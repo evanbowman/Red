@@ -37,7 +37,7 @@ Start:
 
 
 .checkGameboyColor:
-        cp      a, $11                  ; Boot leaves value in reg-a
+        cp      a, BOOTUP_A_CGB         ; Boot leaves value in reg-a
         jr      z, .gbcDetected         ; if a == 0, then we have gbc
         jr      .checkGameboyColor      ; Freeze
 
@@ -46,6 +46,7 @@ Start:
 
 
 .gbcDetected:
+        call    SetCpuFast
         call    VBlankPoll              ; Wait for vbl before disabling lcd.
 
 	xor	a
@@ -69,6 +70,24 @@ Start:
         ei
 
         call    Main
+
+
+;;; ----------------------------------------------------------------------------
+
+SetCpuFast:
+    ld      a, [rKEY1]
+    bit     7, a
+    jr      z, .impl
+    ret
+
+.impl:
+    ld      a, $30
+    ld      [rP1], a
+    ld      a, $01
+    ld      [rKEY1], a
+
+    stop
+    ret
 
 
 ;;; ----------------------------------------------------------------------------
