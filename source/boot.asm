@@ -30,10 +30,22 @@ EntryPoint:
 
 ;;; ----------------------------------------------------------------------------
 
+
 Start:
         di                              ; Turn of interrupts during startup.
         ld      sp, $E000               ; Setup stack.
 
+
+.checkGameboyColor:
+        cp      a, $11                  ; Boot leaves value in reg-a
+        jr      z, .gbcDetected         ; if a == 0, then we have gbc
+        jr      .checkGameboyColor      ; Freeze
+
+;;; TODO: Display some text to indicate that the game requires a gbc. There's no
+;;; need to waste space in bank zero for this stuff, though.
+
+
+.gbcDetected:
         call    VBlankPoll              ; Wait for vbl before disabling lcd.
 
 	xor	a

@@ -1,5 +1,5 @@
 *.o
 *.gbc
 *~
-.map
-.sym
+*.map
+*.sym

@@ -3,7 +3,9 @@ RGBASM  := $(RGBDS)rgbasm
 RGBLINK := $(RGBDS)rgblink
 RGBFIX  := $(RGBDS)rgbfix
 
-ROM := project.gbc
+NAME := project
+
+ROM := $(NAME).gbc
 
 SOURCES := source data
 SOURCES := $(shell find $(SOURCES) -type d -print)
