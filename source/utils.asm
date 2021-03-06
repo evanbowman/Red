@@ -36,7 +36,7 @@ Memset:
 VBlankPoll:
 
         ld      a, [rLY]
-        cp      $90                     ; y value 144
+        cp      SCRN_Y
         jr      nz, VBlankPoll
         ret
 
