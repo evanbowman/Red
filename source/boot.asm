@@ -64,7 +64,7 @@ Start:
         ld      [var_vbl_flag], a
 
         ld      hl, var_oam_back_buffer ; zero out the oam back buffer
-        ld      bc, 4 * OAM_COUNT
+        ld      bc, OAM_SIZE * OAM_COUNT
         call    Memset                  ; Note param a already holds 0 (above)
 
         call    Main
