@@ -492,7 +492,7 @@ SpriteSquare32SetPosition:
 ; b - x
 ; c - y
 ; overwrites b, c, d, e, h, l  :(
-        call    OamLoad
+        call    OamLoad                 ; OAM pointer in hl
 
         push    bc                      ; for when we jump down a row
 
