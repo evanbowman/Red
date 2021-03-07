@@ -55,6 +55,7 @@ Main:
         ei
 
 .loop:
+        call    ReadKeys
         call    VBlankIntrWait          ; vsync
 
         jr      .loop
