@@ -333,6 +333,50 @@ ReadKeys:
 ;;; ---------------------------------------------------------------------------
 
 
+GDMABlockCopy:
+; hl - sprite start address
+; de - destination
+; b - length
+        ld      a, h
+        ldh     [rHDMA1], a             ; HDMA source high
+        ld      a, l
+        ldh     [rHDMA2], a             ; HDMA source low
+
+        ld      a, d
+        ldh     [rHDMA3], a             ; HDMA destination high
+        ld      a, e
+        ldh     [rHDMA4], a             ; HDMA destination low
+
+        ld      a, b                    ; transfer length = 5 (64 bytes)
+        ldh     [rHDMA5], a             ; start DMA transfer
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+CopyDMARoutine:
+        ld      hl, DMARoutine
+        ld      b, DMARoutineEnd - DMARoutine ; Number of bytes to copy
+        ld      c, LOW(hOAMDMA) ; Low byte of the destination address
+.copy
+        ld      a, [hli]
+        ldh     [c], a
+        inc     c
+        dec     b
+        jr      nz, .copy
+        ret
+
+DMARoutine:
+        ldh     [rDMA], a
+
+        ld      a, 40
+.wait
+        dec     a
+        jr      nz, .wait
+        ret
+DMARoutineEnd:
+
 
 ;;; Testing stuff (remove me later)
 ;;; ----------------------------------------------------------------------------
@@ -380,54 +424,6 @@ set_bg_pal:
 	dec	b
 	jr	nz,.copy
 	ret
-
-
-;;; ----------------------------------------------------------------------------
-
-
-GDMABlockCopy:
-; hl - sprite start address
-; de - destination
-; b - length
-        ld      a, h
-        ldh     [rHDMA1], a             ; HDMA source high
-        ld      a, l
-        ldh     [rHDMA2], a             ; HDMA source low
-
-        ld      a, d
-        ldh     [rHDMA3], a             ; HDMA destination high
-        ld      a, e
-        ldh     [rHDMA4], a             ; HDMA destination low
-
-        ld      a, b                    ; transfer length = 5 (64 bytes)
-        ldh     [rHDMA5], a             ; start DMA transfer
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-
-CopyDMARoutine:
-        ld      hl, DMARoutine
-        ld      b, DMARoutineEnd - DMARoutine ; Number of bytes to copy
-        ld      c, LOW(hOAMDMA) ; Low byte of the destination address
-.copy
-        ld      a, [hli]
-        ldh     [c], a
-        inc     c
-        dec     b
-        jr      nz, .copy
-        ret
-
-DMARoutine:
-        ldh     [rDMA], a
-
-        ld      a, 40
-.wait
-        dec     a
-        jr      nz, .wait
-        ret
-DMARoutineEnd:
 
 
 ;;; ----------------------------------------------------------------------------
