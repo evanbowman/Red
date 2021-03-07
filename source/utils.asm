@@ -98,6 +98,11 @@ ScheduleSleep:
 
 VBlankIntrWait:
 .loop:
+;;; NOTE: We reset the vbl flag before the halt, in case our game logic ran
+;;; slow, and we missed the vblank.
+        ld      a, 0
+        ldh     [var_vbl_flag], a
+
         halt
         ;; The assembler inserts a nop here to fix a hardware bug.
         ldh     a, [var_vbl_flag]
