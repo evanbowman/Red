@@ -62,13 +62,6 @@ Start:
         call    ClearHRam
         call    ClearVRam
 
-        ld	a, IEF_VBLANK	        ; vblank interrupt
-	ld	[rIE], a	        ; setup
-
-        ld	a, LCDCF_ON | LCDCF_BG8000 | LCDCF_BG9800 | LCDCF_OBJ16 | LCDCF_WINOFF | LCDCF_BGON
-        ld	[rLCDC], a	        ; enable lcd
-        ei
-
         call    Main
 
 
