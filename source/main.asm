@@ -20,8 +20,8 @@ Main:
         ld	a, IEF_VBLANK	        ; vblank interrupt
 	ld	[rIE], a	        ; setup
 
+        call    CopyDMARoutine
 
-.sample_image:
 	ld	hl,picture_chr		; picture data
 	ld	de,_VRAM		; place it between $8000-8FFF (tiles are numbered here from 0 to 255)
 	ld	bc,3952			; gbhorror.chr file size
@@ -58,11 +58,19 @@ Main:
         call    ReadKeys
         call    VBlankIntrWait          ; vsync
 
+        ld      a, HIGH(var_oam_back_buffer)
+        call    hOAMDMA
+
         jr      .loop
 
 
 
 ;;; ----------------------------------------------------------------------------
+
+ShowSampleImage:
+
+
+
 
 ;;; Borrowed from a tutorial, TODO: write a better version.
 set_bg_pal:
