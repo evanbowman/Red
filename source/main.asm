@@ -540,27 +540,6 @@ SpriteSquare32SetPosition:
         ret
 
 
-;;; --- REPEAT
-
-
-;;; --- REPEAT
-
-        ld      hl, $0800
-        add     hl, bc                  ; x += 8
-        ld      b, h
-
-        pop     hl
-
-        ld      [hl], c
-        inc     hl
-        ld      [hl], b
-        inc     hl
-        inc     hl
-        inc     hl
-
-
-        ret
-
 
 
 ;;; ----------------------------------------------------------------------------
