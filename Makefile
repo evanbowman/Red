@@ -32,7 +32,7 @@ $(ROM): $(OBJ)
 	@echo linking $(ROM)
 	@$(RGBLINK) -o $(ROM) -p 0xFF -m $(NAME).map -n $(NAME).sym $(OBJ)
 	@echo rgbfix $(ROM)
-	@$(RGBFIX) -p 0xFF -v $(ROM)
+	@$(RGBFIX) -C -p 0xFF -v $(ROM)
 	@echo ROM fixed!
 
 run: $(ROM) all

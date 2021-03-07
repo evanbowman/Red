@@ -50,17 +50,18 @@ Start:
         call    VBlankPoll              ; Wait for vbl before disabling lcd.
 
 	xor	a
-	ld	[rIF], a        	; reset important registers
+	ld	[rIF], a
 	ld	[rLCDC], a
 	ld	[rSTAT], a
 	ld	[rSCX], a
 	ld	[rSCY], a
 	ld	[rLYC], a
 	ld	[rIE], a
+	ld	[rVBK], a
+	ld	[rSVBK], a
+	ld	[rRP], a
 
-        call    ClearRam
-        call    ClearHRam
-        call    ClearVRam
+        ld      [var_vbl_flag], a
 
         call    Main
 
@@ -68,25 +69,43 @@ Start:
 ;;; ----------------------------------------------------------------------------
 
 SetCpuFast:
-    ld      a, [rKEY1]
-    bit     7, a
-    jr      z, .impl
-    ret
+        ld      a, [rKEY1]
+        bit     7, a
+        jr      z, .impl
+        ret
 
 .impl:
-    ld      a, $30
-    ld      [rP1], a
-    ld      a, $01
-    ld      [rKEY1], a
+        ld      a, $30
+        ld      [rP1], a
+        ld      a, $01
+        ld      [rKEY1], a
 
-    stop
-    ret
+        stop
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 
 ;;; SECTION START
+
+
+;;; ############################################################################
+
+        SECTION "DATA", ROM0
+
+
+picture_chr:					; bmp2cgb -e0 picture.bmp
+        INCBIN	"picture.chr"
+picture_map:
+	INCBIN	"picture.map"
+picture_atr:
+	INCBIN	"picture.atr"
+picture_pal:
+	INCBIN	"picture.pal"
+
+
+;;; SECTION DATA
 
 
 ;;; ############################################################################
