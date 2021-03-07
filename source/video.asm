@@ -14,25 +14,25 @@
 
 
 CopyDMARoutine:
-  ld  hl, DMARoutine
-  ld  b, DMARoutineEnd - DMARoutine ; Number of bytes to copy
-  ld  c, LOW(hOAMDMA) ; Low byte of the destination address
+        ld      hl, DMARoutine
+        ld      b, DMARoutineEnd - DMARoutine ; Number of bytes to copy
+        ld      c, LOW(hOAMDMA) ; Low byte of the destination address
 .copy
-  ld  a, [hli]
-  ldh [c], a
-  inc c
-  dec b
-  jr  nz, .copy
-  ret
+        ld      a, [hli]
+        ldh     [c], a
+        inc     c
+        dec     b
+        jr      nz, .copy
+        ret
 
 DMARoutine:
-  ldh [rDMA], a
+        ldh     [rDMA], a
 
-  ld  a, 40
+        ld      a, 40
 .wait
-  dec a
-  jr  nz, .wait
-  ret
+        dec     a
+        jr      nz, .wait
+        ret
 DMARoutineEnd:
 
 ;;; ----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ hOAMDMA::
         SECTION "OAM_BACK_BUFFER", WRAM0, ALIGN[8]
 
 var_oam_back_buffer:
-        ds 4 * 40
+        ds OAM_SIZE * OAM_COUNT
 
 
 ;;; SECTION OAM_BACK_BUFFER

@@ -22,6 +22,34 @@ Main:
 
         call    CopyDMARoutine
 
+        call    ShowSampleImage
+
+.activate_screen:
+        ld	a, SCREEN_MODE
+        ld	[rLCDC], a	        ; enable lcd
+        ei
+
+.loop:
+        call    ReadKeys
+        call    VBlankIntrWait          ; vsync
+
+        ld      a, HIGH(var_oam_back_buffer)
+        call    hOAMDMA
+
+        jr      .loop
+
+
+;;; SECTION MAIN
+
+
+;;; ############################################################################
+
+
+
+;;; Testing stuff (remove me later)
+;;; ----------------------------------------------------------------------------
+
+ShowSampleImage:
 	ld	hl,picture_chr		; picture data
 	ld	de,_VRAM		; place it between $8000-8FFF (tiles are numbered here from 0 to 255)
 	ld	bc,3952			; gbhorror.chr file size
@@ -47,28 +75,7 @@ Main:
 	ld	b,64			; gbcyus.pal file size
 					; 1 palette has 4 colors, 1 color takes 2 bytes, so 8 palettes = 64 bytes
 	call	set_bg_pal
-
-
-.activate_screen:
-        ld	a, SCREEN_MODE
-        ld	[rLCDC], a	        ; enable lcd
-        ei
-
-.loop:
-        call    ReadKeys
-        call    VBlankIntrWait          ; vsync
-
-        ld      a, HIGH(var_oam_back_buffer)
-        call    hOAMDMA
-
-        jr      .loop
-
-
-
-;;; ----------------------------------------------------------------------------
-
-ShowSampleImage:
-
+        ret
 
 
 
@@ -88,9 +95,3 @@ set_bg_pal:
 
 
 ;;; ----------------------------------------------------------------------------
-
-
-;;; SECTION MAIN
-
-
-;;; ############################################################################
