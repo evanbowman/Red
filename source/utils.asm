@@ -78,7 +78,7 @@ Reset:
 
 Sleep:
 ; e - frames to sleep
-        call    VBlankPoll
+        call    VBlankIntrWait
         dec     e
         jr      nz, Sleep
         ret
