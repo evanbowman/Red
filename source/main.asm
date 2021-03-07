@@ -184,10 +184,17 @@ Start:
 
         ldh     [var_vbl_flag], a
         ldh     [var_sleep_counter], a
+        ldh     [var_joypad_current], a
+        ldh     [var_joypad_previous], a
 
         ld      hl, var_oam_back_buffer ; zero out the oam back buffer
         ld      bc, OAM_SIZE * OAM_COUNT
         call    Memset                  ; Note param a already holds 0 (above)
+
+        ld      a, 32
+        ld      [var_player_x], a
+        ld      [var_player_y], a
+
 
         jr      Main
 
@@ -228,12 +235,7 @@ Main:
 
 .loop:
         call    ReadKeys
-
-        ld      b, 16
-        ld      c, 31
-        ld      l, 1
-        call    OamSetPosition
-
+        call    UpdateScene
 
 .sched_sleep:
         ldh     a, [var_sleep_counter]
@@ -260,6 +262,41 @@ Main:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+;;;
+;;;
+;;;  Scene Engine
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+UpdateScene:
+        ldh     a, [var_joypad_current]
+        or      a
+        jr      z, .draw
+.move:
+        ld      a, [var_player_x]
+        inc     a
+        ld      [var_player_x], a
+
+
+
+.draw:
+        ld      a, [var_player_x]
+        ld      b, a
+        ld      a, [var_player_y]
+        ld      c, a
+        ld      l, 0
+        call    SpriteSquare32SetPosition
+        ret
+
+
+
+;;; ----------------------------------------------------------------------------
+
 
 
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -447,17 +484,97 @@ GDMABlockCopy:
 
 ;;; ----------------------------------------------------------------------------
 
+;;; Note: 32x32 Square sprite consumes eight hardware sprites, given 8x16
+;;; sprites.
+
+SpriteSquare32SetPosition:
+; l - oam start
+; b - x
+; c - y
+; overwrites b, c, d, e, h, l  :(
+        call    OamLoad
+
+        push    bc                      ; for when we jump down a row
+
+        ld      d, 1                    ; outer loop counter
+
+.loop_outer:
+        ld      a, 3                    ; inner loop counter
+
+.loop_inner:
+
+        ld      [hl], c                 ; set y
+        inc     hl                      ; go to next byte
+        ld      [hl], b                 ; set x
+        inc     hl                      ; skip the next three bytes in oam
+        inc     hl
+        inc     hl
+
+        or      a                       ; test whether a has reached zero
+        jr      z, .loop_outer_cond
+        dec     a
+
+        push    hl
+
+        ld      hl, $0800
+        add     hl, bc                  ; x += 8
+        ld      b, h
+        pop     hl
+        jr      .loop_inner
+
+.loop_outer_cond:
+        or      d                       ; outer loop counter is zero here
+        jr      z, .done
+        dec     d
+
+        pop     bc                      ; see push at fn top
+
+        push    hl
+
+        ld      hl, $000f               ; y += 16
+        add     hl, bc
+        ld      c, l                    ; load upper half into y
+        pop     hl
+        jr      .loop_outer
+.done:
+        ret
+
+
+;;; --- REPEAT
+
+
+;;; --- REPEAT
+
+        ld      hl, $0800
+        add     hl, bc                  ; x += 8
+        ld      b, h
+
+        pop     hl
+
+        ld      [hl], c
+        inc     hl
+        ld      [hl], b
+        inc     hl
+        inc     hl
+        inc     hl
+
+
+        ret
+
+
+
+;;; ----------------------------------------------------------------------------
+
 OamLoad:
 ; l - oam number
 ; hl - return value
 ; de - trashed
-    ld      h, $00
-    add     hl, hl
-    add     hl, hl ; spr number *= 4
-    ld      de, var_oam_back_buffer
-    add     hl, de
-
-    ret
+        ld      h, $00
+        add     hl, hl
+        add     hl, hl
+        ld      de, var_oam_back_buffer
+        add     hl, de
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -466,13 +583,36 @@ OamSetPosition:
 ; l - oam number
 ; b - x
 ; c - y
-    call    OamLoad
+        call    OamLoad
+        ld      [hl], c
+        inc     hl
+        ld      [hl], b
+        ret
 
-    ld      [hl], c
-    inc     hl
-    ld      [hl], b
 
-    ret
+;;; ----------------------------------------------------------------------------
+
+OamSetTile:
+; l - oam number
+; a - tile
+        call    OamLoad
+        inc     hl
+        inc     hl
+        ld      [hl], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+OamSetParams:
+; l - oam number
+; a - params
+        call    OamLoad
+        inc     hl
+        inc     hl
+        inc     hl
+        ld      [hl],a
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
