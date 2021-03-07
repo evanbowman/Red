@@ -15,7 +15,7 @@
 Vbl_isr:
         push    af
         ld      a, 1
-        ld      [var_vbl_flag], a
+        ldh     [var_vbl_flag], a
         pop     af
         reti
 

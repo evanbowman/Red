@@ -31,6 +31,17 @@ Main:
 
 .loop:
         call    ReadKeys
+
+.sched_sleep:
+        ldh     a, [var_sleep_counter]
+        or      a
+        jr      z, .vsync
+        dec     a
+        ldh     [var_sleep_counter], a
+        call    VBlankIntrWait
+        jr      .sched_sleep
+
+.vsync:
         call    VBlankIntrWait          ; vsync
 
         ld      a, HIGH(var_oam_back_buffer)

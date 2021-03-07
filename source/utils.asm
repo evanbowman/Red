@@ -7,6 +7,16 @@
 
 ;; ############################################################################
 
+        SECTION "SLEEP_COUNTER", HRAM
+
+var_sleep_counter:     DS      1
+
+
+;;; SECTION SLEEP_COUNTER
+
+
+;; ############################################################################
+
         SECTION "UTILS", ROM0
         INCLUDE "hardware.inc"
 
@@ -76,11 +86,11 @@ Reset:
 
 ;;; ----------------------------------------------------------------------------
 
-Sleep:
+ScheduleSleep:
 ; e - frames to sleep
-        call    VBlankIntrWait
-        dec     e
-        jr      nz, Sleep
+        ldh     a, [var_sleep_counter]
+        add     a, e
+        ldh     [var_sleep_counter], a
         ret
 
 
@@ -90,11 +100,11 @@ VBlankIntrWait:
 .loop:
         halt
         ;; The assembler inserts a nop here to fix a hardware bug.
-        ld      a, [var_vbl_flag]
+        ldh     a, [var_vbl_flag]
         or      a
         jr      z, .loop
         xor     a
-        ld      [var_vbl_flag], a
+        ldh     [var_vbl_flag], a
         ret
 
 

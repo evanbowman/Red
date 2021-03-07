@@ -5,6 +5,7 @@
 ;;; ----------------------------------------------------------------------------
 
         INCLUDE "hardware.inc"
+        INCLUDE "defs.inc"
 
 
 ;;; ############################################################################
@@ -61,7 +62,8 @@ Start:
 	ld	[rSVBK], a
 	ld	[rRP], a
 
-        ld      [var_vbl_flag], a
+        ldh     [var_vbl_flag], a
+        ldh     [var_sleep_counter], a
 
         ld      hl, var_oam_back_buffer ; zero out the oam back buffer
         ld      bc, OAM_SIZE * OAM_COUNT
