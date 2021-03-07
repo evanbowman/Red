@@ -59,8 +59,9 @@ var_sleep_counter:     DS      1
 
         SECTION "JOYPAD_VARS", HRAM
 
-var_joypad_current:     DS      1
+var_joypad_current:     DS      1       ; Edge triggered
 var_joypad_previous:    DS      1
+var_joypad_raw:         DS      1       ; Level triggered
 
 
 ;;; SECTION JOYPAD_VARS
@@ -235,6 +236,9 @@ Main:
 
 .loop:
         call    ReadKeys
+        ld      a, b
+        ldh     [var_joypad_raw], a
+
         call    UpdateScene
 
 .sched_sleep:
@@ -274,7 +278,7 @@ Main:
 
 
 UpdateScene:
-        ldh     a, [var_joypad_current]
+        ldh     a, [var_joypad_raw]
         or      a
         jr      z, .draw
 .move:
