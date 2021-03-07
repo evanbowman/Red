@@ -1,10 +1,45 @@
-;;; ----------------------------------------------------------------------------
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ;;;
-;;; Sorry about the gigantic file. I had trouble with the linker putting code in
-;;; incorrect sections, and then the code would raise illegal instruction
-;;; warnings during runtime.
+;;; ASM Source code for Red GBC, by Evan Bowman, 2021
 ;;;
-;;; ----------------------------------------------------------------------------
+;;;
+;;; The following licence covers the source code included in this file. The
+;;; game's characters and artwork belong to Evan Bowman, and should not be used
+;;; without permission.
+;;;
+;;;
+;;; Redistribution and use in source and binary forms, with or without
+;;; modification, are permitted provided that the following conditions are met:
+;;;
+;;; 1. Redistributions of source code must retain the above copyright notice,
+;;; this list of conditions and the following disclaimer.
+;;;
+;;; 2. Redistributions in binary form must reproduce the above copyright notice,
+;;; this list of conditions and the following disclaimer in the documentation
+;;; and/or other materials provided with the distribution.
+;;;
+;;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+;;; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+;;; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;;; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+;;; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+;;; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+;;; SUBSTITUTE GOODS OR SERVICES LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+;;; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+;;; POSSIBILITY OF SUCH DAMAGE.
+;;;
+;;; tl;dr: Do whatever you want with the code, just don't blame me if something
+;;; goes wrong.
+;;;
+;;;
+;;; Sorry for the gigantic file. I do not trust the rgbds linker one bit. If
+;;; anyone wants to split the code into separate files, you're welcome to try.
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
 
         INCLUDE "hardware.inc"
         INCLUDE "defs.inc"
@@ -54,6 +89,17 @@ var_oam_back_buffer:
 
 ;;; ############################################################################
 
+        SECTION "PLAYER", WRAM0, ALIGN[8]
+
+var_player_x:   DS      1
+var_player_y:   DS      1
+var_player_fb:  DS      1       ; Frame base
+var_player_kf:  DS      1       ; Keyframe
+var_player_st:  DS      1       ; State Flag
+
+
+;;; ############################################################################
+
         SECTION "VBL", ROM0[$0040]
 	jp	Vbl_isr
 
@@ -95,6 +141,15 @@ EntryPoint:
         SECTION "START", ROM0[$150]
 
 ;;; ----------------------------------------------------------------------------
+
+
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+;;;
+;;;
+;;; Boot Code and main loop
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 Start:
@@ -174,6 +229,12 @@ Main:
 .loop:
         call    ReadKeys
 
+        ld      b, 16
+        ld      c, 31
+        ld      l, 1
+        call    OamSetPosition
+
+
 .sched_sleep:
         ldh     a, [var_sleep_counter]
         or      a
@@ -182,6 +243,7 @@ Main:
         ldh     [var_sleep_counter], a
         call    VBlankIntrWait
         jr      .sched_sleep
+
 
 .vsync:
         call    VBlankIntrWait          ; vsync
@@ -198,6 +260,15 @@ Main:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+;;;
+;;;
+;;; Utility Routines
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 Memset:
@@ -290,6 +361,18 @@ VBlankIntrWait:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+;;;
+;;;
+;;; Joypad Routines
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
 ReadKeys:
 ; b - returns raw state
 ; c - returns debounced state (edge-triggered)
@@ -333,6 +416,16 @@ ReadKeys:
 ;;; ---------------------------------------------------------------------------
 
 
+
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+;;;
+;;;
+;;; Video Routines
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
 GDMABlockCopy:
 ; hl - sprite start address
 ; de - destination
@@ -350,6 +443,36 @@ GDMABlockCopy:
         ld      a, b                    ; transfer length = 5 (64 bytes)
         ldh     [rHDMA5], a             ; start DMA transfer
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+OamLoad:
+; l - oam number
+; hl - return value
+; de - trashed
+    ld      h, $00
+    add     hl, hl
+    add     hl, hl ; spr number *= 4
+    ld      de, var_oam_back_buffer
+    add     hl, de
+
+    ret
+
+
+;;; ----------------------------------------------------------------------------
+
+OamSetPosition:
+; l - oam number
+; b - x
+; c - y
+    call    OamLoad
+
+    ld      [hl], c
+    inc     hl
+    ld      [hl], b
+
+    ret
 
 
 ;;; ----------------------------------------------------------------------------
