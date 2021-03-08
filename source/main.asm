@@ -229,8 +229,6 @@ Main:
 
         call    CopyDMARoutine
 
-        call    ShowSampleImage
-
 .activate_screen:
         ld	a, SCREEN_MODE
         ld	[rLCDC], a	        ; enable lcd
@@ -263,16 +261,12 @@ Main:
         or      a
         jr      z, .ld1
 
-        ld      de, _VRAM
-        ld      hl, WalkLabel
-        ld      b, 16
-        call    GDMABlockCopy
+        ld      l, 0
+        call    MapSpriteBlock
         jr      .done
 .ld1:
-        ld      de, _VRAM
-        ld      hl, WalkLabelMiddle
-        ld      b, 16
-        call    GDMABlockCopy
+        ld      l, 1
+        call    MapSpriteBlock
 
 ;;; As per my own testing, I can fit about five DMA block copies for 32x32 pixel
 ;;; sprites in within the vblank window.
@@ -287,6 +281,23 @@ Main:
 ;;; that I can copy within the vblank window.
 .vbl_window_exceeded:
         stop
+
+
+MapSpriteBlock:
+; l target sprite index
+; overwrites de
+;;; Sprite blocks are 32x32 in size. To go from sprite index to address, we
+;;; simply need to shift l to h.
+;;; FIXME: In the future, if we want to support more than 256 sprites, what to
+;;; do?
+        ld      de, WalkLabel
+        ld      h, l
+        ld      l, 0
+        add     hl, de
+        ld      de, _VRAM
+        ld      b, 16
+        call    GDMABlockCopy
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -573,8 +584,6 @@ SpriteSquare32SetPosition:
         ret
 
 
-
-
 ;;; ----------------------------------------------------------------------------
 
 OamLoad:
@@ -651,18 +660,6 @@ DMARoutine:
         jr      nz, .wait
         ret
 DMARoutineEnd:
-
-
-;;; Testing stuff (remove me later)
-;;; ----------------------------------------------------------------------------
-
-ShowSampleImage:
-        ld      hl, WalkLabel
-        ld      de, _VRAM
-        ld      bc, WalkLabelEnd-WalkLabel
-        call    Memcpy
-        ret
-
 
 
 ;;; Borrowed from a tutorial, TODO: write a better version.
