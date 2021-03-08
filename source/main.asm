@@ -290,6 +290,7 @@ MapSpriteBlock:
 ;;; simply need to shift l to h.
 ;;; FIXME: In the future, if we want to support more than 256 sprites, what to
 ;;; do?
+;;; TODO: parameterize vram dest
         ld      de, WalkLabel
         ld      h, l
         ld      l, 0
