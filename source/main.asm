@@ -274,12 +274,19 @@ Main:
         ld      b, 16
         call    GDMABlockCopy
 
-;;; ld hl spriteStartAddress
-;;; ld de vramSpriteDestAddress
-;;; ld b copyLen
-;;; call GDMABlockCopy
+;;; As per my own testing, I can fit about five DMA block copies for 32x32 pixel
+;;; sprites in within the vblank window.
 .done:
+        ld      a, [rLY]
+        cp      SCRN_Y
+        jr      C, .vbl_window_exceeded
+
         jr      .loop
+
+;;; This is just some debugging code. I'm trying to figure out how much stuff
+;;; that I can copy within the vblank window.
+.vbl_window_exceeded:
+        stop
 
 
 ;;; ----------------------------------------------------------------------------
@@ -673,16 +680,32 @@ set_bg_pal:
 	ret
 
 
+
+;;; SECTION START
+
+
 ;;; ----------------------------------------------------------------------------
 
-; CGBpalette entries.
-WalkLabelCGB::
-DB $00,$00,$00,$00,$00,$00,$00,$00
-WalkLabelCGBEnd::
+;;; ############################################################################
+
+
+        SECTION "OAM_DMA_ROUTINE", HRAM
+
+hOAMDMA::
+        ds DMARoutineEnd - DMARoutine ; Reserve space to copy the routine to
+
+
+;;; SECTION OAM_DMA_ROUTINE
+
+
+;;; ############################################################################
+
 
 ;;; NOTE: We're copying date from here with GDMA, so the eight byte alignment is
 ;;; important.
-SECTION "IMAGE_DATA", ROM0, ALIGN[8]
+SECTION "IMAGE_DATA", ROMX, ALIGN[8]
+;;; I'm putting this data in a separate rom bank, so that I can keep most of the
+;;; code in bank 0.
 WalkLabel::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -750,21 +773,6 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-
-
-;;; SECTION START
-
-
-;;; ############################################################################
-
-
-        SECTION "OAM_DMA_ROUTINE", HRAM
-
-hOAMDMA::
-        ds DMARoutineEnd - DMARoutine ; Reserve space to copy the routine to
-
-
-;;; SECTION OAM_DMA_ROUTINE
 
 
 ;;; ############################################################################
