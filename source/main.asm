@@ -171,7 +171,7 @@ Start:
         call    SetCpuFast
         call    VBlankPoll              ; Wait for vbl before disabling lcd.
 
-	xor	a
+	xor	a                       ; A now holds zero.
 	ld	[rIF], a
 	ld	[rLCDC], a
 	ld	[rSTAT], a
@@ -187,6 +187,8 @@ Start:
         ldh     [var_sleep_counter], a
         ldh     [var_joypad_current], a
         ldh     [var_joypad_previous], a
+
+        ld      [var_player_kf], a
 
         ld      hl, var_oam_back_buffer ; zero out the oam back buffer
         ld      bc, OAM_SIZE * OAM_COUNT
@@ -257,11 +259,26 @@ Main:
         ld      a, HIGH(var_oam_back_buffer)
         call    hOAMDMA
 
+        ld      a, [var_joypad_raw]
+        or      a
+        jr      z, .ld1
+
+        ld      de, _VRAM
+        ld      hl, WalkLabel
+        ld      b, 16
+        call    GDMABlockCopy
+        jr      .done
+.ld1:
+        ld      de, _VRAM
+        ld      hl, WalkLabelMiddle
+        ld      b, 16
+        call    GDMABlockCopy
+
 ;;; ld hl spriteStartAddress
 ;;; ld de vramSpriteDestAddress
 ;;; ld b copyLen
 ;;; call GDMABlockCopy
-
+.done:
         jr      .loop
 
 
@@ -495,12 +512,14 @@ SpriteSquare32SetPosition:
 ; l - oam start
 ; b - x
 ; c - y
+; e - start tile
 ; overwrites b, c, d, e, h, l  :(
         call    OamLoad                 ; OAM pointer in hl
 
         push    bc                      ; for when we jump down a row
 
         ld      d, 1                    ; outer loop counter
+        ld      e, 0
 
 .loop_outer:
         ld      a, 3                    ; inner loop counter
@@ -511,8 +530,11 @@ SpriteSquare32SetPosition:
         inc     hl                      ; go to next byte
         ld      [hl], b                 ; set x
         inc     hl                      ; skip the next three bytes in oam
+        ld      [hl], e
         inc     hl
         inc     hl
+        inc     e
+        inc     e
 
         or      a                       ; test whether a has reached zero
         jr      z, .loop_outer_cond
@@ -628,31 +650,10 @@ DMARoutineEnd:
 ;;; ----------------------------------------------------------------------------
 
 ShowSampleImage:
-	ld	hl,picture_chr		; picture data
-	ld	de,_VRAM		; place it between $8000-8FFF (tiles are numbered here from 0 to 255)
-	ld	bc,3952			; gbhorror.chr file size
-	call 	Memcpy
-
-	ld	hl,picture_map		; picture map (160x144px padded = 32*18)
-	ld	de,_SCRN0		; place it at $9800
-	ld	bc,576			; gbcyus.map file size
-	call	Memcpy
-
-	ld	a,1			; switch to vram bank 1
-	ld	[rVBK],a		; this is where we place attribute map
-
-	ld	hl,picture_atr		; picture attributes
-	ld	de,_SCRN0		; place it at $9800 just like map
-	ld	bc,576			; gbcyus.atr file size
-	call	Memcpy
-
-	xor	a			; switch back to vram bank 0
-	ld	[rVBK],a
-
-	ld	hl,picture_pal		; picture palette
-	ld	b,64			; gbcyus.pal file size
-					; 1 palette has 4 colors, 1 color takes 2 bytes, so 8 palettes = 64 bytes
-	call	set_bg_pal
+        ld      hl, WalkLabel
+        ld      de, _VRAM
+        ld      bc, WalkLabelEnd-WalkLabel
+        call    Memcpy
         ret
 
 
@@ -674,19 +675,79 @@ set_bg_pal:
 
 ;;; ----------------------------------------------------------------------------
 
+; CGBpalette entries.
+WalkLabelCGB::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+WalkLabelCGBEnd::
 
-;;; IMAGE DATA
-
-
-picture_chr:					; bmp2cgb -e0 picture.bmp
-        INCBIN	"picture.chr"
-picture_map:
-	INCBIN	"picture.map"
-picture_atr:
-	INCBIN	"picture.atr"
-picture_pal:
-	INCBIN	"picture.pal"
-
+SECTION "IMAGE_DATA", ROM0, ALIGN[8]
+WalkLabel::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$01,$00,$01,$00,$03
+DB $00,$03,$00,$03,$00,$07,$00,$07
+DB $00,$07,$00,$07,$00,$03,$00,$07
+DB $00,$0F,$00,$0F,$00,$1F,$00,$1F
+DB $00,$00,$00,$F0,$00,$F8,$00,$FC
+DB $00,$FC,$04,$FC,$0C,$FC,$0E,$FA
+DB $1E,$FE,$1C,$FC,$0C,$FC,$00,$FC
+DB $00,$FC,$00,$FC,$00,$FC,$00,$FC
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$01,$01,$01,$01,$01,$01
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$3F,$00,$3F,$00,$7F,$00,$7F
+DB $00,$7F,$00,$7F,$00,$7F,$00,$3F
+DB $E0,$FF,$F8,$FF,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$FC,$00,$FE,$00,$FE,$00,$FE
+DB $00,$FE,$00,$FE,$00,$FE,$00,$FE
+DB $00,$FE,$06,$FE,$0E,$0E,$03,$03
+DB $01,$01,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$20,$20
+DB $C0,$C0,$80,$80,$00,$00,$00,$00
+WalkLabelEnd::
+WalkLabelMiddle::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$01,$00,$01
+DB $00,$03,$00,$03,$00,$03,$00,$07
+DB $00,$07,$00,$07,$00,$07,$00,$03
+DB $00,$07,$00,$0F,$00,$0F,$00,$1F
+DB $00,$00,$00,$00,$00,$F0,$00,$F8
+DB $00,$FC,$00,$FC,$04,$FC,$0C,$FC
+DB $0E,$FA,$1E,$FE,$1C,$FC,$0C,$FC
+DB $00,$FC,$00,$FC,$00,$FC,$00,$FC
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$01,$00,$01,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$3F,$00,$3F,$00,$7F,$00,$FF
+DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $00,$7F,$00,$3F,$00,$0F,$0F,$0F
+DB $0C,$0C,$08,$08,$00,$00,$00,$00
+DB $00,$FC,$00,$FE,$00,$FE,$00,$FE
+DB $00,$FE,$00,$FE,$00,$FE,$00,$FE
+DB $00,$FE,$00,$FE,$00,$FE,$30,$30
+DB $30,$30,$38,$38,$18,$18,$0C,$0C
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
 
 
 ;;; SECTION START
