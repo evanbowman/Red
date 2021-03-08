@@ -680,6 +680,8 @@ WalkLabelCGB::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 WalkLabelCGBEnd::
 
+;;; NOTE: We're copying date from here with GDMA, so the eight byte alignment is
+;;; important.
 SECTION "IMAGE_DATA", ROM0, ALIGN[8]
 WalkLabel::
 DB $00,$00,$00,$00,$00,$00,$00,$00
