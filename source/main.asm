@@ -229,6 +229,10 @@ Main:
 
         call    CopyDMARoutine
 
+        ld      b, 8
+        ld      hl, PlayerCharacterPalette
+        call    LoadColors
+
 .activate_screen:
         ld	a, SCREEN_MODE
         ld	[rLCDC], a	        ; enable lcd
@@ -692,6 +696,15 @@ set_bg_pal:
 	dec	b
 	jr	nz,.copy
 	ret
+
+
+PlayerCharacterPalette::
+DB $00,$00,$69,$72,$df,$24,$cb,$30
+
+;;; Example of how to do the color conversion:
+;;; See byte sequence $df,$24 above, the red color.
+;;; We convert the actual color to hex, and then flip the order of the bytes.
+;;;  (31) | (6 << 5) | (9 << 10) == 0x24df
 
 
 
