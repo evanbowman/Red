@@ -291,7 +291,7 @@ MapSpriteBlock:
 ;;; FIXME: In the future, if we want to support more than 256 sprites, what to
 ;;; do?
 ;;; TODO: parameterize vram dest
-        ld      de, WalkLabel
+        ld      de, SpriteSheetData
         ld      h, l
         ld      l, 0
         add     hl, de
@@ -639,7 +639,6 @@ OamSetParams:
 
 ;;; ----------------------------------------------------------------------------
 
-
 CopyDMARoutine:
         ld      hl, DMARoutine
         ld      b, DMARoutineEnd - DMARoutine ; Number of bytes to copy
@@ -662,6 +661,23 @@ DMARoutine:
         ret
 DMARoutineEnd:
 
+
+;;; ----------------------------------------------------------------------------
+
+LoadColors:
+;;; hl - source array
+;;; b - count
+        ld      a, %10000000
+        ld      [rOCPS], a
+.copy:
+        ld      a, [hl+]
+        ldh     [rOCPD], a
+        dec     b
+        jr      nz, .copy
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 ;;; Borrowed from a tutorial, TODO: write a better version.
 set_bg_pal:
@@ -704,7 +720,7 @@ hOAMDMA::
 SECTION "IMAGE_DATA", ROMX, ALIGN[8]
 ;;; I'm putting this data in a separate rom bank, so that I can keep most of the
 ;;; code in bank 0.
-WalkLabel::
+SpriteSheetData::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -737,8 +753,7 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$20,$20
 DB $C0,$C0,$80,$80,$00,$00,$00,$00
-WalkLabelEnd::
-WalkLabelMiddle::
+
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
