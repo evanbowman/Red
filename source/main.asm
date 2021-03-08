@@ -234,7 +234,7 @@ Main:
 
         ld      b, 8
         ld      hl, PlayerCharacterPalette
-        call    LoadColors
+        call    LoadObjectColors
 
 .activate_screen:
         ld	a, SCREEN_MODE
@@ -349,7 +349,8 @@ UpdateScene:
         ld      a, [var_player_y]
         ld      c, a
         ld      l, 0
-        call    SpriteSquare32SetPosition
+        ld      e, 0
+        call    ShowSpriteSquare32
         ret
 
 
@@ -543,21 +544,58 @@ GDMABlockCopy:
 
 ;;; ----------------------------------------------------------------------------
 
+ShowSpriteSquare16:
+; l - oam start
+; b - x
+; c - y
+; e - start tile
+        push    de
+        call    OamLoad
+        pop     de
+
+        ld      a, 2
+.loop:
+        ld      [hl], c                 ; set y
+        inc     hl
+        ld      [hl], b                 ; set x
+        inc     hl
+        ld      [hl], e
+        inc     hl
+        inc     hl
+        inc     e
+        inc     e
+
+        dec     a
+        or      a
+        jr      z, .done
+
+        push    hl
+        ld      hl, $0800
+        add     hl, bc
+        ld      b, h
+        pop     hl
+
+        jr      .loop
+.done:
+        ret
+
+
 ;;; Note: 32x32 Square sprite consumes eight hardware sprites, given 8x16
 ;;; sprites.
 
-SpriteSquare32SetPosition:
+ShowSpriteSquare32:
 ; l - oam start
 ; b - x
 ; c - y
 ; e - start tile
 ; overwrites b, c, d, e, h, l  :(
+        push    de                      ; de trashed by OamLoad
         call    OamLoad                 ; OAM pointer in hl
+        pop     de                      ; restore e
 
         push    bc                      ; for when we jump down a row
 
         ld      d, 1                    ; outer loop counter
-        ld      e, 0
 
 .loop_outer:
         ld      a, 3                    ; inner loop counter
@@ -571,7 +609,7 @@ SpriteSquare32SetPosition:
         ld      [hl], e
         inc     hl
         inc     hl
-        inc     e
+        inc     e                       ; double inc b/c 8x16 tiles
         inc     e
 
         or      a                       ; test whether a has reached zero
@@ -683,7 +721,7 @@ DMARoutineEnd:
 
 ;;; ----------------------------------------------------------------------------
 
-LoadColors:
+LoadObjectColors:
 ;;; hl - source array
 ;;; b - count
         ld      a, %10000000
@@ -697,20 +735,6 @@ LoadColors:
 
 
 ;;; ----------------------------------------------------------------------------
-
-;;; Borrowed from a tutorial, TODO: write a better version.
-set_bg_pal:
-
-	ld	a,%10000000			; bit 7 - enable palette auto increment
-						; bits 5,4,3 - palette number (0-7)
-						; bits 2,1 - color number (0-3)
-	ld	[rBCPS],a			; we start from color #0 in palette #0 and let the hardware to auto increment those values while we copy palette data
-.copy
-	ld	a,[hl+]				; this is really basic = slow way of doing things
-	ldh	[rBCPD],a
-	dec	b
-	jr	nz,.copy
-	ret
 
 
 PlayerCharacterPalette::
