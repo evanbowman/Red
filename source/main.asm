@@ -92,8 +92,14 @@ var_oam_back_buffer:
 
         SECTION "PLAYER", WRAM0, ALIGN[8]
 
-var_player_x:   DS      1
-var_player_y:   DS      1
+PLAYER_COORD_X:
+var_player_x1:  DS      1
+var_player_x2:  DS      1
+var_player_x3:  DS      1
+PLAYER_COORD_Y:
+var_player_y1:  DS      1
+var_player_y2:  DS      1
+var_player_y3:  DS      1
 var_player_fb:  DS      1       ; Frame base
 var_player_kf:  DS      1       ; Keyframe
 var_player_st:  DS      1       ; State Flag
@@ -196,10 +202,16 @@ Start:
         ld      bc, OAM_SIZE * OAM_COUNT
         call    Memset                  ; Note param a already holds 0 (above)
 
+        ld      hl, PLAYER_COORD_X
+        call    FixnumInit
+
+        ld      hl, PLAYER_COORD_Y
+        call    FixnumInit
+
         ld      a, 64
-        ld      [var_player_x], a
+        ld      [var_player_x1], a
         ld      a, 60
-        ld      [var_player_y], a
+        ld      [var_player_y1], a
 
 
         jr      Main
@@ -315,13 +327,14 @@ MapSpriteBlock:
 
 
 UpdateScene:
-;;         ldh     a, [var_joypad_raw]
-;;         or      a
-;;         jr      z, .draw
-;; .move:
-;;         ld      a, [var_player_x]
-;;         inc     a
-;;         ld      [var_player_x], a
+        ldh     a, [var_joypad_raw]
+        or      a
+        jr      z, .draw
+.move:
+        ld      hl, PLAYER_COORD_X
+        ld      b, 1
+        ld      c, 72
+        call    FixnumAdd
 
 .animate:
         ld      a, [var_player_tmr]
@@ -344,10 +357,16 @@ UpdateScene:
         ld      [var_player_kf], a
 
 .draw:
-        ld      a, [var_player_x]
-        ld      b, a
-        ld      a, [var_player_y]
-        ld      c, a
+        ld      hl, PLAYER_COORD_X
+        call    FixnumUpper
+
+        ld      b, e
+
+        ld      hl, PLAYER_COORD_Y
+        call    FixnumUpper
+
+        ld      c, e
+
         ld      l, 0
         ld      e, 0
         call    ShowSpriteSquare32
@@ -512,6 +531,115 @@ ReadKeys:
 
 ;;; ---------------------------------------------------------------------------
 
+
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+;;;
+;;;
+;;; Number
+;;;
+;;; This code uses an uncommon numbering system. Every number has two bytes for
+;;; the large units, plus one byte of decimal units.
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+;;; ---------------------------------------------------------------------------
+
+
+FixnumInit:
+;;; hl - address of number
+;;; destroys hl
+        ld      a, 0
+        ld      [hl], a
+        inc     hl
+        ld      [hl], a
+        inc     hl
+        ld      [hl], a
+        ret
+
+
+;;; Interprets the decimal bits and the middle bits of a fixnum as a 16 bit
+;;; integer, adds them, and increments the high bits upon overflow.
+FixnumAdd:
+;;; hl - address of number
+;;; b - small unit
+;;; c - fractional unit
+;;; destroys de, hl, bc, a
+        push    hl                      ; Store address, for writing back later
+
+        ld      d, [hl]                 ; Load fractional and small units
+        inc     hl
+        ld      e, [hl]
+
+        ld      a, b                    ; Store small unit in a, load to h later
+
+        inc     hl                      ; inc ptr to location of large unit
+        ld      b, [hl]                 ; Load large unit
+
+        ld      h, a                    ; store small unit argument in h
+
+        ld      a, c                    ; load fractional unit argument into l
+        ld      l, a
+
+        add     hl, de                  ; Add small and fractional units params
+        jr      NC, .writeback          ; If the addition did not overflow
+.inc_large_unit:
+;;; Ok, so at this point, our addition overflowed the fractional bits and the
+;;; small bits, so we need to increment the large bits.
+        inc     b
+        ;; ld      d, 0  (should already be zeroed by overflow)
+        ;; ld      e, 0  is this even necessary?
+
+.writeback:
+        ld      d, h
+        ld      e, l
+        pop     hl
+
+        ld      [hl], d
+        inc     hl
+        ld      [hl], e
+        inc     hl
+        ld      [hl], b
+        ret
+
+
+;; FixnumSub:
+;; ;;; hl - address of number
+;; ;;; b - small unit
+;; ;;; c - fractional unit
+;; ;;; TODO
+;; ;;; This is a bit more complicated, because there's no subtraction instruction
+;; ;;; for hl.
+;;         push    hl
+
+;;         ld      d, [hl]                      ; small units
+;;         inc     hl
+;;         ld      e, [hl]                      ; fractional units
+;;         inc     hl
+;;         ld      a, [hl]
+;;         ld      h, a                         ; we need a for the sub opcode
+
+;;         ld      a, c
+;;         sub     e
+
+;;         pop hl
+;;         ret
+
+
+FixnumUpper:
+;;; hl - address of number
+;;; return result in de
+;;; destroys hl
+        ld      e, [hl]
+        inc     hl
+        inc     hl
+        ld      d, [hl]
+        ret
+
+
+
+;;; ---------------------------------------------------------------------------
 
 
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
