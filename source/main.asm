@@ -369,6 +369,109 @@ MapSpriteBlock:
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ;;;
 ;;;
+;;;  Player
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+AnimatePlayer:
+;;; TODO...
+        ret
+
+
+
+
+UpdatePlayer:
+        ldh     a, [var_joypad_raw]
+        bit     5, a
+        jr      NZ, .pressedLeft
+        jr      .checkRight
+
+.pressedLeft:
+        ld      hl, var_player_coord_x
+        ld      b, 1
+        ld      c, 12
+        call    FixnumSub
+
+.checkRight:
+        ldh     a, [var_joypad_raw]
+        bit     4, a
+        jr      NZ, .pressedRight
+        jr      .checkUp
+
+.pressedRight:
+        ld      hl, var_player_coord_x
+        ld      b, 1
+        ld      c, 12
+        call    FixnumAdd
+
+.checkUp:
+        ldh     a, [var_joypad_raw]
+        bit     6, a
+        jr      NZ, .pressedUp
+        jr      .checkDown
+
+.pressedUp:
+        ld      hl, var_player_coord_y
+        ld      b, 1
+        ld      c, 12
+        call    FixnumSub
+
+.checkDown:
+	ldh     a, [var_joypad_raw]
+        bit     7, a
+        jr      NZ, .pressedDown
+        jr      .animate
+
+.pressedDown:
+        ld      hl, var_player_coord_y
+        ld      b, 1
+        ld      c, 12
+        call    FixnumAdd
+
+.animate:
+        ld      a, [var_joypad_raw]
+        or      a
+        jr      Z, .still
+        ld      a, 0
+        ld      [var_player_fb], a
+        ld      a, [var_player_tmr]
+        inc     a
+        ld      [var_player_tmr], a
+        cp      6
+        jr      z, .next_kf
+        jr      .done
+.next_kf:
+        ld      a, 0
+        ld      [var_player_tmr], a
+        ld      a, [var_player_kf]
+        inc     a
+        ld      [var_player_kf], a
+        cp      5
+        jr      z, .reset_kf
+        jr      .done
+.reset_kf:
+        ld      a, 0
+        ld      [var_player_kf], a
+        jr      .done
+
+.still:
+        ld      a, 5
+        ld      [var_player_fb], a
+        ld      a, 0
+        ld      [var_player_kf], a
+
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+;;;
+;;;
 ;;;  Scene Engine
 ;;;
 ;;;
@@ -465,93 +568,6 @@ UpdateScene:
         call    ShowSpriteSquare16
 .skip:
 
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-
-UpdatePlayer:
-        ldh     a, [var_joypad_raw]
-        bit     5, a
-        jr      NZ, .pressedLeft
-        jr      .checkRight
-
-.pressedLeft:
-        ld      hl, var_player_coord_x
-        ld      b, 1
-        ld      c, 12
-        call    FixnumSub
-
-.checkRight:
-        ldh     a, [var_joypad_raw]
-        bit     4, a
-        jr      NZ, .pressedRight
-        jr      .checkUp
-
-.pressedRight:
-        ld      hl, var_player_coord_x
-        ld      b, 1
-        ld      c, 12
-        call    FixnumAdd
-
-.checkUp:
-        ldh     a, [var_joypad_raw]
-        bit     6, a
-        jr      NZ, .pressedUp
-        jr      .checkDown
-
-.pressedUp:
-        ld      hl, var_player_coord_y
-        ld      b, 1
-        ld      c, 12
-        call    FixnumSub
-
-.checkDown:
-	ldh     a, [var_joypad_raw]
-        bit     7, a
-        jr      NZ, .pressedDown
-        jr      .animate
-
-.pressedDown:
-        ld      hl, var_player_coord_y
-        ld      b, 1
-        ld      c, 12
-        call    FixnumAdd
-
-.animate:
-        ld      a, [var_joypad_raw]
-        or      a
-        jr      Z, .still
-        ld      a, 0
-        ld      [var_player_fb], a
-        ld      a, [var_player_tmr]
-        inc     a
-        ld      [var_player_tmr], a
-        cp      6
-        jr      z, .next_kf
-        jr      .done
-.next_kf:
-        ld      a, 0
-        ld      [var_player_tmr], a
-        ld      a, [var_player_kf]
-        inc     a
-        ld      [var_player_kf], a
-        cp      5
-        jr      z, .reset_kf
-        jr      .done
-.reset_kf:
-        ld      a, 0
-        ld      [var_player_kf], a
-        jr      .done
-
-.still:
-        ld      a, 5
-        ld      [var_player_fb], a
-        ld      a, 0
-        ld      [var_player_kf], a
-
-.done:
         ret
 
 
@@ -1185,21 +1201,31 @@ TestTilemap:
 
 ;;; ----------------------------------------------------------------------------
 
-TestOverlay:
+
+SetOverlayTile:
+;;; NOTE: This writes to vram, careful!
+;;; c - screen overlay x index
+;;; a - tile number (overlay tiles start at $80)
+;;; trashes b
         ld      hl, _SCRN1
         ld      b, 0
-
-        ld      a, $81
+        add     hl, bc
         ld      [hl], a
-        inc     hl
+        ret
 
+
+TestOverlay:
+        ld      c, 0
+        ld      a, $81
+        call    SetOverlayTile
+
+        inc     c
 .loop:
         ld      a, $80
-        ld      [hl], a
-        inc     hl
-        inc     b
-        ld      a, 19
-        cp      b
+        call    SetOverlayTile
+        inc     c
+        ld      a, 20
+        cp      c
         jr      NZ, .loop
         ret
 
