@@ -41,6 +41,13 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+;; ############################################################################
+;;;
+;;; Overview
+;;;
+;;;
+;;;
+
         INCLUDE "hardware.inc"
         INCLUDE "defs.inc"
 
@@ -203,6 +210,7 @@ Start:
         ld      [var_view_y], a
 
         ld      [var_player_kf], a
+        ld      [var_player_fb], a
         ld      [var_player_tmr], a
 
         ld      hl, var_oam_back_buffer ; zero out the oam back buffer
@@ -309,9 +317,18 @@ Main:
         call    hOAMDMA
 
 ;;; TODO: parameterize sprite copies
+        ld      a, SPRITESHEET1_ROM_BANK
+        ld      [rROMB1], a
+
         ld      a, [var_player_kf]
         ld      l, a
+        ld      a, [var_player_fb]
+        add     l
+        ld      l, a
         call    MapSpriteBlock
+
+        ld      a, 1
+        ld      [rROMB1], a
 
 ;;; As per my own testing, I can fit about five DMA block copies for 32x32 pixel
 ;;; sprites in within the vblank window.
@@ -505,7 +522,9 @@ UpdatePlayer:
 .animate:
         ld      a, [var_joypad_raw]
         or      a
-        jr      Z, .done
+        jr      Z, .still
+        ld      a, 0
+        ld      [var_player_fb], a
         ld      a, [var_player_tmr]
         inc     a
         ld      [var_player_tmr], a
@@ -522,6 +541,13 @@ UpdatePlayer:
         jr      z, .reset_kf
         jr      .done
 .reset_kf:
+        ld      a, 0
+        ld      [var_player_kf], a
+        jr      .done
+
+.still:
+        ld      a, 5
+        ld      [var_player_fb], a
         ld      a, 0
         ld      [var_player_kf], a
 
@@ -740,6 +766,9 @@ ReadKeys:
 ;;; Combining the lower byte and the decimal byte, we also have a sixteen bit
 ;;; number.
 ;;;
+;;; This class is potentially over-engineered, but I am not sure how large the
+;;; game's rooms will ultimately be, so I am using three-byte fixnums, in case
+;;; I need a larger range of coordinates.
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -1228,10 +1257,11 @@ SpriteDropShadowEnd::
 
 ;;; NOTE: We're copying date from here with GDMA, so the eight byte alignment is
 ;;; important.
-SECTION "IMAGE_DATA", ROMX, ALIGN[8]
+SECTION "IMAGE_DATA", ROMX, ALIGN[8], BANK[SPRITESHEET1_ROM_BANK]
 ;;; I'm putting this data in a separate rom bank, so that I can keep most of the
 ;;; code in bank 0.
 SpriteSheetData::
+SpritePlayerWalkCycleRight::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1392,5 +1422,39 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-
+SpritePlayerWalkCycleRightEnd::
+SpritePlayerStillRight::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$07,$00,$07,$00,$0F
+DB $00,$0F,$00,$0F,$00,$1F,$00,$1F
+DB $00,$1F,$00,$1F,$00,$0F,$00,$1F
+DB $00,$1F,$00,$1F,$00,$3F,$00,$3F
+DB $00,$00,$00,$C0,$00,$E0,$00,$F0
+DB $00,$F0,$10,$F0,$30,$F0,$38,$E8
+DB $78,$F8,$70,$F0,$30,$F0,$00,$F0
+DB $00,$F0,$00,$F8,$00,$F8,$00,$F8
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$3F,$00,$7F,$00,$7F,$00,$7F
+DB $00,$7F,$00,$7F,$00,$7F,$00,$7F
+DB $00,$7F,$00,$3F,$00,$0F,$01,$01
+DB $01,$01,$01,$01,$01,$01,$00,$00
+DB $00,$F8,$00,$FC,$00,$FC,$00,$FC
+DB $00,$FC,$00,$FC,$00,$FC,$00,$FC
+DB $00,$FC,$00,$FC,$00,$F0,$80,$80
+DB $80,$80,$80,$80,$80,$80,$C0,$C0
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+SpritePlayerStillRightEnd::
 ;;; ############################################################################
