@@ -92,14 +92,9 @@ var_oam_back_buffer:
 
         SECTION "PLAYER", WRAM0, ALIGN[8]
 
-PLAYER_COORD_X:
-var_player_x1:  DS      1
-var_player_x2:  DS      1
-var_player_x3:  DS      1
-PLAYER_COORD_Y:
-var_player_y1:  DS      1
-var_player_y2:  DS      1
-var_player_y3:  DS      1
+var_player_coord_x:  DS      FIXNUM_SIZE
+var_player_coord_y:  DS      FIXNUM_SIZE
+
 var_player_fb:  DS      1       ; Frame base
 var_player_kf:  DS      1       ; Keyframe
 var_player_st:  DS      1       ; State Flag
@@ -107,6 +102,15 @@ var_player_tmr: DS      1       ; Timer
 
 
 ;;; ############################################################################
+
+        SECTION "VIEW", WRAM0, ALIGN[8]
+
+var_view_x:    DS      1
+var_view_y:    DS      1
+
+
+;;; ############################################################################
+
 
         SECTION "VBL", ROM0[$0040]
 	jp	Vbl_isr
@@ -195,6 +199,9 @@ Start:
         ldh     [var_joypad_current], a
         ldh     [var_joypad_previous], a
 
+        ld      [var_view_x], a
+        ld      [var_view_y], a
+
         ld      [var_player_kf], a
         ld      [var_player_tmr], a
 
@@ -202,17 +209,13 @@ Start:
         ld      bc, OAM_SIZE * OAM_COUNT
         call    Memset                  ; Note param a already holds 0 (above)
 
-        ld      hl, PLAYER_COORD_X
+        ld      hl, var_player_coord_x
+        ld      bc, 64
         call    FixnumInit
 
-        ld      hl, PLAYER_COORD_Y
+        ld      hl, var_player_coord_y
+        ld      bc, 60
         call    FixnumInit
-
-        ld      a, 64
-        ld      [var_player_x1], a
-        ld      a, 60
-        ld      [var_player_y1], a
-
 
         jr      Main
 
@@ -248,6 +251,12 @@ Main:
         ld      hl, PlayerCharacterPalette
         call    LoadObjectColors
 
+        call    TestTilemap
+
+        ld      b, 8
+        ld      hl, BackgroundPalette
+        call    LoadBackgroundColors
+
 .activate_screen:
         ld	a, SCREEN_MODE
         ld	[rLCDC], a	        ; enable lcd
@@ -273,10 +282,16 @@ Main:
 .vsync:
         call    VBlankIntrWait          ; vsync
 
+        ld      a, [var_view_x]
+        ld      [rSCX], a
+
+        ld      a, [var_view_y]
+        ld      [rSCY], a
+
         ld      a, HIGH(var_oam_back_buffer)
         call    hOAMDMA
 
-
+;;; TODO: parameterize sprite copies
         ld      a, [var_player_kf]
         ld      l, a
         call    MapSpriteBlock
@@ -326,23 +341,151 @@ MapSpriteBlock:
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+UpdateView:
+        ld      a, [var_player_coord_x]
+        ld      d, a
+        ld      a, 175                  ; 255 - (screen_width / 2)
+        cp      d
+        jr      C, .xFixedRight
+        ld      a, d
+        ld      d, 80
+	sub     d
+        jr      C, .xFixedLeft
+        ld      [var_view_x], a
+
+        jr      .setY
+
+.xFixedLeft:
+        ld      a, 0
+        ld      [var_view_x], a
+        jr      .setY
+
+.xFixedRight:
+        ld      a, 95                   ; 255 - screen_width
+        ld      [var_view_x], a
+
+.setY:
+        ld      a, [var_player_coord_y]
+        add     a, 8                    ; Menu bar takes up one row, add offset
+        ld      d, a
+        ld      a, (183 + 19)           ; FIXME: why does this val work?
+        cp      d
+        jr      C, .yFixedBottom
+        ld      a, d
+        ld      d, 80
+        sub     d
+        jr      C, .yFixedTop
+        ld      [var_view_y], a
+
+        jr      .done
+
+.yFixedTop:
+        ld      a, 0
+        ld      [var_view_y], a
+        jr      .done
+
+.yFixedBottom:
+        ld      a, 121                  ; FIXME: how'd I decide on this number?
+        ld      [var_view_y], a
+
+.done:
+        ret
+
+
 UpdateScene:
+        call    UpdatePlayer
+        call    UpdateView
+
+.draw:
+        ld      hl, var_player_coord_x
+        call    FixnumUpper
+
+        ld      a, [var_view_x]
+        ld      l, a
+        ld      a, e
+        sub     l
+        ld      b, a
+
+
+        ld      hl, var_player_coord_y
+        call    FixnumUpper
+
+        ld      a, [var_view_y]
+        ld      l, a
+        ld      a, e
+        sub     l
+        ld      c, a
+
+        ld      l, 0
+        ld      e, 0
+        call    ShowSpriteSquare32
+
+.skip:
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+UpdatePlayer:
         ldh     a, [var_joypad_raw]
-        or      a
-        jr      z, .draw
-.move:
-        ld      hl, PLAYER_COORD_X
+        bit     5, a
+        jr      NZ, .pressedLeft
+        jr      .checkRight
+
+.pressedLeft:
+        ld      hl, var_player_coord_x
         ld      b, 1
-        ld      c, 72
+        ld      c, 24
+        call    FixnumSub
+
+.checkRight:
+        ldh     a, [var_joypad_raw]
+        bit     4, a
+        jr      NZ, .pressedRight
+        jr      .checkUp
+
+.pressedRight:
+        ld      hl, var_player_coord_x
+        ld      b, 1
+        ld      c, 24
+        call    FixnumAdd
+
+.checkUp:
+        ldh     a, [var_joypad_raw]
+        bit     6, a
+        jr      NZ, .pressedUp
+        jr      .checkDown
+
+.pressedUp:
+        ld      hl, var_player_coord_y
+        ld      b, 1
+        ld      c, 24
+        call    FixnumSub
+
+.checkDown:
+	ldh     a, [var_joypad_raw]
+        bit     7, a
+        jr      NZ, .pressedDown
+        jr      .animate
+
+.pressedDown:
+        ld      hl, var_player_coord_y
+        ld      b, 1
+        ld      c, 24
         call    FixnumAdd
 
 .animate:
+        ld      a, [var_joypad_raw]
+        or      a
+        jr      Z, .done
         ld      a, [var_player_tmr]
         inc     a
         ld      [var_player_tmr], a
         cp      6
         jr      z, .next_kf
-        jr      .draw
+        jr      .done
 .next_kf:
         ld      a, 0
         ld      [var_player_tmr], a
@@ -351,27 +494,52 @@ UpdateScene:
         ld      [var_player_kf], a
         cp      5
         jr      z, .reset_kf
-        jr      .draw
+        jr      .done
 .reset_kf:
         ld      a, 0
         ld      [var_player_kf], a
 
-.draw:
-        ld      hl, PLAYER_COORD_X
-        call    FixnumUpper
-
-        ld      b, e
-
-        ld      hl, PLAYER_COORD_Y
-        call    FixnumUpper
-
-        ld      c, e
-
-        ld      l, 0
-        ld      e, 0
-        call    ShowSpriteSquare32
+.done:
         ret
 
+
+;;; ----------------------------------------------------------------------------
+
+
+IsOnscreen:
+;;; b - x
+;;; c - y
+;;; a - result
+;;; trashes l
+        ld      a, [var_view_x]
+        ld      l, a
+        ld      a, b                    ; TODO: make arg a instead of b?
+        cp      l
+        jr      C, .false
+
+        ld      a, SCRN_X
+        add     l
+        ld      a, l
+        cp      b
+        jr      C, .false
+
+        ld      a, [var_view_y]
+        ld      l, a
+        ld      a, c
+        cp      l
+        jr      C, .false
+
+        ld      a, SCRN_Y
+        add     l
+        ld      a, l
+        cp      c
+        jr      C, .false
+
+        ld      a, 1
+        ret
+.false:
+	ld      a, 0
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -535,10 +703,17 @@ ReadKeys:
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ;;;
 ;;;
-;;; Number
+;;; Fixnum
 ;;;
-;;; This code uses an uncommon numbering system. Every number has two bytes for
-;;; the large units, plus one byte of decimal units.
+;;; I'm using a sort of fixed point numbering format, kind of. Fixnums take up
+;;; three bytes in memory, consisting of:
+;;; 1 upper byte
+;;; 1 lower byte
+;;; 1 decimal byte
+;;;
+;;; Combining the upper byte and the lower byte, we have a sixteen bit number.
+;;; Combining the lower byte and the decimal byte, we also have a sixteen bit
+;;; number.
 ;;;
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -549,13 +724,14 @@ ReadKeys:
 
 FixnumInit:
 ;;; hl - address of number
+;;; bc - upper bits
+;;; a - decimal
 ;;; destroys hl
-        ld      a, 0
-        ld      [hl], a
+        ld      [hl], c
         inc     hl
         ld      [hl], a
         inc     hl
-        ld      [hl], a
+        ld      [hl], b
         ret
 
 
@@ -604,27 +780,49 @@ FixnumAdd:
         ret
 
 
-;; FixnumSub:
-;; ;;; hl - address of number
-;; ;;; b - small unit
-;; ;;; c - fractional unit
-;; ;;; TODO
-;; ;;; This is a bit more complicated, because there's no subtraction instruction
-;; ;;; for hl.
-;;         push    hl
+FixnumSub:
+;;; hl - address of number
+;;; b - small unit
+;;; c - fractional unit
+;;; This is a bit more complicated, because there's no subtraction instruction
+;;; for hl.
+        push    hl
+        ld      e, [hl]                      ; small units
+        inc     hl
+        ld      a, [hl]
+        inc     hl
+        ld      d, [hl]
 
-;;         ld      d, [hl]                      ; small units
-;;         inc     hl
-;;         ld      e, [hl]                      ; fractional units
-;;         inc     hl
-;;         ld      a, [hl]
-;;         ld      h, a                         ; we need a for the sub opcode
-
-;;         ld      a, c
-;;         sub     e
-
-;;         pop hl
-;;         ret
+        sub     c
+        push    af
+        jr      C, .decFracBits
+        jr      .subSmallBits
+.decFracBits:
+        ld      a, e
+        or      a
+        jr      Z, .decCarry
+        jr      .doDec
+.decCarry:
+        dec     d
+.doDec:
+        dec     e
+.subSmallBits:
+        ld      a, e
+        sub     b
+        ld      e, a
+        jr      C, .decUpperBits
+        jr      .done
+.decUpperBits:
+        dec     d
+.done:
+        pop     af
+        pop     hl
+        ld      [hl], e
+        inc     hl
+        ld      [hl], a
+        inc     hl
+        ld      [hl], d
+        ret
 
 
 FixnumUpper:
@@ -716,7 +914,18 @@ ShowSpriteSquare32:
 ; b - x
 ; c - y
 ; e - start tile
-; overwrites b, c, d, e, h, l  :(
+; overwrites a, b, c, d, e, h, l  :(
+
+        ld      a, b
+        ld      b, 8                    ; Center stuff
+        sub     b
+        ld      b, a
+
+        ld      a, c
+        ld      c, 8
+        sub     c
+        ld      c, a
+
         push    de                      ; de trashed by OamLoad
         call    OamLoad                 ; OAM pointer in hl
         pop     de                      ; restore e
@@ -849,6 +1058,21 @@ DMARoutineEnd:
 
 ;;; ----------------------------------------------------------------------------
 
+LoadBackgroundColors:
+;;; hl - source array
+;;; b - count
+        ld      a, %10000000
+        ld      [rBCPS], a
+.copy:
+        ld      a, [hl+]
+        ldh     [rBCPD], a
+        dec     b
+        jr      nz, .copy
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 LoadObjectColors:
 ;;; hl - source array
 ;;; b - count
@@ -859,6 +1083,47 @@ LoadObjectColors:
         ldh     [rOCPD], a
         dec     b
         jr      nz, .copy
+        ret
+
+
+TestTilemap:
+        ld      hl, _SCRN0
+
+        ld      c, 0
+
+.outer:
+        ld      b, 0
+.inner:
+        ld      a, 0
+        cp      b
+        jr      Z, .write
+        cp      c
+        jr      Z, .write
+        ld      a, 31
+        cp      b
+        jr      Z, .write
+        cp      c
+        jr      Z, .write
+
+        jr      .incr
+.write:
+        ld      a, 4
+        ld      [hl], a
+.incr:
+        inc     hl
+        inc     b
+.innerTest:
+        ld      a, 32
+        cp      b
+        jr      Z, .outerTest
+        jr      .inner
+.outerTest:
+        inc     c
+        ld      a, 32
+        cp      c
+        jr      Z, .done
+        jr      .outer
+.done:
         ret
 
 
@@ -873,6 +1138,8 @@ DB $00,$00,$69,$72,$df,$24,$cb,$30
 ;;; We convert the actual color to hex, and then flip the order of the bytes.
 ;;;  (31) | (6 << 5) | (9 << 10) == 0x24df
 
+BackgroundPalette::
+DB $ff,$ff,$69,$72,$df,$24,$cb,$30
 
 
 ;;; SECTION START
