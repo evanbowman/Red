@@ -1188,24 +1188,23 @@ TestTilemap:
 TestOverlay:
         ld      hl, _SCRN1
         ld      b, 0
+
+        ld      a, $81
+        ld      [hl], a
+        inc     hl
+
 .loop:
         ld      a, $80
         ld      [hl], a
         inc     hl
         inc     b
-        ld      a, 20
+        ld      a, 19
         cp      b
         jr      NZ, .loop
         ret
 
 
 ;;; ----------------------------------------------------------------------------
-
-
-OverlayTiles::
-DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-OverlayTilesEnd::
 
 
 PlayerCharacterPalette::
@@ -1217,7 +1216,7 @@ DB $00,$00, $69,$72, $1a,$20, $03,$00
 ;;; python> hex(((70 >> 3)) | ((141 >> 3) << 5) | ((199 >> 3) << 10))
 
 BackgroundPalette::
-DB $bf,$73, $bf,$73, $00,$00,$00,$00
+DB $bf,$73, $bf,$73, $1a,$20, $00,$00
 
 
 ;;; SECTION START
@@ -1241,6 +1240,14 @@ hOAMDMA::
 
 
 SECTION "MISC_SPRITES", ROMX
+
+
+OverlayTiles::
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$93,$FF,$83,$FF
+DB $83,$FF,$C7,$FF,$EF,$FF,$FF,$FF
+OverlayTilesEnd::
 
 
 SpriteDropShadow::
