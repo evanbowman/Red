@@ -321,10 +321,10 @@ Main:
         ld      [rROMB1], a
 
         ld      a, [var_player_kf]
-        ld      l, a
+        ld      h, a
         ld      a, [var_player_fb]
-        add     l
-        ld      l, a
+        add     h
+        ld      h, a
         call    MapSpriteBlock
 
         ld      a, 1
@@ -346,17 +346,16 @@ Main:
 
 
 MapSpriteBlock:
-; l target sprite index
+; h target sprite index
 ; overwrites de
-;;; Sprite blocks are 32x32 in size. To go from sprite index to address, we
-;;; simply need to shift l to h.
+;;; Sprite blocks are 32x32 in size. Because 32x32 sprites occupy 256 bytes,
+;;; indexing is super easy.
 ;;; FIXME: In the future, if we want to support more than 256 sprites, what to
 ;;; do?
 ;;; TODO: parameterize vram dest
         ld      de, SpriteSheetData
-        ld      h, l
         ld      l, 0
-        add     hl, de
+        add     hl, de                  ; h is in upper bits, so x256 for free
         ld      de, _VRAM
         ld      b, 16
         call    GDMABlockCopy
@@ -696,12 +695,12 @@ ScheduleSleep:
 ;;; ----------------------------------------------------------------------------
 
 VBlankIntrWait:
-.loop:
-;;; NOTE: We reset the vbl flag before the halt, in case our game logic ran
+;;; NOTE: We reset the vbl flag before the loop, in case our game logic ran
 ;;; slow, and we missed the vblank.
         ld      a, 0
         ldh     [var_vbl_flag], a
 
+.loop:
         halt
         ;; The assembler inserts a nop here to fix a hardware bug.
         ldh     a, [var_vbl_flag]
