@@ -251,11 +251,28 @@ Main:
         ld      hl, PlayerCharacterPalette
         call    LoadObjectColors
 
+        ld      hl, OverlayTiles
+        ld      bc, OverlayTilesEnd - OverlayTiles
+        ld      de, $8800
+        call    Memcpy
+
+        ld      hl, SpriteDropShadow
+        ld      bc, SpriteDropShadowEnd - SpriteDropShadow
+        ld      de, $8500
+        call    Memcpy
+
         call    TestTilemap
+        call    TestOverlay
 
         ld      b, 8
         ld      hl, BackgroundPalette
         call    LoadBackgroundColors
+
+        ld      a, 136
+        ld      [rWY], a
+
+        ld      a, 7
+        ld      [rWX], a
 
 .activate_screen:
         ld	a, SCREEN_MODE
@@ -416,10 +433,19 @@ UpdateScene:
         sub     l
         ld      c, a
 
-        ld      l, 0
-        ld      e, 0
+        ld      l, 0                    ; Oam offset
+        ld      e, 0                    ; Start tile
+        push    bc
         call    ShowSpriteSquare32
+        pop     bc
 
+;;; Drop shadow
+        ld      a, c
+        add     17
+        ld      c, a
+        ld      l, 8
+        ld      e, $50
+        call    ShowSpriteSquare16
 .skip:
 
         ret
@@ -437,7 +463,7 @@ UpdatePlayer:
 .pressedLeft:
         ld      hl, var_player_coord_x
         ld      b, 1
-        ld      c, 24
+        ld      c, 12
         call    FixnumSub
 
 .checkRight:
@@ -449,7 +475,7 @@ UpdatePlayer:
 .pressedRight:
         ld      hl, var_player_coord_x
         ld      b, 1
-        ld      c, 24
+        ld      c, 12
         call    FixnumAdd
 
 .checkUp:
@@ -461,7 +487,7 @@ UpdatePlayer:
 .pressedUp:
         ld      hl, var_player_coord_y
         ld      b, 1
-        ld      c, 24
+        ld      c, 12
         call    FixnumSub
 
 .checkDown:
@@ -473,7 +499,7 @@ UpdatePlayer:
 .pressedDown:
         ld      hl, var_player_coord_y
         ld      b, 1
-        ld      c, 24
+        ld      c, 12
         call    FixnumAdd
 
 .animate:
@@ -577,7 +603,6 @@ Memset:
 
 Memcpy:
 ; hl - destination
-; a - byte to fill with
 ; bc - size
 
 	inc	b
@@ -1086,6 +1111,8 @@ LoadObjectColors:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
 TestTilemap:
         ld      hl, _SCRN0
 
@@ -1129,17 +1156,39 @@ TestTilemap:
 
 ;;; ----------------------------------------------------------------------------
 
+TestOverlay:
+        ld      hl, _SCRN1
+        ld      b, 0
+.loop:
+        ld      a, $80
+        ld      [hl], a
+        inc     hl
+        inc     b
+        ld      a, 20
+        cp      b
+        jr      NZ, .loop
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+OverlayTiles::
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+OverlayTilesEnd::
+
 
 PlayerCharacterPalette::
-DB $00,$00,$69,$72,$df,$24,$cb,$30
+DB $00,$00, $69,$72, $1a,$20, $03,$00
 
 ;;; Example of how to do the color conversion:
 ;;; See byte sequence $df,$24 above, the red color.
 ;;; We convert the actual color to hex, and then flip the order of the bytes.
-;;;  (31) | (6 << 5) | (9 << 10) == 0x24df
+;;; python> hex(((70 >> 3)) | ((141 >> 3) << 5) | ((199 >> 3) << 10))
 
 BackgroundPalette::
-DB $ff,$ff,$69,$72,$df,$24,$cb,$30
+DB $bf,$73, $bf,$73, $00,$00,$00,$00
 
 
 ;;; SECTION START
@@ -1160,6 +1209,21 @@ hOAMDMA::
 
 
 ;;; ############################################################################
+
+
+SECTION "MISC_SPRITES", ROMX
+
+
+SpriteDropShadow::
+DB $00,$00,$00,$00,$00,$00,$0F,$00
+DB $3F,$00,$7F,$00,$7F,$00,$7F,$00
+DB $7F,$00,$3F,$00,$0F,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$F0,$00
+DB $FC,$00,$FE,$00,$FE,$00,$FE,$00
+DB $FE,$00,$FC,$00,$F0,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+SpriteDropShadowEnd::
 
 
 ;;; NOTE: We're copying date from here with GDMA, so the eight byte alignment is
