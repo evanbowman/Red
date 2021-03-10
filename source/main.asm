@@ -51,6 +51,7 @@
 ;;;     Fixnum coord_x_; // (three bytes)
 ;;;     Animation anim_; // (two bytes)
 ;;;     char base_frame_;
+;;;     char vram_index_;
 ;;;     char state_flag_;
 ;;; };
 ;;;
@@ -119,6 +120,10 @@ var_oam_back_buffer:
 
         SECTION "PLAYER", WRAM0, ALIGN[8]
 
+
+;;; NOTE: The params here should match the layout of an entity EXACTLY AS
+;;; DESCRIBED ABOVE.
+
 var_player_struct:
 ;;; In the very first entry of each entity, store a flag, which tells the
 ;;; renderer than the entity's texture needs to be swapped.
@@ -132,8 +137,11 @@ var_player_tmr: DS      1       ; Timer
 var_player_kf:  DS      1       ; Keyframe
 var_player_fb:  DS      1       ; Frame base
 
+var_player_texture:     DS   1  ; Texture offset in vram
+
 var_player_st:  DS      1       ; State Flag
 var_player_struct_end:
+
 
 ;;; ############################################################################
 
@@ -253,6 +261,7 @@ Start:
 
         ld      [var_player_kf], a
         ld      [var_player_tmr], a
+        ld      [var_player_texture], a
 
         ld      hl, var_oam_back_buffer ; zero out the oam back buffer
         ld      bc, OAM_SIZE * OAM_COUNT
@@ -402,6 +411,9 @@ Main:
         ld      a, [hl]
         inc     hl              ; frame base in next byte
         ld      d, [hl]         ; load frame base
+        inc     hl
+        ld      b, [hl]
+.test:
         add     d               ; keyframe + framebase is spritesheet index
         ld      h, a            ; pass spritesheet index in h
         call    MapSpriteBlock  ; DMA copy the sprite into vram
@@ -437,6 +449,7 @@ Main:
 
 MapSpriteBlock:
 ; h target sprite index
+; b vram index
 ; overwrites de
 ;;; Sprite blocks are 32x32 in size. Because 32x32 sprites occupy 256 bytes,
 ;;; indexing is super easy.
@@ -446,7 +459,15 @@ MapSpriteBlock:
         ld      de, SpriteSheetData
         ld      l, 0
         add     hl, de                  ; h is in upper bits, so x256 for free
-        ld      de, _VRAM
+
+        push    hl
+        ld      hl, _VRAM
+        ld      c, 0
+        add     hl, bc
+        ld      d, h
+        ld      e, l
+        pop     hl
+
         ld      b, 16
         call    GDMABlockCopy
         ret
