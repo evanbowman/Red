@@ -52,6 +52,7 @@
 ;;;     Animation anim_; // (two bytes)
 ;;;     char base_frame_;
 ;;;     char vram_index_;
+;;;     char has_shadow_flag_;
 ;;;     Pointer update_fn_;
 ;;; };
 ;;;
@@ -142,6 +143,7 @@ var_player_kf:  DS      1       ; Keyframe
 var_player_fb:  DS      1       ; Frame base
 
 var_player_texture:     DS   1  ; Texture offset in vram
+var_player_has_shadow:  DS   1
 
 var_player_update_fn:   DS   2  ; Engine will call this fn to update player
 var_player_struct_end:
@@ -159,6 +161,7 @@ var_debug_kf:           DS      1
 var_debug_fb:           DS      1
 
 var_debug_texture:      DS      1
+var_debug_has_shadow:   DS      1
 
 var_debug_update_fn:    DS      2
 var_debug_struct_end:
@@ -302,6 +305,7 @@ Start:
 
         ld      a, 1
         ld      [var_player_swap_spr], a
+        ld      [var_player_has_shadow], a
 
         jr      Main
 
@@ -334,7 +338,7 @@ Main:
         call    CopyDMARoutine
 
         call    PlayerInit
-        ;; call    DebugInit
+        call    DebugInit
 
         ld      b, 8
         ld      hl, PlayerCharacterPalette
@@ -600,7 +604,7 @@ EntitySetUpdateFn:
 ;;; de - update fn address
         push    de
         ld      d, 0
-        ld      e, 11
+        ld      e, 12
         add     hl, de
         pop     de
 
@@ -644,6 +648,8 @@ DebugInit:
         ld      [var_debug_fb], a
         ld      [var_debug_kf], a
         ld      [var_debug_timer], a
+        ld      a, 0
+        ld      [var_debug_has_shadow], a
 
         ld      hl, var_debug_coord_x
         ld      bc, 96
@@ -1032,7 +1038,7 @@ EntityUpdateLoop:
 
 	push    de              ; save entity buffer pointer on stack
 
-        ld      e, 11
+        ld      e, 12
         ld      d, 0
         add     hl, de          ; jump to position of update routine in entity
 
@@ -1127,6 +1133,8 @@ EntityDrawLoop:
         swap    e                       ; ShowSprite... uses e as a start tile.
 
 
+        push    hl                      ; Store entity pointer
+
         ld      a, [var_oam_top_counter]
         ld      l, a                    ; Oam offset
         add     8                       ; 32x32 sprite uses 8 oam
@@ -1134,6 +1142,13 @@ EntityDrawLoop:
         push    bc
         call    ShowSpriteSquare32
         pop     bc
+
+
+        pop     hl                      ; Restore entity pointer
+        inc     hl                      ; Inc to shadow flag
+        ld      a, [hl]
+        or      a
+        jr      Z, .skipShadow
 
 ;;; Drop shadow
         ld      a, c
@@ -1147,6 +1162,7 @@ EntityDrawLoop:
         ld      e, $50
         call    ShowSpriteSquare16
 
+.skipShadow:
 
         pop     de              ; restore entity buffer pointer
         pop     af              ; restore loop counter
