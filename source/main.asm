@@ -146,6 +146,9 @@ var_player_texture:     DS   1  ; Texture offset in vram
 var_player_has_shadow:  DS   1
 
 var_player_update_fn:   DS   2  ; Engine will call this fn to update player
+
+var_player_stamina:     DS      FIXNUM_SIZE
+
 var_player_struct_end:
 
 
@@ -416,6 +419,18 @@ Main:
         dec     a
         push    af              ; store loop counter
 
+;;; Even with DMA, we can only fit so many texture copies into the vblank
+;;; window. If we think that we're going to exceed the vblank, defer the
+;;; copies to the next iteration. The code is just checking entities for
+;;; a flag which indicates that a texture copy is needed, so we can just as
+;;; easily process the texture copy after the next frame.
+        ld      a, [rLY]
+        ld      b, a
+        ld      a, 153 - 4
+        cp      b
+        jr      C, .textureCopyLoopTimeout
+
+
         ld      a, [de]         ; Fetch entity pointer from entity buffer
         ld      h, a
         inc     de
@@ -450,6 +465,12 @@ Main:
 
         pop     af              ; restore loop counter
         jr      .textureCopyLoop
+
+
+.textureCopyLoopTimeout:
+        pop     af              ; Was pushed at the top of the loop
+
+;;; intentional fallthrough
 
 .textureCopyLoopDone:
 ;;; The whole point of the above loop was to copy sprites from various rom banks
@@ -1826,19 +1847,42 @@ SetOverlayTile:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+
 TestOverlay:
         ld      c, 0
         ld      a, $81
         call    SetOverlayTile
 
         inc     c
-.loop:
+
+        ld      a, $82
+        call    SetOverlayTile
+
+        inc     c
+
+.loop1:
+        ld      a, $82
+        call    SetOverlayTile
+        inc     c
+        ld      a, 8
+        cp      c
+        jr      NZ, .loop1
+
+	ld      a, $83
+        call    SetOverlayTile
+
+        inc     c
+
+.loop2:
         ld      a, $80
         call    SetOverlayTile
         inc     c
         ld      a, 20
         cp      c
-        jr      NZ, .loop
+        jr      NZ, .loop2
+
         ret
 
 
@@ -1881,10 +1925,18 @@ SECTION "MISC_SPRITES", ROMX
 
 
 OverlayTiles::
+;;; Empty tile
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-DB $FF,$FF,$FF,$FF,$93,$FF,$83,$FF
-DB $83,$FF,$C7,$FF,$EF,$FF,$FF,$FF
+;;;
+DB $FF,$FF,$FF,$FF,$93,$FF,$83,$FE
+DB $83,$FE,$C7,$FE,$EF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$03,$FF,$01
+DB $FF,$01,$FF,$01,$FF,$03,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$03,$FF,$01
+DB $FF,$01,$FF,$01,$FF,$03,$FF,$FF
 OverlayTilesEnd::
 
 
