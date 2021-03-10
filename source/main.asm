@@ -41,6 +41,21 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+;;;
+;;; Various parts of the code refer to an entity. This is the approximate layout
+;;; of a game entity:
+;;;
+;;; struct Entity {
+;;;     char texture_swap_flag_;
+;;;     Fixnum coord_y_; // (three bytes)
+;;;     Fixnum coord_x_; // (three bytes)
+;;;     Animation anim_; // (two bytes)
+;;;     char base_frame_;
+;;;     char state_flag_;
+;;; };
+;;;
+
+
 ;; ############################################################################
 
         INCLUDE "hardware.inc"
@@ -104,8 +119,13 @@ var_oam_back_buffer:
 
         SECTION "PLAYER", WRAM0, ALIGN[8]
 
-var_player_coord_x:  DS      FIXNUM_SIZE
+var_player_struct:
+;;; In the very first entry of each entity, store a flag, which tells the
+;;; renderer than the entity's texture needs to be swapped.
+var_player_swap_spr:   DS      1
+
 var_player_coord_y:  DS      FIXNUM_SIZE
+var_player_coord_x:  DS      FIXNUM_SIZE
 
 var_player_animation:
 var_player_tmr: DS      1       ; Timer
@@ -113,6 +133,17 @@ var_player_kf:  DS      1       ; Keyframe
 var_player_fb:  DS      1       ; Frame base
 
 var_player_st:  DS      1       ; State Flag
+var_player_struct_end:
+
+;;; ############################################################################
+
+        SECTION "ENTITY_BUFFER", WRAM0, ALIGN[8]
+
+ENTITY_BUFFER_CAPACITY EQU 8
+ENTITY_POINTER_SIZE EQU 2
+
+var_entity_buffer_size: DS      1
+var_entity_buffer:      DS      ENTITY_POINTER_SIZE * ENTITY_BUFFER_CAPACITY
 
 
 ;;; ############################################################################
@@ -215,6 +246,8 @@ Start:
         ldh     [var_joypad_raw], a
         ldh     [var_joypad_released], a
 
+        ld      [var_entity_buffer_size], a
+
         ld      [var_view_x], a
         ld      [var_view_y], a
 
@@ -235,6 +268,9 @@ Start:
 
         ld      a, SPRID_PLAYER_SD
         ld      [var_player_fb], a
+
+        ld      a, 1
+        ld      [var_player_swap_spr], a
 
         jr      Main
 
@@ -265,6 +301,9 @@ Main:
 	ld	[rIE], a	        ; setup
 
         call    CopyDMARoutine
+
+        ld      de, var_player_struct
+        call    EntityBufferEnqueue
 
         ld      b, 8
         ld      hl, PlayerCharacterPalette
@@ -325,19 +364,61 @@ Main:
         ld      a, HIGH(var_oam_back_buffer)
         call    hOAMDMA
 
-;;; TODO: parameterize sprite copies
+
+;;; Now, this entity buffer code looks pretty nasty. But, we are just doing a
+;;; bunch of work upfront, because we do not always need to actually run the
+;;; dma. Iterate through each entity, check its swap flag. If the entity
+;;; requires a texture swap, map the texture into vram with GDMA.
         ld      a, SPRITESHEET1_ROM_BANK
         ld      [rROMB0], a
 
-        ld      a, [var_player_kf]
-        ld      h, a
-        ld      a, [var_player_fb]
-        add     h
-        ld      h, a
-        call    MapSpriteBlock
+        ld      de, var_entity_buffer
+        ld      a, [var_entity_buffer_size]
 
+.textureCopyLoop:
+        cp      0
+        jr      Z, .textureCopyLoopDone
+        dec     a
+        push    af              ; store loop counter
+
+        ld      a, [de]         ; Fetch entity pointer from entity buffer
+        ld      h, a
+        inc     de
+        ld      a, [de]
+        ld      l, a            ; Now we have the entity pointer in hl
+
+        ld      a, [hl]         ; load texture swap flag from entity
+        or      a
+        jr      Z, .noTextureCopy ; swap flag false, nothing to do
+        ld      a, 0
+        ld      [hl], a         ; We're swapping the texture, zero the flag
+
+        push    de              ; store entity buffer pointer on stack
+
+        ld      d, 0
+        ld      e, 1 + FIXNUM_SIZE * 2 + 1
+	add     hl, de          ; jump to offset of keyframe in entity
+
+        ld      a, [hl]
+        inc     hl              ; frame base in next byte
+        ld      d, [hl]         ; load frame base
+        add     d               ; keyframe + framebase is spritesheet index
+        ld      h, a            ; pass spritesheet index in h
+        call    MapSpriteBlock  ; DMA copy the sprite into vram
+
+        pop     de              ; restore entity buffer pointer
+.noTextureCopy:
+
+        pop     af              ; restore loop counter
+        jr      .textureCopyLoop
+
+.textureCopyLoopDone:
+;;; The whole point of the above loop was to copy sprites from various rom banks
+;;; into vram. So we should set the rom bank back to one, which is the standard
+;;; rom bank for most purposes.
         ld      a, 1
         ld      [rROMB0], a
+
 
 ;;; As per my own testing, I can fit about five DMA block copies for 32x32 pixel
 ;;; sprites in within the vblank window.
@@ -389,11 +470,12 @@ AnimationAdvance:
 ;;; hl - animation
 ;;; c - frame time
 ;;; d - length
+;;; return a (true if keyframe changed)
         ld      a, [hl]         ; load timer from animation struct
         inc     a
         ld      [hl], a         ; writeback
         cp      c               ; compare timer to frame visible length
-        jr      NZ, .done
+        jr      NZ, .unchanged
 
 .advance:
         ld      a, 0
@@ -411,8 +493,62 @@ AnimationAdvance:
         ld      [hl], a
 
 .done:
+        ld      a, 1
         ret
 
+.unchanged:
+        ld      a, 0
+        ret
+
+
+
+
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+;;;
+;;;
+;;;  Entity
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+EntityBufferReset:
+        ld      a, 0
+        ld      [var_entity_buffer_size], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+EntityBufferEnqueue:
+;;; de - entity ptr
+;;; trashes bc
+        ld      a, [var_entity_buffer_size]
+        cp      ENTITY_BUFFER_CAPACITY
+        jr      Z, .failed
+
+        inc     a
+        ld      [var_entity_buffer_size], a
+        dec     a
+
+        ld      c, 0
+        add     a, a
+
+	ld      b, a
+
+        ld      hl, var_entity_buffer
+        add     hl, bc
+
+        ld      [hl], d
+        inc     hl
+        ld      [hl], e
+
+.failed:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -448,16 +584,26 @@ AnimatePlayer:
         ld      c, 6
         ld      d, 5
         call    AnimationAdvance
+        or      a
+        jr      NZ, .frameChanged
         jr      .done
 
 .animateWalkUD:
         ld      hl, var_player_animation
         ld      c, 6
         ld      d, 10
-        call    AnimationAdvance
 
+        call    AnimationAdvance
+        or      a
+        jr      NZ, .frameChanged
 .done:
         ret
+
+.frameChanged:
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -479,6 +625,13 @@ PlayerJoypadResponse:
         jr      .setSpeed
 
 .n2:
+        ld      a, [var_player_fb]
+        cp      e
+        jr      Z, .setSpeed    ; the base frame is unchanged
+
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+
         ld      a, e
         ld      [var_player_fb], a
         ld      a, [var_player_kf]
@@ -503,6 +656,8 @@ PlayerJoypadResponse:
         ld      a, [var_player_kf]
         sub     5
         ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
 
 .setSpeed:
         push    bc
@@ -621,6 +776,8 @@ UpdatePlayer:
         ld      [var_player_fb], a
         ld      a, 0
         ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
 
 .checkUpReleased:
         ldh     a, [var_joypad_released]
@@ -635,6 +792,8 @@ UpdatePlayer:
         ld      [var_player_fb], a
         ld      a, 0
         ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
 
 .checkLeftReleased:
         ldh     a, [var_joypad_released]
@@ -649,6 +808,8 @@ UpdatePlayer:
         ld      [var_player_fb], a
         ld      a, 0
         ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
 
 .checkRightReleased:
         ldh     a, [var_joypad_released]
@@ -663,6 +824,8 @@ UpdatePlayer:
         ld      [var_player_fb], a
         ld      a, 0
         ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
 
 .animate:
         ld      a, [var_joypad_raw]
