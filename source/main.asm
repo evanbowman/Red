@@ -327,7 +327,7 @@ Main:
 
 ;;; TODO: parameterize sprite copies
         ld      a, SPRITESHEET1_ROM_BANK
-        ld      [rROMB1], a
+        ld      [rROMB0], a
 
         ld      a, [var_player_kf]
         ld      h, a
@@ -337,7 +337,7 @@ Main:
         call    MapSpriteBlock
 
         ld      a, 1
-        ld      [rROMB1], a
+        ld      [rROMB0], a
 
 ;;; As per my own testing, I can fit about five DMA block copies for 32x32 pixel
 ;;; sprites in within the vblank window.
