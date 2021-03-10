@@ -126,7 +126,7 @@ var_oam_back_buffer:
 
 var_player_struct:
 ;;; In the very first entry of each entity, store a flag, which tells the
-;;; renderer than the entity's texture needs to be swapped.
+;;; renderer that the entity's texture needs to be swapped.
 var_player_swap_spr:   DS      1
 
 var_player_coord_y:  DS      FIXNUM_SIZE
