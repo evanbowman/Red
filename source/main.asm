@@ -139,7 +139,7 @@ var_player_fb:  DS      1       ; Frame base
 
 var_player_texture:     DS   1  ; Texture offset in vram
 
-var_player_st:  DS      1       ; State Flag
+var_player_update_fn:   DS   2  ; Engine will call this fn to update player
 var_player_struct_end:
 
 
@@ -311,8 +311,7 @@ Main:
 
         call    CopyDMARoutine
 
-        ld      de, var_player_struct
-        call    EntityBufferEnqueue
+        call    PlayerInit
 
         ld      b, 8
         ld      hl, PlayerCharacterPalette
@@ -572,6 +571,27 @@ EntityBufferEnqueue:
 ;;; ----------------------------------------------------------------------------
 
 
+EntitySetUpdateFn:
+;;; hl - entity
+;;; de - update fn address
+        push    de
+        ld      d, 0
+        ld      e, 11
+        add     hl, de
+        pop     de
+
+        ld      [hl], d
+        inc     hl
+        ld      [hl], e
+
+        ret
+
+
+
+
+;;; ----------------------------------------------------------------------------
+
+
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ;;;
 ;;;
@@ -581,6 +601,18 @@ EntityBufferEnqueue:
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+PlayerInit:
+        ld      hl, var_player_struct
+        ld      de, UpdatePlayer
+        call    EntitySetUpdateFn
+
+        ld      de, var_player_struct
+        call    EntityBufferEnqueue
+        ret
+
+
+
+;;; ----------------------------------------------------------------------------
 
 AnimatePlayer:
         ld      a, [var_player_fb]
@@ -856,7 +888,7 @@ UpdatePlayer:
         jr      .done
 
 .done:
-        ret
+        jp      EntityUpdateLoopResume
 
 
 ;;; ----------------------------------------------------------------------------
@@ -922,11 +954,58 @@ UpdateView:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+
 UpdateScene:
-        call    UpdatePlayer
+        ld      de, var_entity_buffer
+        ld      a, [var_entity_buffer_size]
+
+;;; intentional fallthrough
+EntityUpdateLoop:
+        cp      0               ; compare loop counter in a
+        jr      Z, EntityUpdateLoopDone
+        dec     a
+        push    af
+
+        ld      a, [de]         ; fetch entity pointer from buffer
+        ld      h, a
+        inc     de
+        ld      a, [de]
+        ld      l, a            ; entity pinter now in hl
+
+	push    de              ; save entity buffer pointer on stack
+
+        ld      e, 11
+        ld      d, 0
+        add     hl, de          ; jump to position of update routine in entity
+
+        ld      d, [hl]
+        inc     hl
+        ld      e, [hl]         ; load entity update function ptr
+
+        ld      h, d
+        ld      l, e
+        jp      hl              ; Jump to entity update address
+
+;;; Now, we could push the stack pointer, thus allowing entity update functions
+;;; to be actual functions. For now, entity update functions need to jump back
+;;; to this address.
+EntityUpdateLoopResume:
+
+        pop     de              ; restore entity buffer pointer
+        pop     af              ; restore loop counter
+        jr      EntityUpdateLoop
+
+;;; intentional fallthrough
+EntityUpdateLoopDone:
+
+;;; If it wasn't for view scrolling, the update and draw stuff could be done in
+;;; the same loop.
         call    UpdateView
 
-.draw:
+;;; intentional fallthrough
+EntityDrawLoop:
         ld      hl, var_player_coord_x
         call    FixnumUpper
 
