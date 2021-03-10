@@ -181,6 +181,10 @@ ENTITY_POINTER_SIZE EQU 2
 var_entity_buffer_size: DS      1
 var_entity_buffer:      DS      ENTITY_POINTER_SIZE * ENTITY_BUFFER_CAPACITY
 
+;;; Used as a placeholder value while sorting entities by y value.
+var_last_entity_y:      DS      1
+var_last_entity_idx:    DS      1
+
 
 ;;; ############################################################################
 
@@ -636,8 +640,6 @@ EntitySetUpdateFn:
         ret
 
 
-
-
 ;;; ----------------------------------------------------------------------------
 
 
@@ -1087,6 +1089,10 @@ EntityUpdateLoopDone:
 ;;; the same loop.
         call    UpdateView
 
+        ld      a, 255
+        ld      [var_last_entity_y], a
+        ld      [var_last_entity_idx], a
+
         ld      a, 0
         ld      [var_oam_top_counter], a
         ld      a, 38
@@ -1163,15 +1169,27 @@ EntityDrawLoop:
         push    bc
         call    ShowSpriteSquare32
         pop     bc
-
-
         pop     hl                      ; Restore entity pointer
+
+;;; Now, check whether the current entity's y value is greater than the previous
+;;; entity's y value. If so, swap their entries in the entity buffer. Not as
+;;; precise as a real sorting algorithm, but uses less cpu, and at 60fps, the
+;;; entity buffer converges to a point where it's sorted by y value pretty
+;;; quickly.
+	ld      a, [var_last_entity_y]
+	cp      c
+        jr      C, EntitySwap
+EntitySwapResume:
+
+;;; Drop shadow
+        ld      a, c
+        ld      [var_last_entity_y], a
+
         inc     hl                      ; Inc to shadow flag
         ld      a, [hl]
         or      a
         jr      Z, .skipShadow
 
-;;; Drop shadow
         ld      a, c
         add     17
         ld      c, a
@@ -1187,12 +1205,68 @@ EntityDrawLoop:
 
         pop     de              ; restore entity buffer pointer
         pop     af              ; restore loop counter
+        ld      [var_last_entity_idx], a
         jr      EntityDrawLoop
 
 EntityDrawLoopDone:
 
 
         ret
+
+
+EntitySwap:
+;;; This entity swap code may not be very efficient, but it should happen
+;;; infrequently.
+        ld      a, [var_last_entity_idx]
+        ld      d, 255                  ; Using 255 as a null index (before array beginning)
+        cp      d
+        jr      Z, EntitySwapResume
+        push    hl
+        ld      d, a
+        inc     d
+        ld      a, [var_entity_buffer_size]
+        sub     d
+        ld      hl, var_entity_buffer
+        add     a                       ; Double a, b/c a pointer is two bytes
+        ld      e, a
+        ld      d, 0
+
+        add     hl, de
+
+;;; Now, we just need to swap pointers in the array.
+
+        push    bc
+        push    hl
+        ld      a, [hl]
+        ld      d, a
+        inc     hl
+        ld      a, [hl]
+        ld      e, a
+        inc     hl              ; Now we have the first value in de
+
+
+        ld      a, [hl]
+        ld      b, a
+        ld      a, d
+        ld      [hl], a
+        inc     hl
+        ld      a, [hl]
+        ld      c, a
+        ld      a, e
+        ld      [hl], a
+
+        pop     hl
+
+        ld      a, b
+        ld      [hl], a
+        inc     hl
+        ld      a, c
+        ld      [hl], c
+
+        pop     bc
+        pop     hl
+        jp      EntitySwapResume
+
 
 
 ;;; ----------------------------------------------------------------------------
