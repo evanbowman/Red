@@ -113,6 +113,10 @@ var_oam_back_buffer:
         ds OAM_SIZE * OAM_COUNT
 
 
+var_oam_top_counter:     DS      1
+var_oam_bottom_counter:  DS      1
+
+
 ;;; SECTION OAM_BACK_BUFFER
 
 
@@ -141,6 +145,24 @@ var_player_texture:     DS   1  ; Texture offset in vram
 
 var_player_update_fn:   DS   2  ; Engine will call this fn to update player
 var_player_struct_end:
+
+
+
+var_debug_struct:
+var_debug_swap_spr:     DS      1
+var_debug_coord_y:      DS      FIXNUM_SIZE
+var_debug_coord_x:      DS      FIXNUM_SIZE
+
+var_debug_animation:
+var_debug_timer:        DS      1
+var_debug_kf:           DS      1
+var_debug_fb:           DS      1
+
+var_debug_texture:      DS      1
+
+var_debug_update_fn:    DS      2
+var_debug_struct_end:
+
 
 
 ;;; ############################################################################
@@ -312,6 +334,7 @@ Main:
         call    CopyDMARoutine
 
         call    PlayerInit
+        ;; call    DebugInit
 
         ld      b, 8
         ld      hl, PlayerCharacterPalette
@@ -394,6 +417,7 @@ Main:
         inc     de
         ld      a, [de]
         ld      l, a            ; Now we have the entity pointer in hl
+        inc     de
 
         ld      a, [hl]         ; load texture swap flag from entity
         or      a
@@ -467,7 +491,7 @@ MapSpriteBlock:
         ld      e, l
         pop     hl
 
-        ld      b, 16
+        ld      b, 15
         call    GDMABlockCopy
         ret
 
@@ -552,10 +576,10 @@ EntityBufferEnqueue:
         ld      [var_entity_buffer_size], a
         dec     a
 
-        ld      c, 0
+        ld      b, 0
         add     a, a
 
-	ld      b, a
+	ld      c, a
 
         ld      hl, var_entity_buffer
         add     hl, bc
@@ -599,6 +623,37 @@ EntitySetUpdateFn:
 ;;;
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+DebugUpdate:
+        jp      EntityUpdateLoopResume
+
+
+
+DebugInit:
+        ld      hl, var_debug_struct
+        ld      de, DebugUpdate
+        call    EntitySetUpdateFn
+
+        ld      de, var_debug_struct
+        call    EntityBufferEnqueue
+
+        ld      a, 1
+        ld      [var_debug_texture], a
+        ld      [var_debug_swap_spr], a
+        ld      [var_debug_fb], a
+        ld      [var_debug_kf], a
+        ld      [var_debug_timer], a
+
+        ld      hl, var_debug_coord_x
+        ld      bc, 96
+        call    FixnumInit
+
+        ld      hl, var_debug_coord_y
+        ld      bc, 96
+        call    FixnumInit
+        ret
+
 
 
 PlayerInit:
@@ -1005,15 +1060,17 @@ EntityUpdateLoopDone:
 ;;; the same loop.
         call    UpdateView
 
-
+        ld      a, 0
+        ld      [var_oam_top_counter], a
+        ld      a, 38
+        ld      [var_oam_bottom_counter], a
         ld      de, var_entity_buffer
-        ld      a, [var_entity_buffer_size]
+        ld      a, [var_entity_buffer_size] ; loop counter
 EntityDrawLoop:
         cp      0               ; compare loop counter in a
         jr      Z, EntityDrawLoopDone
         dec     a
         push    af
-
 
         ld      a, [de]         ; fetch entity pointer from buffer
         ld      h, a
@@ -1069,10 +1126,11 @@ EntityDrawLoop:
 ;;; the lower four bits of the index to the upper four bits (i.e. n x 16).
         swap    e                       ; ShowSprite... uses e as a start tile.
 
-;;; TODO: pull start tile from entity struct (texture index)
-;;; NOTE: 16 tiles per 32x32 pixel texture.
 
-        ld      l, 0                    ; Oam offset
+        ld      a, [var_oam_top_counter]
+        ld      l, a                    ; Oam offset
+        add     8                       ; 32x32 sprite uses 8 oam
+        ld      [var_oam_top_counter], a
         push    bc
         call    ShowSpriteSquare32
         pop     bc
@@ -1081,7 +1139,11 @@ EntityDrawLoop:
         ld      a, c
         add     17
         ld      c, a
-        ld      l, 8
+
+	ld      a, [var_oam_bottom_counter]
+        ld      l, a
+        sub     2                       ; Shadows are 16x16, grow from oam end
+        ld      [var_oam_bottom_counter], a
         ld      e, $50
         call    ShowSpriteSquare16
 
