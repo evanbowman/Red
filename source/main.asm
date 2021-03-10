@@ -52,7 +52,7 @@
 ;;;     Animation anim_; // (two bytes)
 ;;;     char base_frame_;
 ;;;     char vram_index_;
-;;;     char state_flag_;
+;;;     Pointer update_fn_;
 ;;; };
 ;;;
 
@@ -972,7 +972,8 @@ EntityUpdateLoop:
         ld      h, a
         inc     de
         ld      a, [de]
-        ld      l, a            ; entity pinter now in hl
+        ld      l, a            ; entity pointer now in hl
+        inc     de
 
 	push    de              ; save entity buffer pointer on stack
 
@@ -1004,9 +1005,46 @@ EntityUpdateLoopDone:
 ;;; the same loop.
         call    UpdateView
 
-;;; intentional fallthrough
+
+        ld      de, var_entity_buffer
+        ld      a, [var_entity_buffer_size]
 EntityDrawLoop:
-        ld      hl, var_player_coord_x
+        cp      0               ; compare loop counter in a
+        jr      Z, EntityDrawLoopDone
+        dec     a
+        push    af
+
+
+        ld      a, [de]         ; fetch entity pointer from buffer
+        ld      h, a
+        inc     de
+        ld      a, [de]
+        ld      l, a            ; entity pointer now in hl
+        inc     de
+
+	push    de              ; save entity buffer pointer on stack
+
+
+	inc     hl              ; hl now points to y coord in entity struct
+
+        push    hl              ; save entity pointer (FixnumUpper overwrites)
+	call    FixnumUpper
+
+        ld      a, [var_view_y]
+        ld      l, a
+        ld      a, e
+        sub     l
+        ld      c, a
+        pop     hl                      ; restore entity pointer
+
+;;; This is a bit delicate. We should really be adding the size of the fixnum
+;;; field. But that would be a bunch of loads and an add instruction, so it
+;;; wouldn't necessarily be faster.
+        inc     hl                      ; jump to location of x coord in entity
+        inc     hl
+        inc     hl                      ; fixnum occupies three bytes
+
+	push    hl
         call    FixnumUpper
 
         ld      a, [var_view_x]
@@ -1014,19 +1052,27 @@ EntityDrawLoop:
         ld      a, e
         sub     l
         ld      b, a
+        pop     hl
 
+;;; Now, we want to jump to the location of the texture offset in the entity
+;;; struct.
+;;; See entity struct docs at top of file.
+;;; ptr + sizeof(Fixnum) + sizeof(Animation) + 1
 
-        ld      hl, var_player_coord_y
-        call    FixnumUpper
+        ld      d, 0
+        ld      e, FIXNUM_SIZE + 2 + 1
+        add     hl, de
 
-        ld      a, [var_view_y]
-        ld      l, a
-        ld      a, e
-        sub     l
-        ld      c, a
+        ld      e, [hl]                 ; Load texture index from struct
+;;; Each Sprite is 32x32, and our tile sizes are 8x16. So, to go from
+;;; A sprite texture index to a starting tile index, we simply need to move
+;;; the lower four bits of the index to the upper four bits (i.e. n x 16).
+        swap    e                       ; ShowSprite... uses e as a start tile.
+
+;;; TODO: pull start tile from entity struct (texture index)
+;;; NOTE: 16 tiles per 32x32 pixel texture.
 
         ld      l, 0                    ; Oam offset
-        ld      e, 0                    ; Start tile
         push    bc
         call    ShowSpriteSquare32
         pop     bc
@@ -1038,7 +1084,14 @@ EntityDrawLoop:
         ld      l, 8
         ld      e, $50
         call    ShowSpriteSquare16
-.skip:
+
+
+        pop     de              ; restore entity buffer pointer
+        pop     af              ; restore loop counter
+        jr      EntityDrawLoop
+
+EntityDrawLoopDone:
+
 
         ret
 
