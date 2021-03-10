@@ -692,6 +692,12 @@ PlayerInit:
 
         ld      de, var_player_struct
         call    EntityBufferEnqueue
+
+        ld      hl, var_player_stamina
+        ld      bc, 1024
+        ld      a, 0
+        call    FixnumInit
+
         ret
 
 
