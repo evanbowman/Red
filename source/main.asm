@@ -297,6 +297,7 @@ Start:
         ld      [var_player_kf], a
         ld      [var_player_tmr], a
         ld      [var_player_texture], a
+        ld      [var_player_palette], a
 
         ld      hl, var_oam_back_buffer ; zero out the oam back buffer
         ld      bc, OAM_SIZE * OAM_COUNT
@@ -350,7 +351,7 @@ Main:
         call    PlayerInit
         call    DebugInit
 
-        ld      b, 8
+        ld      b, 16
         ld      hl, PlayerCharacterPalette
         call    LoadObjectColors
 
@@ -699,6 +700,8 @@ DebugInit:
         ld      a, SPRID_BONFIRE
         ld      [var_debug_fb], a
 
+        ld      a, 1
+        ld      [var_debug_palette], a
         ret
 
 
@@ -1722,8 +1725,13 @@ ShowSpriteSquare32:
 ; l - oam start
 ; b - x
 ; c - y
+; d - palette
 ; e - start tile
 ; overwrites a, b, c, d, e, h, l  :(
+
+;;; NOTE: This used to be a nested loop. Now, the outer loop is manually
+;;; unrolled, not necessarily for performance, but because I ran out of
+;;; registers.
 
         ld      a, b
         ld      b, 8                    ; Center stuff
@@ -1741,8 +1749,6 @@ ShowSpriteSquare32:
 
         push    bc                      ; for when we jump down a row
 
-        ld      d, 1                    ; outer loop counter
-
 .loop_outer:
         ld      a, 3                    ; inner loop counter
 
@@ -1754,6 +1760,7 @@ ShowSpriteSquare32:
         inc     hl                      ; skip the next three bytes in oam
         ld      [hl], e
         inc     hl
+        ld      [hl], d
         inc     hl
         inc     e                       ; double inc b/c 8x16 tiles
         inc     e
@@ -1771,10 +1778,6 @@ ShowSpriteSquare32:
         jr      .loop_inner
 
 .loop_outer_cond:
-        or      d                       ; outer loop counter is zero here
-        jr      z, .done
-        dec     d
-
         pop     bc                      ; see push at fn top
 
         push    hl
@@ -1783,8 +1786,35 @@ ShowSpriteSquare32:
         add     hl, bc
         ld      c, l                    ; load upper half into y
         pop     hl
-        jr      .loop_outer
-.done:
+
+.loop_outer2:
+        ld      a, 3                    ; inner loop counter
+
+.loop_inner2:
+
+        ld      [hl], c                 ; set y
+        inc     hl                      ; go to next byte
+        ld      [hl], b                 ; set x
+        inc     hl                      ; skip the next three bytes in oam
+        ld      [hl], e
+        inc     hl
+        ld      [hl], d
+        inc     hl
+        inc     e                       ; double inc b/c 8x16 tiles
+        inc     e
+
+        or      a                       ; test whether a has reached zero
+        jr      z, .done
+        dec     a
+
+        push    hl
+
+        ld      hl, $0800
+        add     hl, bc                  ; x += 8
+        ld      b, h
+        pop     hl
+        jr      .loop_inner2
+.done
         ret
 
 
@@ -2039,6 +2069,7 @@ TestOverlay:
 
 PlayerCharacterPalette::
 DB $00,$00, $69,$72, $1a,$20, $03,$00
+DB $00,$00, $ff,$ff, $f8,$37, $1a,$20
 
 ;;; Example of how to do the color conversion:
 ;;; See byte sequence $df,$24 above, the red color.
