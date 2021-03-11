@@ -52,11 +52,14 @@
 ;;;     Animation anim_; // (two bytes)
 ;;;     char base_frame_;
 ;;;     char vram_index_;
-;;;     char has_shadow_flag_;
+;;;     char display_flags_;
 ;;;     Pointer update_fn_;
 ;;; };
 ;;;
 
+SPRITE_SHAPE_SQUARE_32 EQU $f0
+SPRITE_SHAPE_T EQU $e0
+SPRITE_SHAPE_TALL_16_32 EQU $00
 
 ;; ############################################################################
 
@@ -102,6 +105,17 @@ var_joypad_released:    DS      1       ; Edge triggered
         SECTION "IRQ_VARIABLES", HRAM
 
 var_vbl_flag:   DS      1
+
+
+;;; SECTION IRQ_VARIABLES
+
+
+;;; ############################################################################
+
+        SECTION "MISC_HRAM", HRAM
+
+;;; TODO: use unique color palettes for Gameboy Advance
+agb_detected:   DS      1
 
 
 ;;; SECTION IRQ_VARIABLES
@@ -267,10 +281,24 @@ Start:
 
 
 .gbcDetected:
+        ld      a, 0
+        ldh     [agb_detected], a
+        ld      a, b
+        cp      a, BOOTUP_B_AGB
+        jr      NZ, .configure
+.test:
+        ld      a, 1
+        ldh     [agb_detected], a
+        jr      .test
+
+.configure:
         call    SetCpuFast
         call    VBlankPoll              ; Wait for vbl before disabling lcd.
 
-	xor	a                       ; A now holds zero.
+
+
+
+	ld	a, 0
 	ld	[rIF], a
 	ld	[rLCDC], a
 	ld	[rSTAT], a
@@ -316,6 +344,8 @@ Start:
 
         ld      a, 1
         ld      [var_player_swap_spr], a
+
+        or      SPRITE_SHAPE_T
         ld      [var_player_has_shadow], a
 
         jr      Main
@@ -351,13 +381,16 @@ Main:
         call    PlayerInit
         call    DebugInit
 
-        ld      b, 16
-        ld      hl, PlayerCharacterPalette
-        call    LoadObjectColors
+        call    LoadOverworldPalettes
 
         ld      hl, OverlayTiles
         ld      bc, OverlayTilesEnd - OverlayTiles
         ld      de, $8800
+        call    Memcpy
+
+        ld      hl, BackgroundTiles
+        ld      bc, BackgroundTilesEnd - BackgroundTiles
+        ld      de, $8B00
         call    Memcpy
 
         ld      hl, SpriteDropShadow
@@ -367,9 +400,7 @@ Main:
 
         call    TestOverlay
 
-        ld      b, 8
-        ld      hl, BackgroundPalette
-        call    LoadBackgroundColors
+        call    InitMap
 
         ld      a, 136
         ld      [rWY], a
@@ -600,6 +631,14 @@ EntityBufferReset:
 ;;; ----------------------------------------------------------------------------
 
 
+EntityBufferErase:
+;;; TODO...
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 EntityBufferEnqueue:
 ;;; de - entity ptr
 ;;; trashes bc
@@ -694,7 +733,7 @@ DebugInit:
         call    FixnumInit
 
         ld      hl, var_debug_coord_y
-        ld      bc, 96
+        ld      bc, 95
         call    FixnumInit
 
         ld      a, SPRID_BONFIRE
@@ -749,7 +788,7 @@ PlayerAnimate:
         ld      d, 5
         call    AnimationAdvance
         or      a
-        jr      NZ, .frameChanged
+        jr      NZ, .frameChangedLR
         jr      .done
 
 .animateWalkUD:
@@ -759,9 +798,18 @@ PlayerAnimate:
 
         call    AnimationAdvance
         or      a
-        jr      NZ, .frameChanged
+        jr      NZ, .frameChangedUD
 .done:
         ret
+
+.frameChangedLR:
+        ld      a, 1 | SPRITE_SHAPE_T
+        ld      [var_player_has_shadow], a
+        jr      .frameChanged
+
+.frameChangedUD:
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_has_shadow], a
 
 .frameChanged:
         ld      a, 1
@@ -798,6 +846,7 @@ PlayerJoypadResponse:
 
         ld      a, e
         ld      [var_player_fb], a
+
         ld      a, [var_player_kf]
         ld      e, a
         ld      a, 4
@@ -938,6 +987,8 @@ UpdatePlayer:
 
         ld      a, SPRID_PLAYER_SD
         ld      [var_player_fb], a
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_has_shadow], a
         ld      a, 0
         ld      [var_player_kf], a
         ld      a, 1
@@ -954,6 +1005,8 @@ UpdatePlayer:
 
         ld      a, SPRID_PLAYER_SU
         ld      [var_player_fb], a
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_has_shadow], a
         ld      a, 0
         ld      [var_player_kf], a
         ld      a, 1
@@ -970,6 +1023,8 @@ UpdatePlayer:
 
         ld      a, SPRID_PLAYER_SL
         ld      [var_player_fb], a
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_has_shadow], a
         ld      a, 0
         ld      [var_player_kf], a
         ld      a, 1
@@ -986,6 +1041,8 @@ UpdatePlayer:
 
         ld      a, SPRID_PLAYER_SR
         ld      [var_player_fb], a
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_has_shadow], a
         ld      a, 0
         ld      [var_player_kf], a
         ld      a, 1
@@ -1018,6 +1075,12 @@ UpdatePlayer:
 ;;;
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+SetSceneFunction:
+
+        ret
+
 
 
 UpdateView:
@@ -1134,7 +1197,7 @@ EntityUpdateLoopDone:
         ld      a, [var_entity_buffer_size] ; loop counter
 EntityDrawLoop:
         cp      0               ; compare loop counter in a
-        jr      Z, EntityDrawLoopDone
+        jp      Z, EntityDrawLoopDone
         dec     a
         push    af
 
@@ -1193,10 +1256,37 @@ EntityDrawLoop:
 ;;; A sprite texture index to a starting tile index, we simply need to move
 ;;; the lower four bits of the index to the upper four bits (i.e. n x 16).
         swap    e                       ; ShowSprite... uses e as a start tile.
+        inc     hl                      ; Inc to shadow flag
 
-
+        ld      a, [hl]
         push    hl                      ; Store entity pointer
 
+        and     $f0
+        ld      h, SPRITE_SHAPE_TALL_16_32
+        cp      h
+        jr      Z, .putTall16x32Sprite
+
+        ld      h, SPRITE_SHAPE_T
+        cp      h
+        jr      Z, .putTSprite
+
+        ld      h, SPRITE_SHAPE_SQUARE_32
+        cp      h
+        jr      Z, .putSquare32Sprite
+
+        jr      .putSpriteFinished
+
+.putTSprite:
+	ld      a, [var_oam_top_counter]
+        ld      l, a                    ; Oam offset
+        add     6                       ; top row uses 2 oam, bottom row uses 4
+        ld      [var_oam_top_counter], a
+        push    bc
+        call    ShowSpriteT
+        pop     bc
+        jr      .putSpriteFinished
+
+.putSquare32Sprite:
         ld      a, [var_oam_top_counter]
         ld      l, a                    ; Oam offset
         add     8                       ; 32x32 sprite uses 8 oam
@@ -1204,6 +1294,19 @@ EntityDrawLoop:
         push    bc
         call    ShowSpriteSquare32
         pop     bc
+        jr      .putSpriteFinished
+
+.putTall16x32Sprite:
+        ld      a, [var_oam_top_counter]
+        ld      l, a                    ; Oam offset
+        add     4                       ; 16x32 sprite uses 4 oam
+        ld      [var_oam_top_counter], a
+        push    bc
+        call    ShowSpriteTall16x32
+        pop     bc
+
+
+.putSpriteFinished:
         pop     hl                      ; Restore entity pointer
 
 ;;; Now, check whether the current entity's y value is greater than the previous
@@ -1220,8 +1323,8 @@ EntitySwapResume:
         ld      a, c
         ld      [var_last_entity_y], a
 
-        inc     hl                      ; Inc to shadow flag
         ld      a, [hl]
+        and     $0f
         or      a
         jr      Z, .skipShadow
 
@@ -1234,6 +1337,7 @@ EntitySwapResume:
         sub     2                       ; Shadows are 16x16, grow from oam end
         ld      [var_oam_bottom_counter], a
         ld      e, $50
+        ld      d, 2
         call    ShowSpriteSquare16
 
 .skipShadow:
@@ -1241,11 +1345,34 @@ EntitySwapResume:
         pop     de              ; restore entity buffer pointer
         pop     af              ; restore loop counter
         ld      [var_last_entity_idx], a
-        jr      EntityDrawLoop
+        jp      EntityDrawLoop
 
 EntityDrawLoopDone:
 
+        ld      a, [var_oam_top_counter]
+        ld      b, a
+        ld      l, b
+        call    OamLoad
 
+	ld      c, 0
+
+.unusedOAMZeroLoop:
+        ld      a, [var_oam_bottom_counter]
+        cp      b
+        jr      Z, .done
+
+;;; Move unused object to (0,0), effectively hiding it
+        ld      [hl], c
+        inc     hl
+        ld      [hl], c
+        inc     hl
+        inc     hl
+        inc     hl
+
+        inc     b
+        jr      .unusedOAMZeroLoop
+
+.done:
         ret
 
 
@@ -1303,48 +1430,7 @@ EntitySwap:
         jp      EntitySwapResume
 
 
-
 ;;; ----------------------------------------------------------------------------
-
-
-IsOnscreen:
-;;; b - x
-;;; c - y
-;;; a - result
-;;; trashes l
-        ld      a, [var_view_x]
-        ld      l, a
-        ld      a, b                    ; TODO: make arg a instead of b?
-        cp      l
-        jr      C, .false
-
-        ld      a, SCRN_X
-        add     l
-        ld      a, l
-        cp      b
-        jr      C, .false
-
-        ld      a, [var_view_y]
-        ld      l, a
-        ld      a, c
-        cp      l
-        jr      C, .false
-
-        ld      a, SCRN_Y
-        add     l
-        ld      a, l
-        cp      c
-        jr      C, .false
-
-        ld      a, 1
-        ret
-.false:
-	ld      a, 0
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
 
 
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -1592,6 +1678,9 @@ FixnumAdd:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+
 FixnumSub:
 ;;; hl - address of number
 ;;; b - small unit
@@ -1655,6 +1744,41 @@ FixnumUpper:
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ;;;
 ;;;
+;;; Overworld Map
+;;;
+;;;
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+InitMap:
+;;; TODO: this is just a test
+        ld      a, 10
+        ld      d, 10
+        ld      e, $B0
+        ld      c, 1
+        call    SetBackgroundTile32x32
+
+        ld      a, 2
+        ld      d, 2
+        ld      e, $C0
+        ld      c, 2
+        call    SetBackgroundTile16x16
+
+        ld      a, 2
+        ld      d, 4
+        ld      e, $C0 + 4
+        ld      c, 2
+        call    SetBackgroundTile16x16
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+;;;
+;;;
 ;;; Video Routines
 ;;;
 ;;;
@@ -1686,6 +1810,7 @@ ShowSpriteSquare16:
 ; l - oam start
 ; b - x
 ; c - y
+; d - palette
 ; e - start tile
         push    de
         call    OamLoad
@@ -1699,6 +1824,7 @@ ShowSpriteSquare16:
         inc     hl
         ld      [hl], e
         inc     hl
+        ld      [hl], d
         inc     hl
         inc     e
         inc     e
@@ -1716,6 +1842,110 @@ ShowSpriteSquare16:
         jr      .loop
 .done:
         ret
+
+
+
+ShowSpriteTall16x32:
+;;; l - oam start
+;;; b - x
+;;; c - y
+;;; d - palette
+;;; e - start tile
+;;; trashes most registers
+        inc     e
+        inc     e
+        ld      a, b
+        ld      b, 0                    ; Center stuff
+        sub     b
+        ld      b, a
+
+        ld      a, c
+        ld      c, 8
+        sub     c
+        ld      c, a
+
+        push    de                      ; de trashed by OamLoad
+        call    OamLoad                 ; OAM pointer in hl
+        pop     de                      ; restore e
+
+        push    bc                      ; for when we jump down a row
+
+.loop_outer:
+        ld      a, 1                    ; inner loop counter
+
+.loop_inner:
+
+        ld      [hl], c                 ; set y
+        inc     hl                      ; go to next byte
+        ld      [hl], b                 ; set x
+        inc     hl                      ; skip the next three bytes in oam
+        ld      [hl], e
+        inc     hl
+        ld      [hl], d
+        inc     hl
+        inc     e                       ; double inc b/c 8x16 tiles
+        inc     e
+
+        or      a                       ; test whether a has reached zero
+        jr      z, .loop_outer_cond
+        dec     a
+
+        push    hl
+
+        ld      hl, $0800
+        add     hl, bc                  ; x += 8
+        ld      b, h
+        pop     hl
+        jr      .loop_inner
+
+.loop_outer_cond:
+        pop     bc                      ; see push at fn top
+
+        push    hl
+
+        ld      hl, $0010               ; y += 16
+        add     hl, bc
+        ld      c, l                    ; load upper half into y
+        pop     hl
+
+.loop_outer2:
+
+        inc     e
+        inc     e
+        inc     e
+        inc     e
+
+        ld      a, 1                    ; inner loop counter
+
+.loop_inner2:
+
+        ld      [hl], c                 ; set y
+        inc     hl                      ; go to next byte
+        ld      [hl], b                 ; set x
+        inc     hl                      ; skip the next three bytes in oam
+        ld      [hl], e
+        inc     hl
+        ld      [hl], d
+        inc     hl
+        inc     e                       ; double inc b/c 8x16 tiles
+        inc     e
+
+        or      a                       ; test whether a has reached zero
+        jr      z, .done
+        dec     a
+
+        push    hl
+
+        ld      hl, $0800
+        add     hl, bc                  ; x += 8
+        ld      b, h
+        pop     hl
+        jr      .loop_inner2
+.done
+        ret
+
+
+
 
 
 ;;; Note: 32x32 Square sprite consumes eight hardware sprites, given 8x16
@@ -1783,6 +2013,109 @@ ShowSpriteSquare32:
         push    hl
 
         ld      hl, $0010               ; y += 16
+        add     hl, bc
+        ld      c, l                    ; load upper half into y
+        pop     hl
+
+.loop_outer2:
+        ld      a, 3                    ; inner loop counter
+
+.loop_inner2:
+
+        ld      [hl], c                 ; set y
+        inc     hl                      ; go to next byte
+        ld      [hl], b                 ; set x
+        inc     hl                      ; skip the next three bytes in oam
+        ld      [hl], e
+        inc     hl
+        ld      [hl], d
+        inc     hl
+        inc     e                       ; double inc b/c 8x16 tiles
+        inc     e
+
+        or      a                       ; test whether a has reached zero
+        jr      z, .done
+        dec     a
+
+        push    hl
+
+        ld      hl, $0800
+        add     hl, bc                  ; x += 8
+        ld      b, h
+        pop     hl
+        jr      .loop_inner2
+.done
+        ret
+
+
+
+ShowSpriteT:
+; l - oam start
+; b - x
+; c - y
+; d - palette
+; e - start tile
+; overwrites a, b, c, d, e, h, l  :(
+        inc     e
+        inc     e
+
+        ;; ld      a, b
+        ;; ld      b, 8                    ; Center stuff
+        ;; sub     b
+        ;; ld      b, a
+
+        ld      a, c
+        ld      c, 8
+        sub     c
+        ld      c, a
+
+        push    de                      ; de trashed by OamLoad
+        call    OamLoad                 ; OAM pointer in hl
+        pop     de                      ; restore e
+
+        push    bc                      ; for when we jump down a row
+
+.loop_outer:
+        ld      a, 1                    ; inner loop counter
+
+.loop_inner:
+
+        ld      [hl], c                 ; set y
+        inc     hl                      ; go to next byte
+        ld      [hl], b                 ; set x
+        inc     hl                      ; skip the next three bytes in oam
+        ld      [hl], e
+        inc     hl
+        ld      [hl], d
+        inc     hl
+        inc     e                       ; double inc b/c 8x16 tiles
+        inc     e
+
+        or      a                       ; test whether a has reached zero
+        jr      z, .loop_outer_cond
+        dec     a
+
+        push    hl
+
+        ld      hl, $0800
+        add     hl, bc                  ; x += 8
+        ld      b, h
+        pop     hl
+        jr      .loop_inner
+
+.loop_outer_cond:
+        inc     e
+        inc     e
+
+        pop     bc                      ; see push at fn top
+
+        push    hl
+
+        ld      hl, $0010               ; y += 16
+        ld      a, b
+        ld      b, 8
+        sub     b
+        ld      b, a
         add     hl, bc
         ld      c, l                    ; load upper half into y
         pop     hl
@@ -1927,6 +2260,19 @@ LoadObjectColors:
 
 ;;; ----------------------------------------------------------------------------
 
+LoadOverworldPalettes:
+        ld      b, 24
+        ld      hl, PlayerCharacterPalette
+        call    LoadObjectColors
+
+        ld      b, 24
+        ld      hl, BackgroundPalette
+        call    LoadBackgroundColors
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 TestTilemap:
         ld      hl, _SCRN0
 
@@ -1971,6 +2317,138 @@ TestTilemap:
 ;;; ----------------------------------------------------------------------------
 
 
+
+SetBackgroundTile16x16:
+;;; a - x index
+;;; d - y index
+;;; e - start tile
+;;; c - palette
+        ld      b, 2
+.loop:
+        push    bc
+
+        push    de
+        call    SetBackgroundTile
+        pop     de
+
+        inc     e
+        inc     a
+
+        push    de
+        call    SetBackgroundTile
+        pop     de
+
+        inc     e
+        ld      c, 1
+        sub     c
+        inc     d
+
+        pop     bc
+
+        dec     b
+        push    af
+        ld      a, b
+        or      a
+        pop     af
+        jr      NZ, .loop
+
+        ret
+
+
+;;; Yeah I know, this code is not good.
+SetBackgroundTile32x32:
+;;; a - x index
+;;; d - y index
+;;; e - start tile
+;;; c - palette
+        ld      b, 4
+.loop:
+        push    bc
+
+        push    de
+        call    SetBackgroundTile
+        pop     de
+
+        inc     e
+        inc     a
+
+        push    de
+        call    SetBackgroundTile
+        pop     de
+
+        inc     e
+        inc     a
+
+        push    de
+        call    SetBackgroundTile
+        pop     de
+
+        inc     e
+        inc     a
+
+        push    de
+        call    SetBackgroundTile
+        pop     de
+
+        inc     e
+        ld      c, 3
+        sub     c
+        inc     d
+
+        pop     bc
+
+        dec     b
+        push    af
+        ld      a, b
+        or      a
+        pop     af
+        jr      NZ, .loop
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+SetBackgroundTile:
+;;; a - x index
+;;; d - y index
+;;; e - tile number
+;;; c - palette
+        push    bc
+        push    af
+        ld      hl, _SCRN0
+        ld      b, 0
+        ld      c, 32
+.loop:
+        ld      a, 0
+        or      d
+	jr      Z, .ready
+        dec     d
+        add     hl, bc
+        jr      .loop
+
+.ready:
+        pop     af
+        ld      c, a
+        add     hl, bc
+        ld      [hl], e
+
+        pop     bc
+        push    af
+        ld	a, 1
+	ld	[rVBK], a
+        ld      [hl], c
+        ld      a, 0
+        ld      [rVBK], a
+        pop     af
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 SetOverlayTile:
 ;;; NOTE: This writes to vram, careful!
 ;;; c - screen overlay x index
@@ -1993,20 +2471,20 @@ UpdateStaminaBar:
 
 .loopFull:
         ld      a, e
-        ld      e, 32
+        ld      e, 16
         cp      e
         ld      e, a
         jr      C, .partial
 
         ld      a, e
-        ld      e, 32
+        ld      e, 16
         sub     e
         ld      e, a
         ld      a, $82 + 8
         call    SetOverlayTile
         inc     c
 
-        ld      a, 9
+        ld      a, 18
         cp      c
         jr      Z, .done
         jr      .loopFull
@@ -2014,12 +2492,11 @@ UpdateStaminaBar:
 .partial:
         ld      a, $82
         SRL     e
-        SRL     e
         add     a, e
         call    SetOverlayTile
 
         inc     c
-        ld      a, 9
+        ld      a, 18
         cp      c
         jr      Z, .done
 
@@ -2044,7 +2521,7 @@ TestOverlay:
         ld      a, $82
         call    SetOverlayTile
         inc     c
-        ld      a, 9
+        ld      a, 17
         cp      c
         jr      NZ, .loop1
 
@@ -2069,7 +2546,9 @@ TestOverlay:
 
 PlayerCharacterPalette::
 DB $00,$00, $69,$72, $1a,$20, $03,$00
-DB $00,$00, $ff,$ff, $f8,$37, $1a,$20
+DB $00,$00, $ff,$ff, $f8,$37, $5f,$19
+DB $00,$00, $54,$62, $f8,$37, $1a,$20
+
 
 ;;; Example of how to do the color conversion:
 ;;; See byte sequence $df,$24 above, the red color.
@@ -2077,7 +2556,9 @@ DB $00,$00, $ff,$ff, $f8,$37, $1a,$20
 ;;; python> hex(((70 >> 3)) | ((141 >> 3) << 5) | ((199 >> 3) << 10))
 
 BackgroundPalette::
-DB $bf,$73, $bf,$73, $1a,$20, $00,$00
+DB $bf,$73, $1a,$20, $1a,$20, $00,$00
+DB $bf,$73, $53,$5e, $4b,$3d, $86,$18
+DB $bf,$73, $ec,$31, $54,$62, $26,$29
 
 
 ;;; SECTION START
@@ -2108,8 +2589,8 @@ OverlayTiles::
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 ;;;
-DB $FF,$FF,$FF,$FF,$93,$FF,$83,$FE
-DB $83,$FE,$C7,$FE,$EF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$EF,$FE,$EF,$FE
+DB $83,$FE,$EF,$FE,$EF,$FE,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$7F
@@ -2128,9 +2609,165 @@ DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$01
 DB $FF,$01,$FF,$01,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$FF
-DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$7F
-DB $FF,$7F,$FF,$7F,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$7F,$FF,$7F
+DB $FF,$7F,$FF,$7F,$FF,$7F,$FF,$FF
+;;; debug
 OverlayTilesEnd::
+
+BackgroundTiles::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$1E,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$03,$00,$07,$00
+DB $07,$00,$00,$07,$1F,$07,$3F,$07
+DB $0F,$00,$0F,$00,$DF,$00,$FF,$3F
+DB $BF,$7F,$FF,$FF,$FF,$FF,$FF,$FF
+DB $3F,$00,$EF,$70,$FF,$7F,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $00,$00,$70,$00,$F8,$80,$F8,$80
+DB $DC,$E0,$EC,$F0,$FC,$FC,$FE,$F8
+DB $3F,$07,$1F,$27,$3F,$3F,$3F,$3F
+DB $7F,$07,$7F,$07,$3F,$47,$3F,$0F
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FE,$F0,$FE,$F0,$FE,$F0,$FE,$F0
+DB $FC,$F2,$F0,$FC,$F8,$E0,$F8,$C0
+DB $0F,$3F,$0F,$00,$0F,$00,$07,$08
+DB $03,$04,$00,$03,$00,$00,$00,$00
+DB $FF,$FF,$FF,$7F,$FF,$70,$FF,$20
+DB $9F,$40,$0E,$91,$00,$0F,$00,$00
+DB $FF,$FF,$FF,$FF,$FF,$70,$FF,$60
+DB $FE,$61,$00,$9E,$00,$00,$00,$00
+DB $F8,$80,$F0,$88,$E0,$98,$00,$60
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$80
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$03,$FF,$1F,$FF,$1F
+DB $FF,$E0,$FF,$0C,$FF,$BE,$FF,$FF
+DB $FF,$FF,$FF,$FF,$3F,$FF,$00,$FF
+DB $FF,$1F,$FE,$1E,$FE,$7E,$FC,$FC
+DB $F8,$FE,$D0,$FE,$80,$FE,$00,$FE
+DB $00,$00,$01,$00,$0F,$00,$1F,$00
+DB $7F,$00,$7F,$00,$FF,$00,$FF,$00
+DB $1F,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$80
+DB $FF,$01,$FF,$C3,$FF,$FF,$7F,$7F
+DB $07,$3F,$03,$7F,$01,$7F,$00,$3F
+DB $FF,$C0,$FF,$E0,$FF,$E1,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$1F,$FF
+DB $FF,$80,$FF,$C0,$7F,$E0,$7F,$E0
+DB $7F,$E0,$7F,$E0,$3F,$F0,$3F,$FF
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $3F,$FF,$1F,$7F,$0F,$7F,$07,$7F
+DB $00,$3F,$00,$1F,$00,$07,$00,$03
+DB $FF,$80,$FF,$E0,$FF,$F0,$FF,$FF
+DB $3F,$FF,$3F,$FF,$07,$FF,$01,$FF
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$0F,$00,$0F,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$E0,$00,$F0,$00
+DB $1F,$00,$1F,$00,$3F,$00,$3F,$00
+DB $3F,$00,$7F,$00,$FF,$00,$FF,$00
+DB $F8,$00,$FC,$00,$FC,$00,$FE,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $7F,$00,$7F,$00,$7F,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$7F,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FE,$00
+DB $FE,$00,$FE,$00,$FE,$00,$FE,$00
+DB $7F,$00,$7F,$00,$7F,$00,$7F,$00
+DB $3F,$00,$7F,$00,$7F,$00,$FF,$00
+DB $FE,$00,$FE,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FE,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$03,$00,$07,$00
+DB $01,$00,$07,$00,$0F,$00,$1F,$00
+DB $1F,$00,$3F,$00,$FF,$00,$FF,$00
+DB $0F,$00,$0F,$00,$0F,$00,$07,$00
+DB $3F,$00,$7F,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$7F,$00,$7F,$00
+DB $3F,$00,$3F,$00,$7F,$00,$7F,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $7F,$00,$7F,$00,$7F,$00,$7F,$00
+DB $3F,$00,$7F,$00,$7F,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $F8,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $00,$00,$FC,$00,$FC,$00,$FE,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$71
+DB $FF,$00,$FF,$01,$FF,$3F,$FF,$FF
+DB $FE,$FF,$FC,$FF,$F8,$FF,$E0,$FF
+DB $FF,$7F,$FE,$FE,$FC,$FE,$E0,$FC
+DB $00,$FE,$00,$FE,$00,$FE,$00,$F8
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$01,$FF,$03,$FF,$03
+DB $FF,$3F,$FE,$6F,$FE,$FF,$FC,$FF
+DB $FF,$0E,$FF,$1F,$FF,$1F,$FF,$1F
+DB $FF,$FF,$FE,$FF,$FC,$FF,$F8,$FF
+DB $F8,$FF,$C0,$FF,$C0,$FE,$00,$FE
+DB $00,$FC,$00,$F0,$00,$E0,$00,$C0
+DB $FC,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $0F,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$0C,$FF,$1F,$FF,$FF
+DB $FE,$FF,$F8,$FF,$E0,$FF,$00,$FF
+DB $FF,$00,$FF,$3C,$FF,$7F,$FF,$FF
+DB $FF,$FF,$3F,$FF,$00,$FF,$00,$FF
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$18
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$03
+DB $FF,$3E,$FF,$FF,$FF,$FF,$F8,$FF
+DB $F0,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $FF,$73,$FF,$FF,$7F,$FF,$3F,$FF
+DB $1F,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $C0,$00,$E0,$00,$FB,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $00,$00,$00,$00,$80,$00,$C0,$00
+DB $C0,$00,$E0,$00,$F0,$00,$F0,$00
+DB $F8,$00,$F8,$00,$F8,$00,$F8,$00
+DB $FC,$00,$FE,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FE,$00,$FC,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FC,$00,$FE,$00,$FE,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FE,$00
+DB $00,$00,$E0,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $00,$00,$0F,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+BackgroundTilesEnd::
 
 
 SpriteDropShadow::
