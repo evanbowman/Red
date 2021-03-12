@@ -138,6 +138,20 @@ var_oam_bottom_counter:  DS      1
 
 ;;; ############################################################################
 
+        SECTION "MAP_INFO", WRAM0, ALIGN[8]
+
+MAP_TILE_WIDTH EQU 16
+MAP_WIDTH EQU SCRN_VX / MAP_TILE_WIDTH
+MAP_HEIGHT EQU SCRN_VY / MAP_TILE_WIDTH
+
+var_map_info:    DS     MAP_WIDTH * MAP_HEIGHT
+var_map_scratch: DS     MAP_WIDTH * MAP_HEIGHT
+
+
+;;; SECTION MAP_INFO
+
+;;; ############################################################################
+
         SECTION "PLAYER", WRAM0, ALIGN[8]
 
 
@@ -163,9 +177,12 @@ var_player_display_flag:DS   1
 
 var_player_update_fn:   DS   2  ; Engine will call this fn to update player
 
+var_player_struct_end:
+
+ENTITY_SIZE EQU var_player_struct_end - var_player_struct
+
 var_player_stamina:     DS      FIXNUM_SIZE
 
-var_player_struct_end:
 
 
 
@@ -343,7 +360,8 @@ Main:
 
         call    TestOverlay
 
-        call    InitMap
+        call    MapInit
+        call    MapLoad
 
         ld      a, 136
         ld      [rWY], a
@@ -592,7 +610,7 @@ EntityBufferEnqueue:
         dec     a
 
         ld      b, 0
-        add     a, a
+        sla     a
 
 	ld      c, a
 
@@ -682,6 +700,14 @@ DebugInit:
 
         ld      a, 1
         ld      [var_debug_palette], a
+
+;;; NOTE: this needs to be done in vblank!
+        ld      a, 10
+        ld      d, 10
+        ld      e, $B0
+        ld      c, 1
+        call    SetBackgroundTile32x32
+
         ret
 
 
@@ -1352,7 +1378,7 @@ EntitySwap:
         ld      a, [var_entity_buffer_size]
         sub     d
         ld      hl, var_entity_buffer
-        add     a                       ; Double a, b/c a pointer is two bytes
+        sla     a                       ; Double a, b/c a pointer is two bytes
         ld      e, a
         ld      d, 0
 
@@ -1740,27 +1766,131 @@ FixnumUpper:
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-InitMap:
-;;; TODO: this is just a test
-        ld      a, 10
-        ld      d, 10
-        ld      e, $B0
-        ld      c, 1
-        call    SetBackgroundTile32x32
-
-        ld      a, 2
-        ld      d, 2
-        ld      e, $C0
-        ld      c, 2
-        call    SetBackgroundTile16x16
-
-        ld      a, 2
-        ld      d, 4
-        ld      e, $C0 + 4
-        ld      c, 2
-        call    SetBackgroundTile16x16
+MapInit:
 
         ret
+
+;;; ----------------------------------------------------------------------------
+
+;;; Copy map from wram to vram
+MapShow:
+        ld      c, 0
+        ld      hl, var_map_info
+
+.outerLoop:
+	ld      b, 0
+        ld      a, 16
+        cp      c
+        jr      Z, .done
+
+.innerLoop:
+        ld      a, 16
+        cp      b
+        jr      Z, .outerLoopInc
+
+        push    bc
+
+        ld      a, [hl]
+        or      a
+        jr      Z, .skip
+
+        ld      d, c
+        sla     d
+
+        ld      e, $C0
+
+        ld      c, 2
+
+        ld      a, b
+	sla     a
+
+        push    hl
+        call    SetBackgroundTile16x16
+        pop     hl
+
+.skip:
+
+        pop     bc
+
+        inc     b
+        inc     hl
+	jr      .innerLoop
+
+.outerLoopInc:
+	inc     c
+        jr      .outerLoop
+
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+MapGetTile:
+;;; hl - map
+;;; a - x
+;;; b - y
+;;; return value in b
+;;; trashes hl, c
+        swap    b                       ; map is 16 wide
+        add     b
+        ld      c, 0
+        ld      b, a
+        add     hl, bc
+        ld      b, [hl]
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+MapPutSampleData:
+        ld      hl, var_map_info
+
+        ld      c, 0
+
+.outer:
+        ld      b, 0
+.inner:
+        ld      a, 0
+        cp      b
+        jr      Z, .write
+        cp      c
+        jr      Z, .write
+        ld      a, 15
+        cp      b
+        jr      Z, .write
+        cp      c
+        jr      Z, .write
+
+        jr      .incr
+.write:
+        ld      a, 1
+        ld      [hl], a
+.incr:
+        inc     hl
+        inc     b
+.innerTest:
+        ld      a, 16
+        cp      b
+        jr      Z, .outerTest
+        jr      .inner
+.outerTest:
+        inc     c
+        ld      a, 16
+        cp      c
+        jr      Z, .done
+        jr      .outer
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+MapLoad:
+        call    MapPutSampleData
+        call    MapShow
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -2263,49 +2393,6 @@ LoadOverworldPalettes:
 
 ;;; ----------------------------------------------------------------------------
 
-TestTilemap:
-        ld      hl, _SCRN0
-
-        ld      c, 0
-
-.outer:
-        ld      b, 0
-.inner:
-        ld      a, 0
-        cp      b
-        jr      Z, .write
-        cp      c
-        jr      Z, .write
-        ld      a, 31
-        cp      b
-        jr      Z, .write
-        cp      c
-        jr      Z, .write
-
-        jr      .incr
-.write:
-        ld      a, 4
-        ld      [hl], a
-.incr:
-        inc     hl
-        inc     b
-.innerTest:
-        ld      a, 32
-        cp      b
-        jr      Z, .outerTest
-        jr      .inner
-.outerTest:
-        inc     c
-        ld      a, 32
-        cp      c
-        jr      Z, .done
-        jr      .outer
-.done:
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
 
 
 SetBackgroundTile16x16:
@@ -2405,6 +2492,8 @@ SetBackgroundTile:
 ;;; d - y index
 ;;; e - tile number
 ;;; c - palette
+;;; FIXME: the map is vram 32 tiles wide, so we may be able to use sla
+;;; instructions with the y value instead.
         push    bc
         push    af
         ld      hl, _SCRN0
