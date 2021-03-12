@@ -656,6 +656,17 @@ EntitySetUpdateFn:
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+
+PlayerCheckWallCollisions:
+        ld      hl, var_player_coord_x
+        ld      b, [hl]
+
+        ld      hl, var_player_coord_y
+        ld      c, [hl]
+
+        ret
+
+
 DebugUpdate:
         ld      hl, var_debug_animation
         ld      c, 6
@@ -1202,32 +1213,23 @@ EntityDrawLoop:
 
 	inc     hl              ; hl now points to y coord in entity struct
 
-        push    hl              ; save entity pointer (FixnumUpper overwrites)
-	call    FixnumUpper
-
         ld      a, [var_view_y]
-        ld      l, a
-        ld      a, e
-        sub     l
+        ld      d, a
+        ld      a, [hl+]         ; this is fine, due to layout of fixnum
+        sub     d
         ld      c, a
-        pop     hl                      ; restore entity pointer
 
 ;;; This is a bit delicate. We should really be adding the size of the fixnum
 ;;; field. But that would be a bunch of loads and an add instruction, so it
 ;;; wouldn't necessarily be faster.
         inc     hl                      ; jump to location of x coord in entity
-        inc     hl
-        inc     hl                      ; fixnum occupies three bytes
-
-	push    hl
-        call    FixnumUpper
+        inc     hl                      ; fixnum occupies 3 bytes (see hl+ above)
 
         ld      a, [var_view_x]
-        ld      l, a
-        ld      a, e
-        sub     l
+        ld      d, a
+        ld      a, [hl]
+        sub     d
         ld      b, a
-        pop     hl
 
 ;;; Now, we want to jump to the location of the texture offset in the entity
 ;;; struct.
