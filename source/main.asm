@@ -656,17 +656,6 @@ EntitySetUpdateFn:
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-
-PlayerCheckWallCollisions:
-        ld      hl, var_player_coord_x
-        ld      b, [hl]
-
-        ld      hl, var_player_coord_y
-        ld      c, [hl]
-
-        ret
-
-
 DebugUpdate:
         ld      hl, var_debug_animation
         ld      c, 6
@@ -760,6 +749,23 @@ PlayerInit:
 
         ret
 
+
+;;; ----------------------------------------------------------------------------
+
+PlayerCheckWallCollisions:
+        ld      hl, var_player_coord_x
+        ld      b, [hl]
+
+        srl     b                       ; /2 to convert player coord to tile
+
+        ld      hl, var_player_coord_y
+        ld      c, [hl]
+
+        srl     c
+
+;;; TODO... We want to check collisions based on all tiles around the player.
+
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -928,6 +934,8 @@ PlayerJoypadResponse:
 
 
 PlayerUpdateMovement:
+        call    PlayerCheckWallCollisions
+
         ld      hl, var_player_coord_x
         ld      b, 0
 
