@@ -159,7 +159,7 @@ var_player_fb:  DS      1       ; Frame base
 
 var_player_texture:     DS   1  ; Texture offset in vram
 var_player_palette:     DS   1
-var_player_has_shadow:  DS   1
+var_player_display_flag:DS   1
 
 var_player_update_fn:   DS   2  ; Engine will call this fn to update player
 
@@ -181,7 +181,7 @@ var_debug_fb:           DS      1
 
 var_debug_texture:      DS      1
 var_debug_palette:     DS   1
-var_debug_has_shadow:   DS      1
+var_debug_display_flag:   DS      1
 
 var_debug_update_fn:    DS      2
 var_debug_struct_end:
@@ -295,9 +295,6 @@ Start:
         call    SetCpuFast
         call    VBlankPoll              ; Wait for vbl before disabling lcd.
 
-
-
-
 	ld	a, 0
 	ld	[rIF], a
 	ld	[rLCDC], a
@@ -310,63 +307,9 @@ Start:
 	ld	[rSVBK], a
 	ld	[rRP], a
 
-        ldh     [var_vbl_flag], a
-        ldh     [var_sleep_counter], a
-        ldh     [var_joypad_current], a
-        ldh     [var_joypad_previous], a
-        ldh     [var_joypad_raw], a
-        ldh     [var_joypad_released], a
-
-        ld      [var_entity_buffer_size], a
-
-        ld      [var_view_x], a
-        ld      [var_view_y], a
-
-        ld      [var_player_kf], a
-        ld      [var_player_tmr], a
-        ld      [var_player_texture], a
-        ld      [var_player_palette], a
-
-        ld      hl, var_oam_back_buffer ; zero out the oam back buffer
-        ld      bc, OAM_SIZE * OAM_COUNT
-        call    Memset                  ; Note param a already holds 0 (above)
-
-        ld      hl, var_player_coord_x
-        ld      bc, 64
-        call    FixnumInit
-
-        ld      hl, var_player_coord_y
-        ld      bc, 60
-        call    FixnumInit
-
-        ld      a, SPRID_PLAYER_SD
-        ld      [var_player_fb], a
-
-        ld      a, 1
-        ld      [var_player_swap_spr], a
-
-        or      SPRITE_SHAPE_T
-        ld      [var_player_has_shadow], a
+        call    InitRam
 
         jr      Main
-
-
-;;; ----------------------------------------------------------------------------
-
-SetCpuFast:
-        ld      a, [rKEY1]
-        bit     7, a
-        jr      z, .impl
-        ret
-
-.impl:
-        ld      a, $30
-        ld      [rP1], a
-        ld      a, $01
-        ld      [rKEY1], a
-
-        stop
-        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -491,8 +434,7 @@ Main:
         ld      e, 1 + FIXNUM_SIZE * 2 + 1
 	add     hl, de          ; jump to offset of keyframe in entity
 
-        ld      a, [hl]
-        inc     hl              ; frame base in next byte
+        ld      a, [hl+]
         ld      d, [hl]         ; load frame base
         inc     hl
         ld      b, [hl]
@@ -589,8 +531,7 @@ AnimationAdvance:
 
 .advance:
         ld      a, 0
-        ld      [hl], a
-        inc     hl              ; now points to keyframe
+        ld      [hl+], a        ; now points to keyframe
         ld      a, [hl]         ; load keyframe from animation struct
         inc     a
         cp      d
@@ -725,7 +666,7 @@ DebugInit:
         ld      [var_debug_swap_spr], a
         ld      [var_debug_timer], a
         ld      a, 0
-        ld      [var_debug_has_shadow], a
+        ld      [var_debug_display_flag], a
 	ld      [var_debug_kf], a
 
         ld      hl, var_debug_coord_x
@@ -747,7 +688,29 @@ DebugInit:
 
 PlayerInit:
         ld      hl, var_player_struct
-        ld      de, UpdatePlayer
+        ld      bc, var_player_struct_end - var_player_struct
+        ld      a, 0
+        call    Memset
+
+        ld      hl, var_player_coord_x
+        ld      bc, 64
+        call    FixnumInit
+
+        ld      hl, var_player_coord_y
+        ld      bc, 60
+        call    FixnumInit
+
+        ld      a, SPRID_PLAYER_SD
+        ld      [var_player_fb], a
+
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+
+        or      SPRITE_SHAPE_T
+        ld      [var_player_display_flag], a
+
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdate
         call    EntitySetUpdateFn
 
         ld      de, var_player_struct
@@ -804,12 +767,12 @@ PlayerAnimate:
 
 .frameChangedLR:
         ld      a, 1 | SPRITE_SHAPE_T
-        ld      [var_player_has_shadow], a
+        ld      [var_player_display_flag], a
         jr      .frameChanged
 
 .frameChangedUD:
         ld      a, 1 | SPRITE_SHAPE_TALL_16_32
-        ld      [var_player_has_shadow], a
+        ld      [var_player_display_flag], a
 
 .frameChanged:
         ld      a, 1
@@ -927,7 +890,7 @@ PlayerJoypadResponse:
 
 
 
-UpdatePlayerMovement:
+PlayerUpdateMovement:
         ld      hl, var_player_coord_x
         ld      b, 0
 
@@ -974,8 +937,8 @@ UpdatePlayerMovement:
         ret
 
 
-UpdatePlayer:
-        call UpdatePlayerMovement
+PlayerUpdate:
+        call    PlayerUpdateMovement
 
         ldh     a, [var_joypad_released]
         and     PADF_DOWN
@@ -988,7 +951,7 @@ UpdatePlayer:
         ld      a, SPRID_PLAYER_SD
         ld      [var_player_fb], a
         ld      a, 1 | SPRITE_SHAPE_TALL_16_32
-        ld      [var_player_has_shadow], a
+        ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
         ld      a, 1
@@ -1006,7 +969,7 @@ UpdatePlayer:
         ld      a, SPRID_PLAYER_SU
         ld      [var_player_fb], a
         ld      a, 1 | SPRITE_SHAPE_TALL_16_32
-        ld      [var_player_has_shadow], a
+        ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
         ld      a, 1
@@ -1024,7 +987,7 @@ UpdatePlayer:
         ld      a, SPRID_PLAYER_SL
         ld      [var_player_fb], a
         ld      a, 1 | SPRITE_SHAPE_TALL_16_32
-        ld      [var_player_has_shadow], a
+        ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
         ld      a, 1
@@ -1042,7 +1005,7 @@ UpdatePlayer:
         ld      a, SPRID_PLAYER_SR
         ld      [var_player_fb], a
         ld      a, 1 | SPRITE_SHAPE_TALL_16_32
-        ld      [var_player_has_shadow], a
+        ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
         ld      a, 1
@@ -1252,13 +1215,13 @@ EntityDrawLoop:
         ld      e, [hl]                 ; Load texture index from struct
         inc     hl
         ld      d, [hl]                 ; Load palette index from struct
+        inc     hl
 ;;; Each Sprite is 32x32, and our tile sizes are 8x16. So, to go from
 ;;; A sprite texture index to a starting tile index, we simply need to move
 ;;; the lower four bits of the index to the upper four bits (i.e. n x 16).
         swap    e                       ; ShowSprite... uses e as a start tile.
-        inc     hl                      ; Inc to shadow flag
 
-        ld      a, [hl]
+        ld      a, [hl]                 ; Load flags
         push    hl                      ; Store entity pointer
 
         and     $f0
@@ -1399,19 +1362,15 @@ EntitySwap:
 
         push    bc
         push    hl
-        ld      a, [hl]
+        ld      a, [hl+]
         ld      d, a
-        inc     hl
-        ld      a, [hl]
-        ld      e, a
-        inc     hl              ; Now we have the first value in de
-
+        ld      a, [hl+]
+        ld      e, a                    ; Now we have the first value in de
 
         ld      a, [hl]
         ld      b, a
         ld      a, d
-        ld      [hl], a
-        inc     hl
+        ld      [hl+], a
         ld      a, [hl]
         ld      c, a
         ld      a, e
@@ -1420,8 +1379,7 @@ EntitySwap:
         pop     hl
 
         ld      a, b
-        ld      [hl], a
-        inc     hl
+        ld      [hl+], a
         ld      a, c
         ld      [hl], c
 
@@ -1498,8 +1456,42 @@ Reset:
         ld      a, $0
         ld      b, a
         ld      a, BOOTUP_A_CGB
-;;; TODO: explicitly set the rom bank?
         jp      $0100
+
+
+;;; ----------------------------------------------------------------------------
+
+InitRam:
+;;; trashes hl, bc, a
+        ld      a, 0
+
+        ld      hl, _HRAM
+        ld      bc, $80
+        call    Memset
+
+        ld      hl, _RAM
+        ld      bc, $CFFF - _RAM        ; size == pRamEnd - pRam
+        call    Memset
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+SetCpuFast:
+        ld      a, [rKEY1]
+        bit     7, a
+        jr      z, .impl
+        ret
+
+.impl:
+        ld      a, $30
+        ld      [rP1], a
+        ld      a, $01
+        ld      [rKEY1], a
+
+        stop
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -1627,8 +1619,7 @@ FixnumInit:
 ;;; destroys hl
         ld      [hl], c
         inc     hl
-        ld      [hl], a
-        inc     hl
+        ld      [hl+], a
         ld      [hl], b
         ret
 
@@ -1720,8 +1711,7 @@ FixnumSub:
         pop     hl
         ld      [hl], e
         inc     hl
-        ld      [hl], a
-        inc     hl
+        ld      [hl+], a
         ld      [hl], d
         ret
 
