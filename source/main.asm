@@ -303,10 +303,8 @@ Start:
         ld      a, b
         cp      a, BOOTUP_B_AGB
         jr      NZ, .configure
-.test:
         ld      a, 1
         ldh     [agb_detected], a
-        jr      .test
 
 .configure:
         call    SetCpuFast
