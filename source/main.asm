@@ -133,7 +133,7 @@ var_oam_bottom_counter:  DS      1
 
 ;;; ############################################################################
 
-        SECTION "MAP_INFO", WRAM0, ALIGN[8]
+        SECTION "MAP_INFO", WRAM0
 
 MAP_TILE_WIDTH EQU 16
 MAP_WIDTH EQU SCRN_VX / MAP_TILE_WIDTH
@@ -147,7 +147,7 @@ var_map_scratch: DS     MAP_WIDTH * MAP_HEIGHT
 
 ;;; ############################################################################
 
-        SECTION "PLAYER", WRAM0, ALIGN[8]
+        SECTION "PLAYER", WRAM0
 
 
 ;;; NOTE: The params here should match the layout of an entity EXACTLY AS
@@ -210,7 +210,7 @@ var_debug_struct_end:
 
 ;;; ############################################################################
 
-        SECTION "ENTITY_BUFFER", WRAM0, ALIGN[8]
+        SECTION "ENTITY_BUFFER", WRAM0
 
 ENTITY_BUFFER_CAPACITY EQU 8
 ENTITY_POINTER_SIZE EQU 2
@@ -225,10 +225,18 @@ var_last_entity_idx:    DS      1
 
 ;;; ############################################################################
 
-        SECTION "VIEW", WRAM0, ALIGN[8]
+        SECTION "VIEW", WRAM0
 
 var_view_x:    DS      1
 var_view_y:    DS      1
+
+
+;;; ############################################################################
+
+        SECTION "SCENE", WRAM0
+
+var_scene_update_fn:    DS      2
+var_scene_vblank_fn:    DS      2
 
 
 ;;; ############################################################################
@@ -346,6 +354,13 @@ Main:
 
         call    CopyDMARoutine
 
+        ld      de, OverworldSceneUpdate
+        call    SceneSetUpdateFn
+
+        ld      de, OverworldSceneOnVBlank
+        call    SceneSetVBlankFn
+
+
         call    PlayerInit
 
         call    LoadOverworldPalettes
@@ -387,7 +402,18 @@ Main:
         call    ReadKeys
         ld      a, b
         ldh     [var_joypad_raw], a
-        call    UpdateScene
+
+
+        ld      de, var_scene_update_fn ; \
+        ld      a, [de]                 ; |
+        inc     de                      ; |
+        ld      h, a                    ; | Fetch scene update fn
+        ld      a, [de]                 ; |
+        ld      l, a                    ; /
+        jp      hl                      ; Jump to scene update code
+
+UpdateFnResume:                         ; This label is global, so that the
+                                        ; update code can jump back.
 
 .sched_sleep:
         ldh     a, [var_sleep_counter]
@@ -411,84 +437,16 @@ Main:
         ld      a, HIGH(var_oam_back_buffer)
         call    hOAMDMA
 
-        call    UpdateStaminaBar
 
+        ld      de, var_scene_vblank_fn ; \
+        ld      a, [de]                 ; |
+        inc     de                      ; |
+        ld      h, a                    ; | Fetch scene update fn
+        ld      a, [de]                 ; |
+        ld      l, a                    ; /
+        jp      hl                      ; Jump to scene vblank code
 
-;;; Now, this entity buffer code looks pretty nasty. But, we are just doing a
-;;; bunch of work upfront, because we do not always need to actually run the
-;;; dma. Iterate through each entity, check its swap flag. If the entity
-;;; requires a texture swap, map the texture into vram with GDMA.
-        ld      a, SPRITESHEET1_ROM_BANK
-        ld      [rROMB0], a
-
-        ld      de, var_entity_buffer
-        ld      a, [var_entity_buffer_size]
-
-.textureCopyLoop:
-        cp      0
-        jr      Z, .textureCopyLoopDone
-        dec     a
-        push    af              ; store loop counter
-
-;;; Even with DMA, we can only fit so many texture copies into the vblank
-;;; window. If we think that we're going to exceed the vblank, defer the
-;;; copies to the next iteration. The code is just checking entities for
-;;; a flag which indicates that a texture copy is needed, so we can just as
-;;; easily process the texture copy after the next frame.
-        ld      a, [rLY]
-        ld      b, a
-        ld      a, 153 - 4
-        cp      b
-        jr      C, .textureCopyLoopTimeout
-
-
-        ld      a, [de]         ; Fetch entity pointer from entity buffer
-        ld      h, a
-        inc     de
-        ld      a, [de]
-        ld      l, a            ; Now we have the entity pointer in hl
-        inc     de
-
-        ld      a, [hl]         ; load texture swap flag from entity
-        or      a
-        jr      Z, .noTextureCopy ; swap flag false, nothing to do
-        ld      a, 0
-        ld      [hl], a         ; We're swapping the texture, zero the flag
-
-        push    de              ; store entity buffer pointer on stack
-
-        ld      d, 0
-        ld      e, 1 + FIXNUM_SIZE * 2 + 1
-	add     hl, de          ; jump to offset of keyframe in entity
-
-        ld      a, [hl+]
-        ld      d, [hl]         ; load frame base
-        inc     hl
-        ld      b, [hl]
-.test:
-        add     d               ; keyframe + framebase is spritesheet index
-        ld      h, a            ; pass spritesheet index in h
-        call    MapSpriteBlock  ; DMA copy the sprite into vram
-
-        pop     de              ; restore entity buffer pointer
-.noTextureCopy:
-
-        pop     af              ; restore loop counter
-        jr      .textureCopyLoop
-
-
-.textureCopyLoopTimeout:
-        pop     af              ; Was pushed at the top of the loop
-
-;;; intentional fallthrough
-
-.textureCopyLoopDone:
-;;; The whole point of the above loop was to copy sprites from various rom banks
-;;; into vram. So we should set the rom bank back to one, which is the standard
-;;; rom bank for most purposes.
-        ld      a, 1
-        ld      [rROMB0], a
-
+VBlankFnResume:
 
 ;;; As per my own testing, I can fit about five DMA block copies for 32x32 pixel
 ;;; sprites in within the vblank window.
@@ -497,7 +455,7 @@ Main:
         cp      SCRN_Y
         jr      C, .vbl_window_exceeded
 
-        jr      .loop
+        jr      Main.loop
 
 ;;; This is just some debugging code. I'm trying to figure out how much stuff
 ;;; that I can copy within the vblank window.

@@ -33,6 +33,7 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ;;;
 ;;;
@@ -42,13 +43,34 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-SetSceneFunction:
-
+SceneSetUpdateFn:
+;;; de - fn
+;;; trashes hl
+        ld      hl, var_scene_update_fn
+        ld      a, d
+        ld      [hl+], a
+        ld      a, e
+        ld      [hl], a
         ret
 
 
+;;; ----------------------------------------------------------------------------
 
-UpdateView:
+
+SceneSetVBlankFn:
+;;; de - fn
+;;; trashes hl
+        ld      hl, var_scene_vblank_fn
+        ld      a, d
+        ld      [hl+], a
+        ld      a, e
+        ld      [hl], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+OverworldSceneUpdateView:
         ld      a, [var_player_coord_x]
         ld      d, a
         ld      a, 175                  ; 255 - (screen_width / 2)
@@ -102,7 +124,7 @@ UpdateView:
 ;;; ----------------------------------------------------------------------------
 
 
-UpdateScene:
+OverworldSceneUpdate:
         ld      de, var_entity_buffer
         ld      a, [var_entity_buffer_size]
 
@@ -148,7 +170,7 @@ EntityUpdateLoopDone:
 
 ;;; If it wasn't for view scrolling, the update and draw stuff could be done in
 ;;; the same loop.
-        call    UpdateView
+        call    OverworldSceneUpdateView
 
         ld      a, 255
         ld      [var_last_entity_y], a
@@ -329,7 +351,7 @@ EntityDrawLoopDone:
         jr      .unusedOAMZeroLoop
 
 .done:
-        ret
+        jp      UpdateFnResume
 
 
 EntitySwap:
@@ -379,6 +401,91 @@ EntitySwap:
         pop     bc
         pop     hl
         jp      EntitySwapResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+OverworldSceneOnVBlank:
+        call    UpdateStaminaBar
+
+;;; Now, this entity buffer code looks pretty nasty. But, we are just doing a
+;;; bunch of work upfront, because we do not always need to actually run the
+;;; dma. Iterate through each entity, check its swap flag. If the entity
+;;; requires a texture swap, map the texture into vram with GDMA.
+        ld      a, SPRITESHEET1_ROM_BANK
+        ld      [rROMB0], a
+
+        ld      de, var_entity_buffer
+        ld      a, [var_entity_buffer_size]
+
+.textureCopyLoop:
+        cp      0
+        jr      Z, .textureCopyLoopDone
+        dec     a
+        push    af              ; store loop counter
+
+;;; Even with DMA, we can only fit so many texture copies into the vblank
+;;; window. If we think that we're going to exceed the vblank, defer the
+;;; copies to the next iteration. The code is just checking entities for
+;;; a flag which indicates that a texture copy is needed, so we can just as
+;;; easily process the texture copy after the next frame.
+        ld      a, [rLY]
+        ld      b, a
+        ld      a, 153 - 4
+        cp      b
+        jr      C, .textureCopyLoopTimeout
+
+
+        ld      a, [de]         ; Fetch entity pointer from entity buffer
+        ld      h, a
+        inc     de
+        ld      a, [de]
+        ld      l, a            ; Now we have the entity pointer in hl
+        inc     de
+
+        ld      a, [hl]         ; load texture swap flag from entity
+        or      a
+        jr      Z, .noTextureCopy ; swap flag false, nothing to do
+        ld      a, 0
+        ld      [hl], a         ; We're swapping the texture, zero the flag
+
+        push    de              ; store entity buffer pointer on stack
+
+        ld      d, 0
+        ld      e, 1 + FIXNUM_SIZE * 2 + 1
+	add     hl, de          ; jump to offset of keyframe in entity
+
+        ld      a, [hl+]
+        ld      d, [hl]         ; load frame base
+        inc     hl
+        ld      b, [hl]
+.test:
+        add     d               ; keyframe + framebase is spritesheet index
+        ld      h, a            ; pass spritesheet index in h
+        call    MapSpriteBlock  ; DMA copy the sprite into vram
+
+        pop     de              ; restore entity buffer pointer
+.noTextureCopy:
+
+        pop     af              ; restore loop counter
+        jr      .textureCopyLoop
+
+
+.textureCopyLoopTimeout:
+        pop     af              ; Was pushed at the top of the loop
+
+;;; intentional fallthrough
+
+.textureCopyLoopDone:
+;;; The whole point of the above loop was to copy sprites from various rom banks
+;;; into vram. So we should set the rom bank back to one, which is the standard
+;;; rom bank for most purposes.
+        ld      a, 1
+        ld      [rROMB0], a
+
+.done:
+        jp      VBlankFnResume
 
 
 ;;; ----------------------------------------------------------------------------
