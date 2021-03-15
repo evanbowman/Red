@@ -337,18 +337,17 @@ Main:
         call    CopyDMARoutine
 
         call    PlayerInit
-        call    DebugInit
 
         call    LoadOverworldPalettes
 
         ld      hl, OverlayTiles
         ld      bc, OverlayTilesEnd - OverlayTiles
-        ld      de, $8800
+        ld      de, $9000
         call    Memcpy
 
         ld      hl, BackgroundTiles
         ld      bc, BackgroundTilesEnd - BackgroundTiles
-        ld      de, $8B00
+        ld      de, $8800
         call    Memcpy
 
         ld      hl, SpriteDropShadow
@@ -360,6 +359,8 @@ Main:
 
         call    MapInit
         call    MapLoad
+
+        call    DebugInit
 
         ld      a, 136
         ld      [rWY], a
@@ -702,7 +703,7 @@ DebugInit:
 ;;; NOTE: this needs to be done in vblank!
         ld      a, 10
         ld      d, 10
-        ld      e, $B0
+        ld      e, $80
         ld      c, 1
         call    SetBackgroundTile32x32
 
@@ -717,11 +718,11 @@ PlayerInit:
         call    Memset
 
         ld      hl, var_player_coord_x
-        ld      bc, 64
+        ld      bc, $81
         call    FixnumInit
 
         ld      hl, var_player_coord_y
-        ld      bc, 60
+        ld      bc, $75
         call    FixnumInit
 
         ld      a, SPRID_PLAYER_SD
@@ -751,15 +752,198 @@ PlayerInit:
 ;;; ----------------------------------------------------------------------------
 
 PlayerCheckWallCollisions:
-        ld      hl, var_player_coord_x
-        ld      b, [hl]
+;;; This is manually unrolled, but what we're doing here, is checking a 3x3
+;;; square of 16x16 tiles for collisions.
 
-        srl     b                       ; /2 to convert player coord to tile
+        ld      a, [var_player_coord_y]
+        swap    a
+	and     $0f
+        ld      b, a
 
-        ld      hl, var_player_coord_y
-        ld      c, [hl]
+        ld      a, [var_player_coord_x]
+        swap    a
+        and     $0f
 
-        srl     c
+
+;;; ...... x - 1, y - 1
+        push    af
+        push    bc
+
+        dec     a
+        dec     b
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        ld      a, 1
+        cp      b
+.loop:
+        nop
+        jr      Z, .loop
+
+        pop     bc
+        pop     af
+
+;;; ...... x - 1, y
+
+        push    af
+        push    bc
+
+        dec     a
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        ld      a, 1
+        cp      b
+.loop2:
+        nop
+        jr      Z, .loop2
+
+        pop     bc
+        pop     af
+
+
+;;; ...... x - 1, y + 1
+
+        push    af
+        push    bc
+
+        dec     a
+        inc     b
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        ld      a, 1
+        cp      b
+.loop3:
+        nop
+        jr      Z, .loop3
+
+        pop     bc
+        pop     af
+
+
+;;; ...... x, y - 1
+
+        push    af
+        push    bc
+
+        dec     b
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        ld      a, 1
+        cp      b
+.loop4:
+        nop
+        jr      Z, .loop4
+
+        pop     bc
+        pop     af
+
+
+;;; ...... x, y
+
+        push    af
+        push    bc
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        ld      a, 1
+        cp      b
+.loop5:
+        nop
+        jr      Z, .loop5
+
+        pop     bc
+        pop     af
+
+
+;;; ...... x, y + 1
+
+        push    af
+        push    bc
+
+        inc     b
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        ld      a, 1
+        cp      b
+.loop6:
+        nop
+        jr      Z, .loop6
+
+        pop     bc
+        pop     af
+
+
+;;; ...... x + 1, y - 1
+
+        push    af
+        push    bc
+
+        inc     a
+        dec     b
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        ld      a, 1
+        cp      b
+.loop7:
+        nop
+        jr      Z, .loop7
+
+        pop     bc
+        pop     af
+
+
+;;; ...... x + 1, y
+
+        push    af
+        push    bc
+
+        inc     a
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        ld      a, 1
+        cp      b
+.loop8:
+        nop
+        jr      Z, .loop8
+
+        pop     bc
+        pop     af
+
+
+;;; ...... x + 1, y + 1
+
+        push    af
+        push    bc
+
+        inc     a
+        inc     b
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        ld      a, 1
+        cp      b
+.loop9:
+        nop
+        jr      Z, .loop9
+
+        pop     bc
+        pop     af
+
 
 ;;; TODO... We want to check collisions based on all tiles around the player.
 
@@ -932,7 +1116,7 @@ PlayerJoypadResponse:
 
 
 PlayerUpdateMovement:
-        call    PlayerCheckWallCollisions
+        ;; call    PlayerCheckWallCollisions
 
         ld      hl, var_player_coord_x
         ld      b, 0
@@ -1455,8 +1639,9 @@ Memset:
 ;;; ----------------------------------------------------------------------------
 
 Memcpy:
-; hl - destination
-; bc - size
+;;; hl - source
+;;; de - dest
+;;; bc - size
 
 	inc	b
 	inc	c
@@ -1798,14 +1983,15 @@ MapShow:
 
         push    bc
 
-        ld      a, [hl]
-        or      a
-        jr      Z, .skip
-
         ld      d, c
         sla     d
 
-        ld      e, $C0
+        ld      a, [hl]
+        sla     a
+        sla     a
+        ld      e, $90
+        add     e
+        ld      e, a
 
         ld      c, 2
 
@@ -1815,8 +2001,6 @@ MapShow:
         push    hl
         call    SetBackgroundTile16x16
         pop     hl
-
-.skip:
 
         pop     bc
 
@@ -1842,8 +2026,8 @@ MapGetTile:
 ;;; trashes hl, c
         swap    b                       ; map is 16 wide
         add     b
-        ld      c, 0
-        ld      b, a
+        ld      c, a
+        ld      b, 0
         add     hl, bc
         ld      b, [hl]
         ret
@@ -1852,43 +2036,11 @@ MapGetTile:
 ;;; ----------------------------------------------------------------------------
 
 MapPutSampleData:
-        ld      hl, var_map_info
+        ld      hl, TEST_MAP
+        ld      bc, TEST_MAP_END - TEST_MAP
+        ld      de, var_map_info
+	call    Memcpy
 
-        ld      c, 0
-
-.outer:
-        ld      b, 0
-.inner:
-        ld      a, 0
-        cp      b
-        jr      Z, .write
-        cp      c
-        jr      Z, .write
-        ld      a, 15
-        cp      b
-        jr      Z, .write
-        cp      c
-        jr      Z, .write
-
-        jr      .incr
-.write:
-        ld      a, 1
-        ld      [hl], a
-.incr:
-        inc     hl
-        inc     b
-.innerTest:
-        ld      a, 16
-        cp      b
-        jr      Z, .outerTest
-        jr      .inner
-.outerTest:
-        inc     c
-        ld      a, 16
-        cp      c
-        jr      Z, .done
-        jr      .outer
-.done:
         ret
 
 
@@ -2567,7 +2719,7 @@ UpdateStaminaBar:
         ld      e, 16
         sub     e
         ld      e, a
-        ld      a, $82 + 8
+        ld      a, $2 + 8
         call    SetOverlayTile
         inc     c
 
@@ -2577,7 +2729,7 @@ UpdateStaminaBar:
         jr      .loopFull
 
 .partial:
-        ld      a, $82
+        ld      a, $2
         SRL     e
         add     a, e
         call    SetOverlayTile
@@ -2594,31 +2746,31 @@ UpdateStaminaBar:
 
 TestOverlay:
         ld      c, 0
-        ld      a, $81
+        ld      a, $1
         call    SetOverlayTile
 
         inc     c
 
-        ld      a, $82
+        ld      a, $2
         call    SetOverlayTile
 
         inc     c
 
 .loop1:
-        ld      a, $82
+        ld      a, $2
         call    SetOverlayTile
         inc     c
         ld      a, 17
         cp      c
         jr      NZ, .loop1
 
-	ld      a, $8B
+	ld      a, $B
         call    SetOverlayTile
 
         inc     c
 
 .loop2:
-        ld      a, $80
+        ld      a, $0
         call    SetOverlayTile
         inc     c
         ld      a, 20
@@ -2629,6 +2781,27 @@ TestOverlay:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+TEST_MAP::
+DB $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f
+DB $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f
+DB $0f, $0f, $0f, $0f, $0f, $01, $01, $01, $01, $01, $0f, $0f, $0f, $0f, $0f, $0f
+DB $0f, $0f, $0f, $0f, $09, $00, $00, $00, $00, $00, $03, $0f, $0f, $0f, $0f, $0f
+DB $0f, $0f, $0f, $01, $00, $00, $00, $00, $00, $00, $00, $03, $01, $0f, $0f, $0f
+DB $0f, $0f, $09, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $03, $0f, $0f
+DB $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $07, $0f
+DB $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $07, $0f
+DB $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $07, $0f
+DB $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $07, $0f
+DB $0f, $0f, $0c, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $06, $0f, $0f
+DB $0f, $0f, $0f, $0c, $00, $00, $00, $00, $00, $00, $00, $00, $06, $0f, $0f, $0f
+DB $0f, $0f, $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $06, $0f, $0f, $0f, $0f
+DB $0f, $0f, $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $07, $0f, $0f, $0f, $0f
+DB $0f, $0f, $0f, $0f, $0c, $00, $00, $00, $00, $00, $00, $07, $0f, $0f, $0f, $0f
+DB $0f, $0f, $0f, $0f, $0f, $0c, $00, $00, $00, $00, $06, $0f, $0f, $0f, $0f, $0f
+TEST_MAP_END::
+
 
 
 PlayerCharacterPalette::
@@ -2734,6 +2907,14 @@ DB $FF,$FF,$FF,$FF,$FF,$70,$FF,$60
 DB $FE,$61,$00,$9E,$00,$00,$00,$00
 DB $F8,$80,$F0,$88,$E0,$98,$00,$60
 DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$80
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
@@ -2790,8 +2971,6 @@ DB $7F,$00,$7F,$00,$7F,$00,$7F,$00
 DB $3F,$00,$7F,$00,$7F,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
-DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
-DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $F8,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $00,$00,$FC,$00,$FC,$00,$FE,$00
@@ -2828,6 +3007,8 @@ DB $C0,$00,$E0,$00,$FB,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $00,$00,$00,$00,$80,$00,$C0,$00
 DB $C0,$00,$E0,$00,$F0,$00,$F0,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $F8,$00,$F8,$00,$F8,$00,$F8,$00
 DB $FC,$00,$FE,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
@@ -2854,6 +3035,8 @@ DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
 BackgroundTilesEnd::
 
 
