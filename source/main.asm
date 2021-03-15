@@ -56,7 +56,6 @@ SPRITE_SHAPE_SQUARE_32 EQU $f0
 SPRITE_SHAPE_T EQU $e0
 SPRITE_SHAPE_TALL_16_32 EQU $00
 
-;; ############################################################################
 
         INCLUDE "hardware.inc"
         INCLUDE "defs.inc"
@@ -72,175 +71,12 @@ SPRID_PLAYER_WU EQU     23
 SPRID_PLAYER_SU EQU     33
 SPRID_BONFIRE   EQU     34
 
-;; ############################################################################
 
-        SECTION "SLEEP_COUNTER", HRAM
-
-var_sleep_counter:     DS      1
-
-
-;;; SECTION SLEEP_COUNTER
+        INCLUDE "hram.asm"
+        INCLUDE "wram0.asm"
 
 
 ;; ############################################################################
-
-        SECTION "JOYPAD_VARS", HRAM
-
-var_joypad_current:     DS      1       ; Edge triggered
-var_joypad_previous:    DS      1
-var_joypad_raw:         DS      1       ; Level triggered
-var_joypad_released:    DS      1       ; Edge triggered
-
-
-;;; SECTION JOYPAD_VARS
-
-
-;;; ############################################################################
-
-        SECTION "IRQ_VARIABLES", HRAM
-
-var_vbl_flag:   DS      1
-
-
-;;; SECTION IRQ_VARIABLES
-
-
-;;; ############################################################################
-
-        SECTION "MISC_HRAM", HRAM
-
-;;; TODO: use unique color palettes for Gameboy Advance
-agb_detected:   DS      1
-
-
-;;; SECTION IRQ_VARIABLES
-
-
-;;; ############################################################################
-
-        SECTION "OAM_BACK_BUFFER", WRAM0, ALIGN[8]
-
-var_oam_back_buffer:
-        ds OAM_SIZE * OAM_COUNT
-
-
-var_oam_top_counter:     DS      1
-var_oam_bottom_counter:  DS      1
-
-
-;;; SECTION OAM_BACK_BUFFER
-
-
-;;; ############################################################################
-
-        SECTION "MAP_INFO", WRAM0
-
-MAP_TILE_WIDTH EQU 16
-MAP_WIDTH EQU SCRN_VX / MAP_TILE_WIDTH
-MAP_HEIGHT EQU SCRN_VY / MAP_TILE_WIDTH
-
-var_map_info:    DS     MAP_WIDTH * MAP_HEIGHT
-var_map_scratch: DS     MAP_WIDTH * MAP_HEIGHT
-
-
-;;; SECTION MAP_INFO
-
-;;; ############################################################################
-
-        SECTION "PLAYER", WRAM0
-
-
-;;; NOTE: The params here should match the layout of an entity EXACTLY AS
-;;; DESCRIBED ABOVE.
-
-var_player_struct:
-;;; In the very first entry of each entity, store a flag, which tells the
-;;; renderer that the entity's texture needs to be swapped.
-var_player_swap_spr:   DS      1
-
-var_player_coord_y:  DS      FIXNUM_SIZE
-var_player_coord_x:  DS      FIXNUM_SIZE
-
-var_player_animation:
-var_player_tmr: DS      1       ; Timer
-var_player_kf:  DS      1       ; Keyframe
-var_player_fb:  DS      1       ; Frame base
-
-var_player_texture:     DS   1  ; Texture offset in vram
-var_player_palette:     DS   1
-var_player_display_flag:DS   1
-
-var_player_update_fn:   DS   2  ; Engine will call this fn to update player
-
-var_player_struct_end:
-
-ENTITY_SIZE EQU var_player_struct_end - var_player_struct
-
-var_player_stamina:     DS      FIXNUM_SIZE
-
-
-COLLISION_LEFT EQU $01
-COLLISION_RIGHT EQU $02
-COLLISION_UP EQU $04
-COLLISION_DOWN EQU $08
-
-;;; Just a scratch variable that simplifies other code.
-var_player_spill1:      DS      1
-var_player_spill2:      DS      1
-
-
-var_debug_struct:
-var_debug_swap_spr:     DS      1
-var_debug_coord_y:      DS      FIXNUM_SIZE
-var_debug_coord_x:      DS      FIXNUM_SIZE
-
-var_debug_animation:
-var_debug_timer:        DS      1
-var_debug_kf:           DS      1
-var_debug_fb:           DS      1
-
-var_debug_texture:      DS      1
-var_debug_palette:     DS   1
-var_debug_display_flag:   DS      1
-
-var_debug_update_fn:    DS      2
-var_debug_struct_end:
-
-
-
-;;; ############################################################################
-
-        SECTION "ENTITY_BUFFER", WRAM0
-
-ENTITY_BUFFER_CAPACITY EQU 8
-ENTITY_POINTER_SIZE EQU 2
-
-var_entity_buffer_size: DS      1
-var_entity_buffer:      DS      ENTITY_POINTER_SIZE * ENTITY_BUFFER_CAPACITY
-
-;;; Used as a placeholder value while sorting entities by y value.
-var_last_entity_y:      DS      1
-var_last_entity_idx:    DS      1
-
-
-;;; ############################################################################
-
-        SECTION "VIEW", WRAM0
-
-var_view_x:    DS      1
-var_view_y:    DS      1
-
-
-;;; ############################################################################
-
-        SECTION "SCENE", WRAM0
-
-var_scene_update_fn:    DS      2
-var_scene_vblank_fn:    DS      2
-
-
-;;; ############################################################################
-
 
         SECTION "VBL", ROM0[$0040]
 	jp	Vbl_isr
