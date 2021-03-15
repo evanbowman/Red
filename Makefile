@@ -10,7 +10,7 @@ ROM := $(NAME).gbc
 SOURCES := source data
 SOURCES := $(shell find $(SOURCES) -type d -print)
 
-ASMFILES := $(foreach dir,$(SOURCES),$(wildcard $(dir)/*.asm))
+ASMFILES := $(foreach dir,$(SOURCES),$(wildcard $(dir)/main.asm))
 
 INCLUDES := $(foreach dir,$(SOURCES),-i$(dir)/)
 
