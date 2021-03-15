@@ -33,11 +33,6 @@
 ;;; tl;dr: Do whatever you want with the code, just don't blame me if something
 ;;; goes wrong.
 ;;;
-;;;
-;;; Sorry for the gigantic file. I do not trust the rgbds linker one bit. If
-;;; anyone wants to split the code into separate files, you're welcome to try.
-;;;
-;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
@@ -539,7 +534,9 @@ MapSpriteBlock:
 ;;; ----------------------------------------------------------------------------
 
 
-
+;;; I ran into issues where the linker would generate incorrect code. This
+;;; isn't such a terrible alternative, though. At least this way, I have some
+;;; idea of the order in which my code will be laid out in the ROM.
         INCLUDE "animation.asm"
         INCLUDE "entity.asm"
         INCLUDE "player.asm"
