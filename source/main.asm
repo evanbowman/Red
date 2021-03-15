@@ -184,6 +184,14 @@ ENTITY_SIZE EQU var_player_struct_end - var_player_struct
 var_player_stamina:     DS      FIXNUM_SIZE
 
 
+COLLISION_LEFT EQU $01
+COLLISION_RIGHT EQU $02
+COLLISION_UP EQU $04
+COLLISION_DOWN EQU $08
+
+;;; Just a scratch variable that simplifies other code.
+var_player_spill1:      DS      1
+var_player_spill2:      DS      1
 
 
 var_debug_struct:
@@ -303,8 +311,15 @@ Start:
         ld      a, b
         cp      a, BOOTUP_B_AGB
         jr      NZ, .configure
+
+;;; TODO: I need to add the corrected color palettes for gba. Until then, the
+;;; game will not be playable on the gba, as the color palettes would not
+;;; look too good anyway.
+.agbDetected:
         ld      a, 1
         ldh     [agb_detected], a
+        jr      .agbDetected
+
 
 .configure:
         call    SetCpuFast
@@ -751,19 +766,256 @@ PlayerInit:
 
 ;;; ----------------------------------------------------------------------------
 
-PlayerCheckWallCollisions:
-;;; This is manually unrolled, but what we're doing here, is checking a 3x3
-;;; square of 16x16 tiles for collisions.
-
-        ld      a, [var_player_coord_y]
+PlayerCheckWallCollisionLeft:
+;;; a - wall tile x
+;;; b - wall tile y
+;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
         swap    a
-	and     $0f
+        swap    b
+        ld      c, a
+
+;;; We have the abs coords, now we want to check whether the absolute coord of
+;;; the player falls within the bounds of the square tile. So we need to do a
+;;; bounding box test:
+
+
+;;; Player.y < tile.y? Then no collision
+        push    bc
+        ld      a, [var_player_coord_y]
+        cp      b
+	pop     bc
+        jr      C, .false
+
+;;; Player.y > tile.y + 16? Then no collision
+        push    bc
+        ld      a, [var_player_coord_y]
+        ld      c, a
+        ld      a, b
+        add     16
+        cp      c
+        pop     bc
+        jr      C, .false
+
+;;; Player.x < tile.x? Then no collision
+        push    bc
+        ld      a, [var_player_coord_x]
+        sub     8
+        cp      c
+        pop     bc
+        jr      C, .false
+
+;;; Player.x > tile.x + 16? Then no collision
+        push    bc
+        ld      a, [var_player_coord_x]
+        sub     8
+        ld      b, a
+        ld      a, c
+        add     16
+        cp      b
+        pop     bc
+        jr      C, .false
+
+        ld      a, [var_player_spill1]
+        or      COLLISION_LEFT
+        ld      [var_player_spill1], a
+.false:
+        ret
+
+
+
+PlayerCheckWallCollisionUp:
+;;; a - wall tile x
+;;; b - wall tile y
+;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
+        swap    a
+        swap    b
+        ld      c, a
+
+;;; We have the abs coords, now we want to check whether the absolute coord of
+;;; the player falls within the bounds of the square tile. So we need to do a
+;;; bounding box test:
+
+
+;;; Player.y < tile.y? Then no collision
+        push    bc
+        ld      a, [var_player_coord_y]
+        sub     8
+        cp      b
+	pop     bc
+        jr      C, .false
+
+;;; Player.y > tile.y + 16? Then no collision
+        push    bc
+        ld      a, [var_player_coord_y]
+        sub     8
+        ld      c, a
+        ld      a, b
+        add     16
+        cp      c
+        pop     bc
+        jr      C, .false
+
+;;; Player.x < tile.x? Then no collision
+        push    bc
+        ld      a, [var_player_coord_x]
+        cp      c
+        pop     bc
+        jr      C, .false
+
+;;; Player.x > tile.x + 16? Then no collision
+        push    bc
+        ld      a, [var_player_coord_x]
+        ld      b, a
+        ld      a, c
+        add     16
+        cp      b
+        pop     bc
+        jr      C, .false
+
+        ld      a, [var_player_spill1]
+        or      COLLISION_UP
+        ld      [var_player_spill1], a
+.false:
+        ret
+
+
+PlayerCheckWallCollisionDown:
+;;; a - wall tile x
+;;; b - wall tile y
+;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
+        swap    a
+        swap    b
+        ld      c, a
+
+;;; We have the abs coords, now we want to check whether the absolute coord of
+;;; the player falls within the bounds of the square tile. So we need to do a
+;;; bounding box test:
+
+
+;;; Player.y < tile.y? Then no collision
+        push    bc
+        ld      a, [var_player_coord_y]
+        add     8
+        cp      b
+	pop     bc
+        jr      C, .false
+
+;;; Player.y > tile.y + 16? Then no collision
+        push    bc
+        ld      a, [var_player_coord_y]
+        add     8
+        ld      c, a
+        ld      a, b
+        add     16
+        cp      c
+        pop     bc
+        jr      C, .false
+
+;;; Player.x < tile.x? Then no collision
+        push    bc
+        ld      a, [var_player_coord_x]
+        cp      c
+        pop     bc
+        jr      C, .false
+
+;;; Player.x > tile.x + 16? Then no collision
+        push    bc
+        ld      a, [var_player_coord_x]
+        ld      b, a
+        ld      a, c
+        add     16
+        cp      b
+        pop     bc
+        jr      C, .false
+
+        ld      a, [var_player_spill1]
+        or      COLLISION_DOWN
+        ld      [var_player_spill1], a
+.false:
+        ret
+
+
+
+PlayerCheckWallCollisionRight:
+;;; a - wall tile x
+;;; b - wall tile y
+;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
+        swap    a
+        swap    b
+        ld      c, a
+
+;;; We have the abs coords, now we want to check whether the absolute coord of
+;;; the player falls within the bounds of the square tile. So we need to do a
+;;; bounding box test:
+
+
+;;; Player.y < tile.y? Then no collision
+        push    bc
+        ld      a, [var_player_coord_y]
+        cp      b
+	pop     bc
+        jr      C, .false
+
+;;; Player.y > tile.y + 16? Then no collision
+        push    bc
+        ld      a, [var_player_coord_y]
+        ld      c, a
+        ld      a, b
+        add     16
+        cp      c
+        pop     bc
+        jr      C, .false
+
+;;; Player.x < tile.x? Then no collision
+        push    bc
+        ld      a, [var_player_coord_x]
+        add     8
+        cp      c
+        pop     bc
+        jr      C, .false
+
+;;; Player.x > tile.x + 16? Then no collision
+        push    bc
+        ld      a, [var_player_coord_x]
+        add     8
+        ld      b, a
+        ld      a, c
+        add     16
+        cp      b
+        pop     bc
+        jr      C, .false
+
+        ld      a, [var_player_spill1]
+        or      COLLISION_RIGHT
+        ld      [var_player_spill1], a
+.false:
+        ret
+
+
+
+
+PlayerTileCoord:
+;;; return b - y
+;;; return a - x
+        ld      a, [var_player_coord_y]
+        swap    a               ; Tiles are 16x16, so divide player pos by 16
+	and     $0f             ; swap + mask == division by 16
         ld      b, a
 
         ld      a, [var_player_coord_x]
         swap    a
         and     $0f
+        ret
 
+
+PlayerCheckWallCollisions:
+;;; This is manually unrolled, but what we're doing here, is checking a 3x3
+;;; square of 16x16 tiles for collisions.
+
+        ld      a, 0
+        ld      [var_player_spill1], a
+
+	call    PlayerTileCoord
 
 ;;; ...... x - 1, y - 1
         push    af
@@ -775,12 +1027,26 @@ PlayerCheckWallCollisions:
         ld      hl, var_map_info
         call    MapGetTile
 
-        ld      a, 1
+        ld      a, b
+        ld      b, 15
         cp      b
-.loop:
-        nop
-        jr      Z, .loop
 
+        jr      C, .test_xm1_ym1
+        jr      .skip_xm1_ym1
+
+.test_xm1_ym1:
+        call    PlayerTileCoord
+        dec     a
+        dec     b
+        call    PlayerCheckWallCollisionLeft
+
+        call    PlayerTileCoord
+        dec     a
+        dec     b
+        call    PlayerCheckWallCollisionUp
+
+
+.skip_xm1_ym1:
         pop     bc
         pop     af
 
@@ -794,12 +1060,20 @@ PlayerCheckWallCollisions:
         ld      hl, var_map_info
         call    MapGetTile
 
-        ld      a, 1
+        ld      a, b
+        ld      b, 15
         cp      b
-.loop2:
-        nop
-        jr      Z, .loop2
 
+        jr      C, .test_xm1_y
+        jr      .skip_xm1_y
+
+.test_xm1_y:
+        call    PlayerTileCoord
+        dec     a
+        call    PlayerCheckWallCollisionLeft
+
+
+.skip_xm1_y:
         pop     bc
         pop     af
 
@@ -815,11 +1089,26 @@ PlayerCheckWallCollisions:
         ld      hl, var_map_info
         call    MapGetTile
 
-        ld      a, 1
+        ld      a, b
+        ld      b, 15
         cp      b
-.loop3:
-        nop
-        jr      Z, .loop3
+
+        jr      C, .test_xm1_yp1
+        jr      .skip_xm1_yp1
+
+.test_xm1_yp1:
+        call    PlayerTileCoord
+        dec     a
+        inc     b
+        call    PlayerCheckWallCollisionLeft
+
+        call    PlayerTileCoord
+        dec     a
+        inc     b
+        call    PlayerCheckWallCollisionDown
+
+
+.skip_xm1_yp1:
 
         pop     bc
         pop     af
@@ -835,29 +1124,20 @@ PlayerCheckWallCollisions:
         ld      hl, var_map_info
         call    MapGetTile
 
-        ld      a, 1
+        ld      a, b
+        ld      b, 15
         cp      b
-.loop4:
-        nop
-        jr      Z, .loop4
 
-        pop     bc
-        pop     af
+        jr      C, .test_x_ym1
+        jr      .skip_x_ym1
+
+.test_x_ym1:
+        call    PlayerTileCoord
+        dec     b
+        call    PlayerCheckWallCollisionUp
 
 
-;;; ...... x, y
-
-        push    af
-        push    bc
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, 1
-        cp      b
-.loop5:
-        nop
-        jr      Z, .loop5
+.skip_x_ym1:
 
         pop     bc
         pop     af
@@ -873,11 +1153,19 @@ PlayerCheckWallCollisions:
         ld      hl, var_map_info
         call    MapGetTile
 
-        ld      a, 1
+        ld      a, b
+        ld      b, 15
         cp      b
-.loop6:
-        nop
-        jr      Z, .loop6
+
+        jr      C, .test_x_yp1
+        jr      .skip_x_yp1
+
+.test_x_yp1:
+        call    PlayerTileCoord
+        inc     b
+        call    PlayerCheckWallCollisionDown
+
+.skip_x_yp1:
 
         pop     bc
         pop     af
@@ -894,11 +1182,25 @@ PlayerCheckWallCollisions:
         ld      hl, var_map_info
         call    MapGetTile
 
-        ld      a, 1
+        ld      a, b
+        ld      b, 15
         cp      b
-.loop7:
-        nop
-        jr      Z, .loop7
+
+        jr      C, .test_xp1_ym1
+        jr      .skip_xp1_ym1
+
+.test_xp1_ym1:
+        call    PlayerTileCoord
+        inc     a
+        dec     b
+        call    PlayerCheckWallCollisionRight
+
+        call    PlayerTileCoord
+        inc     a
+        dec     b
+        call    PlayerCheckWallCollisionUp
+
+.skip_xp1_ym1:
 
         pop     bc
         pop     af
@@ -914,11 +1216,20 @@ PlayerCheckWallCollisions:
         ld      hl, var_map_info
         call    MapGetTile
 
-        ld      a, 1
+        ld      a, b
+        ld      b, 15
         cp      b
-.loop8:
-        nop
-        jr      Z, .loop8
+
+        jr      C, .test_xp1_y
+        jr      .skip_xp1_y
+
+.test_xp1_y:
+        call    PlayerTileCoord
+        inc     a
+        call    PlayerCheckWallCollisionRight
+
+
+.skip_xp1_y:
 
         pop     bc
         pop     af
@@ -935,11 +1246,26 @@ PlayerCheckWallCollisions:
         ld      hl, var_map_info
         call    MapGetTile
 
-        ld      a, 1
+        ld      a, b
+        ld      b, 15
         cp      b
-.loop9:
-        nop
-        jr      Z, .loop9
+
+        jr      C, .test_xp1_yp1
+        jr      .skip_xp1_yp1
+
+.test_xp1_yp1:
+        call    PlayerTileCoord
+        inc     a
+        inc     b
+        call    PlayerCheckWallCollisionRight
+
+        call    PlayerTileCoord
+        inc     a
+        inc     b
+        call    PlayerCheckWallCollisionDown
+
+
+.skip_xp1_yp1:
 
         pop     bc
         pop     af
@@ -1061,6 +1387,10 @@ PlayerJoypadResponse:
         ld      [var_player_swap_spr], a
 
 .setSpeed:
+        ld      a, [var_player_spill2]
+        or      a
+        jr      NZ, .noMove
+
         push    bc
         ld      a, b
         or      a
@@ -1103,8 +1433,7 @@ PlayerJoypadResponse:
         pop     bc
 	jr      .done
 
-.else1:
-        nop
+.noMove:
 
 .done:
         ret
@@ -1116,7 +1445,13 @@ PlayerJoypadResponse:
 
 
 PlayerUpdateMovement:
-        ;; call    PlayerCheckWallCollisions
+        call    PlayerCheckWallCollisions
+
+
+;;; try walk left
+        ld      a, [var_player_spill1]  ; Load collision mask
+        and     COLLISION_LEFT
+        ld      [var_player_spill2], a  ; Store part of mask in temp var
 
         ld      hl, var_player_coord_x
         ld      b, 0
@@ -1131,6 +1466,12 @@ PlayerUpdateMovement:
         call    PlayerJoypadResponse
 
 
+
+;;; try walk right
+        ld      a, [var_player_spill1]  ; Load collision mask
+        and     COLLISION_RIGHT
+        ld      [var_player_spill2], a  ; Store part of mask in temp var
+
         ld      hl, var_player_coord_x
         ld      b, 1
 
@@ -1140,6 +1481,12 @@ PlayerUpdateMovement:
         ld      e, SPRID_PLAYER_WR
         call    PlayerJoypadResponse
 
+
+
+;;; try walk down
+        ld      a, [var_player_spill1]  ; Load collision mask
+        and     COLLISION_DOWN
+        ld      [var_player_spill2], a  ; Store part of mask in temp var
 
 	ld      hl, var_player_coord_y
         ld      b, 1
@@ -1152,6 +1499,13 @@ PlayerUpdateMovement:
 	and     PADF_DOWN
         ld      e, SPRID_PLAYER_WD
         call    PlayerJoypadResponse
+
+
+
+;;; try walk up
+        ld      a, [var_player_spill1]  ; Load collision mask
+        and     COLLISION_UP
+        ld      [var_player_spill2], a  ; Store part of mask in temp var
 
 	ld      hl, var_player_coord_y
         ld      b, 0
@@ -2782,28 +3136,6 @@ TestOverlay:
 
 ;;; ----------------------------------------------------------------------------
 
-
-TEST_MAP::
-DB $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f
-DB $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f
-DB $0f, $0f, $0f, $0f, $0f, $01, $01, $01, $01, $01, $0f, $0f, $0f, $0f, $0f, $0f
-DB $0f, $0f, $0f, $0f, $09, $00, $00, $00, $00, $00, $03, $0f, $0f, $0f, $0f, $0f
-DB $0f, $0f, $0f, $01, $00, $00, $00, $00, $00, $00, $00, $03, $01, $0f, $0f, $0f
-DB $0f, $0f, $09, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $03, $0f, $0f
-DB $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $07, $0f
-DB $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $07, $0f
-DB $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $07, $0f
-DB $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $07, $0f
-DB $0f, $0f, $0c, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $06, $0f, $0f
-DB $0f, $0f, $0f, $0c, $00, $00, $00, $00, $00, $00, $00, $00, $06, $0f, $0f, $0f
-DB $0f, $0f, $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $06, $0f, $0f, $0f, $0f
-DB $0f, $0f, $0f, $0d, $00, $00, $00, $00, $00, $00, $00, $07, $0f, $0f, $0f, $0f
-DB $0f, $0f, $0f, $0f, $0c, $00, $00, $00, $00, $00, $00, $07, $0f, $0f, $0f, $0f
-DB $0f, $0f, $0f, $0f, $0f, $0c, $00, $00, $00, $00, $06, $0f, $0f, $0f, $0f, $0f
-TEST_MAP_END::
-
-
-
 PlayerCharacterPalette::
 DB $00,$00, $69,$72, $1a,$20, $03,$00
 DB $00,$00, $ff,$ff, $f8,$37, $5f,$19
@@ -2842,6 +3174,26 @@ hOAMDMA::
 
 
 SECTION "MISC_SPRITES", ROMX
+
+
+TEST_MAP::
+DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
+DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
+DB $0e, $0e, $0e, $0e, $0e, $00, $00, $00, $00, $00, $0e, $0e, $0e, $0e, $0e, $0e
+DB $0e, $0e, $0e, $0e, $08, $0f, $0f, $0f, $0f, $0f, $02, $0e, $0e, $0e, $0e, $0e
+DB $0e, $0e, $0e, $00, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $02, $00, $0e, $0e, $0e
+DB $0e, $0e, $08, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $02, $0e, $0e
+DB $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e
+DB $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e
+DB $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e
+DB $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e
+DB $0e, $0e, $0b, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $05, $0e, $0e
+DB $0e, $0e, $0e, $0b, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $05, $0e, $0e, $0e
+DB $0e, $0e, $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $05, $0e, $0e, $0e, $0e
+DB $0e, $0e, $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e, $0e, $0e, $0e
+DB $0e, $0e, $0e, $0e, $0b, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e, $0e, $0e, $0e
+DB $0e, $0e, $0e, $0e, $0e, $0b, $0f, $0f, $0f, $0f, $05, $0e, $0e, $0e, $0e, $0e
+TEST_MAP_END::
 
 
 OverlayTiles::
@@ -2906,14 +3258,6 @@ DB $9F,$40,$0E,$91,$00,$0F,$00,$00
 DB $FF,$FF,$FF,$FF,$FF,$70,$FF,$60
 DB $FE,$61,$00,$9E,$00,$00,$00,$00
 DB $F8,$80,$F0,$88,$E0,$98,$00,$60
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$80
@@ -3035,6 +3379,14 @@ DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 BackgroundTilesEnd::
