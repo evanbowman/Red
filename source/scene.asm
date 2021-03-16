@@ -314,7 +314,7 @@ EntitySwapResume:
         ld      l, a
         sub     2                       ; Shadows are 16x16, grow from oam end
         ld      [var_oam_bottom_counter], a
-        ld      e, $50
+        ld      e, $7c
         ld      d, 2
         call    ShowSpriteSquare16
 

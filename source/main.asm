@@ -213,7 +213,7 @@ Main:
 
         ld      hl, SpriteDropShadow
         ld      bc, SpriteDropShadowEnd - SpriteDropShadow
-        ld      de, $8500
+        ld      de, $87c0
         call    Memcpy
 
         call    TestOverlay

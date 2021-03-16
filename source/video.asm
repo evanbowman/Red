@@ -675,6 +675,12 @@ SetOverlayTile:
         ld      b, 0
         add     hl, bc
         ld      [hl], a
+        ld      a, 1
+        ld      [rVBK], a
+        ld      a, $80
+        ld      [hl], a
+        ld      a, 0
+        ld      [rVBK], a
         ret
 
 
