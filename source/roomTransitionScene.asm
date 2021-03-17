@@ -43,5 +43,24 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-RoomTransitionSceneUpdate:
+RoomTransitionSceneDownUpdate:
+        ld      a, [var_view_y]
+        cp      0
+        jr      Z, .done
+
+        inc     a
+        inc     a
+        cp      1
+        jr      NZ, .skip
+        ld      a, 0
+
+.skip:
+        ld      [var_view_y], a
+
+        call    DrawEntities
+
+        jr      .continue
+.done:
+;;; ...
+.continue:
         jp      UpdateFnResume
