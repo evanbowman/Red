@@ -190,44 +190,20 @@ Main:
 
         call    CopyDMARoutine
 
-        ld      de, OverworldSceneUpdate
+        ld      de, OverworldSceneEnter
         call    SceneSetUpdateFn
 
-        ld      de, OverworldSceneOnVBlank
+        ld      de, VoidVBlankFn
         call    SceneSetVBlankFn
-
 
         call    PlayerInit
 
-        call    LoadOverworldPalettes
-
-        ld      hl, OverlayTiles
-        ld      bc, OverlayTilesEnd - OverlayTiles
-        ld      de, $9000
-        call    Memcpy
-
-        ld      hl, BackgroundTiles
-        ld      bc, BackgroundTilesEnd - BackgroundTiles
-        ld      de, $8800
-        call    Memcpy
-
-        ld      hl, SpriteDropShadow
-        ld      bc, SpriteDropShadowEnd - SpriteDropShadow
-        ld      de, $87c0
-        call    Memcpy
-
-        call    TestOverlay
+        call    LoadFont
 
         call    MapInit
         call    MapLoad
 
         call    DebugInit
-
-        ld      a, 136
-        ld      [rWY], a
-
-        ld      a, 7
-        ld      [rWX], a
 
 .activate_screen:
         ld	a, SCREEN_MODE
@@ -299,6 +275,20 @@ VBlankFnResume:
         stop
 
 
+;;; ----------------------------------------------------------------------------
+
+VoidVBlankFn:
+	jr      VBlankFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+VoidUpdateFn:
+        jr      UpdateFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
 MapSpriteBlock:
 ; h target sprite index
 ; b vram index
@@ -335,6 +325,7 @@ MapSpriteBlock:
         INCLUDE "entity.asm"
         INCLUDE "player.asm"
         INCLUDE "scene.asm"
+        INCLUDE "overworldScene.asm"
         INCLUDE "utility.asm"
         INCLUDE "joypad.asm"
         INCLUDE "fixnum.asm"

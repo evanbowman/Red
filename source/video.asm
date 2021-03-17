@@ -765,3 +765,21 @@ TestOverlay:
 
 
 ;;; ----------------------------------------------------------------------------
+
+LoadFont:
+        ld      hl, FontTiles
+        ld      bc, FontTilesEnd - FontTiles
+        ld      de, $9000
+
+        ld	a, 1
+	ld	[rVBK], a
+
+	call    Memcpy
+
+        xor     a
+        ld      [rVBK], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
