@@ -378,8 +378,17 @@ EntityDrawLoopDone:
 
 .done:
 
-        ;; ld      a, [var_player_coord_y]
-        ;; cp      255
+        ld      a, [var_player_coord_y]
+        cp      247
+        jr      C, .noYTransition
+
+        ld      de, RoomTransitionSceneUpdate
+        call    SceneSetUpdateFn
+
+.noYTransition:
+
+;;; TODO: left, right, up transitions. The level map that I drew only has an
+;;; exit on one side.
 
         jp      UpdateFnResume
 
