@@ -192,8 +192,6 @@ RoomTransitionSceneUpUpdate:
 RoomTransitionSceneUpVBlank:
         ld      a, [var_room_load_y_counter]
 
-;;; Why only 24 rows? Otherwise, we will see the rows change as the screen
-;;; scrolls. We will finish up the rest of the rows after the transition.
         cp      8
 
 	jr      Z, .done
@@ -278,29 +276,73 @@ RoomTransitionSceneRightUpdate:
         jr      .continue
 .done:
 
-        ld      de, OverworldSceneUpdate
+        ld      de, VoidUpdateFn
         call    SceneSetUpdateFn
 
-        ld      de, OverworldSceneOnVBlank
+        ld      de, RoomTransitionSceneRightFinishUpVBlank
         call    SceneSetVBlankFn
 
-
-;;; TODO...
-        ;; ld      de, VoidUpdateFn
-        ;; call    SceneSetUpdateFn
-
-        ;; ld      de, RoomTransitionSceneDownFinishUpVBlank
-        ;; call    SceneSetVBlankFn
-
-;;; ...
 .continue:
         jp      UpdateFnResume
 
 
 ;;; ----------------------------------------------------------------------------
 
+RoomTransitionSceneRightFinishUpVBlank:
+        ld      a, [var_room_load_x_counter]
+
+        cp      32
+
+	jr      Z, .done
+
+        ld      c, a
+
+        push    bc
+
+        call    MapShowColumn
+
+        pop     bc
+
+        inc     c
+        ld      a, c
+        ld      [var_room_load_x_counter], a
+
+        jr      .return
+.done:
+
+        ld      de, OverworldSceneUpdate
+        call    SceneSetUpdateFn
+
+        ld      de, OverworldSceneOnVBlank
+        call    SceneSetVBlankFn
+
+.return:
+        jp      VBlankFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
 RoomTransitionSceneRightVBlank:
-;;; TODO...
+        ld      a, [var_room_load_x_counter]
+
+        cp      20
+
+	jr      Z, .done
+
+        ld      c, a
+
+        push    bc
+
+        call    MapShowColumn
+
+        pop     bc
+
+        inc     c
+        ld      a, c
+        ld      [var_room_load_x_counter], a
+
+.done:
         jp      VBlankFnResume
 
 
@@ -333,17 +375,11 @@ RoomTransitionSceneLeftUpdate:
         jr      .continue
 
 .done:
-        ld      de, OverworldSceneUpdate
+        ld      de, VoidUpdateFn
         call    SceneSetUpdateFn
 
-        ld      de, OverworldSceneOnVBlank
+        ld      de, RoomTransitionSceneLeftFinishUpVBlank
         call    SceneSetVBlankFn
-
-        ;; ld      de, VoidUpdateFn
-        ;; call    SceneSetUpdateFn
-
-        ;; ld      de, RoomTransitionSceneUpFinishUpVBlank
-        ;; call    SceneSetVBlankFn
 
 .continue:
 	jp      UpdateFnResume
@@ -352,6 +388,60 @@ RoomTransitionSceneLeftUpdate:
 ;;; ----------------------------------------------------------------------------
 
 RoomTransitionSceneLeftVBlank:
+        ld      a, [var_room_load_x_counter]
+
+        cp      12
+
+	jr      Z, .done
+
+        ld      c, a
+
+        push    bc
+
+        call    MapShowColumn
+
+        pop     bc
+
+        dec     c
+        ld      a, c
+        ld      [var_room_load_x_counter], a
+
+.done:
+        jp      VBlankFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+RoomTransitionSceneLeftFinishUpVBlank:
+        ld      a, [var_room_load_x_counter]
+
+        cp      255                     ; Intentional overflow
+
+	jr      Z, .done
+
+        ld      c, a
+
+        push    bc
+
+        call    MapShowColumn
+
+        pop     bc
+
+        dec     c
+        ld      a, c
+        ld      [var_room_load_x_counter], a
+
+        jr      .return
+.done:
+
+        ld      de, OverworldSceneUpdate
+        call    SceneSetUpdateFn
+
+        ld      de, OverworldSceneOnVBlank
+        call    SceneSetVBlankFn
+
+.return:
         jp      VBlankFnResume
 
 

@@ -52,6 +52,7 @@ MapInit:
 
 MapShowColumn:
 ;;; c - column
+        ld      e, c
         bit     0, e
         ld      a, 0
         jr      Z, .setParity
@@ -81,8 +82,74 @@ MapShowColumn:
 
         pop     hl
 
-;;; TODO...
+        ld      b, 0
+.copy:
+        ld      a, [var_room_load_parity]
+        or      a
+        ld      a, [de]
+        jr      Z, .evenParity
 
+        sla     a                       ; \ Four tiles per metatile in vram,
+        sla     a                       ; / so multiply by four
+        add     $90                     ; $90 is the first map tile in vram
+
+        inc     a                       ; Inc 1, to second column of 16x16p tile
+        jr      .meta
+
+.evenParity:
+
+        sla     a
+        sla     a
+        add     $90
+.meta:
+
+        ld      [hl], a
+
+        push    af
+        ld	a, 1                    ; \
+	ld	[rVBK], a               ; |
+        ld      a, 2                    ; | Set Palette
+        ld      [hl], a                 ; |
+        ld      a, 0                    ; |
+	ld	[rVBK], a               ; /
+        pop     af
+
+        inc     a                       ; \ Go to next column tile in 16x16px
+        inc     a                       ; / meta tile.
+
+        push    de                      ; \
+        ld      e, 32                   ; |
+	ld      d, 0                    ; | Jump down a full row in vram
+        add     hl, de                  ; |
+        pop     de                      ; /
+
+        ld      [hl], a
+
+        ld	a, 1                    ; \
+	ld	[rVBK], a               ; |
+        ld      a, 2                    ; | Set Palette
+        ld      [hl], a                 ; |
+        ld      a, 0                    ; |
+	ld	[rVBK], a               ; /
+
+        push    de                      ; \
+        ld      e, 32                   ; |
+	ld      d, 0                    ; | Jump down a full row in vram
+        add     hl, de                  ; |
+        pop     de                      ; /
+
+        push    hl                      ; \
+        ld      l, 16                   ; |
+        ld      h, 0                    ; |
+        add     hl, de                  ; | Jump to next row in tile map
+        ld      d, h                    ; |
+        ld      e, l                    ; |
+        pop     hl                      ; /
+
+        inc     b
+        ld      a, b
+        cp      16
+        jr      NZ, .copy
 
         ret
 
