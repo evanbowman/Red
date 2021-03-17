@@ -326,6 +326,7 @@ MapSpriteBlock:
         INCLUDE "player.asm"
         INCLUDE "scene.asm"
         INCLUDE "overworldScene.asm"
+        INCLUDE "roomTransitionScene.asm"
         INCLUDE "utility.asm"
         INCLUDE "joypad.asm"
         INCLUDE "fixnum.asm"

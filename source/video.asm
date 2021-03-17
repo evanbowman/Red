@@ -769,7 +769,7 @@ TestOverlay:
 LoadFont:
         ld      hl, FontTiles
         ld      bc, FontTilesEnd - FontTiles
-        ld      de, $9000
+        ld      de, $9330
 
         ld	a, 1
 	ld	[rVBK], a
@@ -778,6 +778,14 @@ LoadFont:
 
         xor     a
         ld      [rVBK], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+PutText:
+;;; hl - text
 
         ret
 

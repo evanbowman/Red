@@ -89,6 +89,7 @@ OverworldSceneEnter:
         ld      de, OverworldSceneOnVBlank
         call    SceneSetVBlankFn
 
+
         jp      UpdateFnResume
 
 
@@ -376,6 +377,10 @@ EntityDrawLoopDone:
         jr      .unusedOAMZeroLoop
 
 .done:
+
+        ;; ld      a, [var_player_coord_y]
+        ;; cp      255
+
         jp      UpdateFnResume
 
 

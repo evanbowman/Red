@@ -401,8 +401,7 @@ PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        ld      b, 15
-        cp      b
+        cp      15
 
         jr      C, .test_xm1_ym1
         jr      .skip_xm1_ym1
@@ -434,8 +433,7 @@ PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        ld      b, 15
-        cp      b
+        cp      15
 
         jr      C, .test_xm1_y
         jr      .skip_xm1_y
@@ -463,8 +461,7 @@ PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        ld      b, 15
-        cp      b
+        cp      15
 
         jr      C, .test_xm1_yp1
         jr      .skip_xm1_yp1
@@ -498,8 +495,7 @@ PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        ld      b, 15
-        cp      b
+        cp      15
 
         jr      C, .test_x_ym1
         jr      .skip_x_ym1
@@ -527,8 +523,7 @@ PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        ld      b, 15
-        cp      b
+        cp      15
 
         jr      C, .test_x_yp1
         jr      .skip_x_yp1
@@ -556,8 +551,7 @@ PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        ld      b, 15
-        cp      b
+        cp      15
 
         jr      C, .test_xp1_ym1
         jr      .skip_xp1_ym1
@@ -590,8 +584,7 @@ PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        ld      b, 15
-        cp      b
+        cp      15
 
         jr      C, .test_xp1_y
         jr      .skip_xp1_y
@@ -620,8 +613,7 @@ PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        ld      b, 15
-        cp      b
+        cp      15
 
         jr      C, .test_xp1_yp1
         jr      .skip_xp1_yp1
@@ -654,17 +646,16 @@ PlayerCheckWallCollisions:
 PlayerAnimate:
         ld      a, [var_player_fb]
 
-        ld      c, SPRID_PLAYER_WR
-        cp      c
+        cp      SPRID_PLAYER_WR
         jr      Z, .animateWalkLR
-        ld      c, SPRID_PLAYER_WL
-        cp      c
+
+        cp      SPRID_PLAYER_WL
         jr      Z, .animateWalkLR
-        ld      c, SPRID_PLAYER_WD
-        cp      c
+
+        cp      SPRID_PLAYER_WD
         jr      Z, .animateWalkUD
-        ld      c, SPRID_PLAYER_WU
-        cp      c
+
+        cp      SPRID_PLAYER_WU
         jr      Z, .animateWalkUD
 
         jr      .done
