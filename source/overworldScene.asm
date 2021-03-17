@@ -194,20 +194,14 @@ EntityUpdateLoopResume:
 ;;; intentional fallthrough
 EntityUpdateLoopDone:
 
+
 ;;; If it wasn't for view scrolling, the update and draw stuff could be done in
 ;;; the same loop.
         call    OverworldSceneUpdateView
 
         call    DrawEntities
 
-        ld      a, [var_player_coord_y]
-        cp      247
-        jr      C, .noYTransition
-
-        ld      de, RoomTransitionSceneDownUpdate
-        call    SceneSetUpdateFn
-
-.noYTransition:
+        call    OverworldSceneTryRoomTransition
 
 ;;; TODO: left, right, up transitions. The level map that I drew only has an
 ;;; exit on one side.
@@ -301,3 +295,27 @@ OverworldSceneOnVBlank:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+OverworldSceneStartTransition:
+;;; de - transition fn
+	call    SceneSetUpdateFn
+
+        call    EntityBufferReset
+
+        ld      de, var_player_struct
+        call    EntityBufferEnqueue
+
+        ret
+
+
+OverworldSceneTryRoomTransition:
+        ld      a, [var_player_coord_y]
+        cp      247
+        jr      C, .noYTransition
+
+        ld      de, RoomTransitionSceneDownUpdate
+        call    OverworldSceneStartTransition
+
+.noYTransition:
+        ret
