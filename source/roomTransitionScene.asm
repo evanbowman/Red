@@ -39,12 +39,15 @@
 ;;;
 ;;;  Room Transition Scene
 ;;;
+;;; TODO: there's a bunch of repeated code here. We could save a decent amount
+;;; of ROM by refactoring this stuff. e.g. the down and right vblank handlers
+;;; differ only by MapShowRow/MapShowColumn
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 RoomTransitionSceneDownVBlank:
-        ld      a, [var_room_load_y_counter]
+        ld      a, [var_room_load_counter]
 
 ;;; Why only 24 rows? Otherwise, we will see the rows change as the screen
 ;;; scrolls. We will finish up the rest of the rows after the transition.
@@ -62,7 +65,7 @@ RoomTransitionSceneDownVBlank:
 
         inc     c
         ld      a, c
-        ld      [var_room_load_y_counter], a
+        ld      [var_room_load_counter], a
 
 .done:
         jp      VBlankFnResume
@@ -73,7 +76,7 @@ RoomTransitionSceneDownVBlank:
 ;;; This handler takes care of the remaining rows, after the transition is
 ;;; complete.
 RoomTransitionSceneDownFinishUpVBlank:
-        ld      a, [var_room_load_y_counter]
+        ld      a, [var_room_load_counter]
 
         cp      32
 
@@ -89,7 +92,7 @@ RoomTransitionSceneDownFinishUpVBlank:
 
         inc     c
         ld      a, c
-        ld      [var_room_load_y_counter], a
+        ld      [var_room_load_counter], a
 
         jr      .return
 .done:
@@ -190,7 +193,7 @@ RoomTransitionSceneUpUpdate:
 ;;; ----------------------------------------------------------------------------
 
 RoomTransitionSceneUpVBlank:
-        ld      a, [var_room_load_y_counter]
+        ld      a, [var_room_load_counter]
 
         cp      8
 
@@ -206,7 +209,7 @@ RoomTransitionSceneUpVBlank:
 
         dec     c
         ld      a, c
-        ld      [var_room_load_y_counter], a
+        ld      [var_room_load_counter], a
 
 .done:
         jp      VBlankFnResume
@@ -215,7 +218,7 @@ RoomTransitionSceneUpVBlank:
 ;;; ----------------------------------------------------------------------------
 
 RoomTransitionSceneUpFinishUpVBlank:
-        ld      a, [var_room_load_y_counter]
+        ld      a, [var_room_load_counter]
 
         cp      255                     ; Intentional overflow
 
@@ -231,7 +234,7 @@ RoomTransitionSceneUpFinishUpVBlank:
 
         dec     c
         ld      a, c
-        ld      [var_room_load_y_counter], a
+        ld      [var_room_load_counter], a
 
         jr      .return
 .done:
@@ -289,7 +292,7 @@ RoomTransitionSceneRightUpdate:
 ;;; ----------------------------------------------------------------------------
 
 RoomTransitionSceneRightFinishUpVBlank:
-        ld      a, [var_room_load_x_counter]
+        ld      a, [var_room_load_counter]
 
         cp      32
 
@@ -305,7 +308,7 @@ RoomTransitionSceneRightFinishUpVBlank:
 
         inc     c
         ld      a, c
-        ld      [var_room_load_x_counter], a
+        ld      [var_room_load_counter], a
 
         jr      .return
 .done:
@@ -324,7 +327,7 @@ RoomTransitionSceneRightFinishUpVBlank:
 
 
 RoomTransitionSceneRightVBlank:
-        ld      a, [var_room_load_x_counter]
+        ld      a, [var_room_load_counter]
 
         cp      20
 
@@ -340,7 +343,7 @@ RoomTransitionSceneRightVBlank:
 
         inc     c
         ld      a, c
-        ld      [var_room_load_x_counter], a
+        ld      [var_room_load_counter], a
 
 .done:
         jp      VBlankFnResume
@@ -388,7 +391,7 @@ RoomTransitionSceneLeftUpdate:
 ;;; ----------------------------------------------------------------------------
 
 RoomTransitionSceneLeftVBlank:
-        ld      a, [var_room_load_x_counter]
+        ld      a, [var_room_load_counter]
 
         cp      12
 
@@ -404,7 +407,7 @@ RoomTransitionSceneLeftVBlank:
 
         dec     c
         ld      a, c
-        ld      [var_room_load_x_counter], a
+        ld      [var_room_load_counter], a
 
 .done:
         jp      VBlankFnResume
@@ -414,7 +417,7 @@ RoomTransitionSceneLeftVBlank:
 
 
 RoomTransitionSceneLeftFinishUpVBlank:
-        ld      a, [var_room_load_x_counter]
+        ld      a, [var_room_load_counter]
 
         cp      255                     ; Intentional overflow
 
@@ -430,7 +433,7 @@ RoomTransitionSceneLeftFinishUpVBlank:
 
         dec     c
         ld      a, c
-        ld      [var_room_load_x_counter], a
+        ld      [var_room_load_counter], a
 
         jr      .return
 .done:

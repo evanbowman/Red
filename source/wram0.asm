@@ -150,8 +150,7 @@ var_last_entity_idx:    DS      1
 var_view_x:    DS      1
 var_view_y:    DS      1
 
-var_room_load_x_counter:      DS      1
-var_room_load_y_counter:      DS      1
+var_room_load_counter:        DS      1
 var_room_load_parity:         DS      1
 
 

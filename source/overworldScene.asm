@@ -325,7 +325,7 @@ OverworldSceneTryRoomTransition:
 	call    Memcpy
 
         ld      a, 0
-        ld      [var_room_load_y_counter], a
+        ld      [var_room_load_counter], a
 
         jr      .done
 
@@ -349,7 +349,7 @@ OverworldSceneTryRoomTransition:
 	call    Memcpy
 
         ld      a, 31
-        ld      [var_room_load_y_counter], a
+        ld      [var_room_load_counter], a
 
         jr      .done
 
@@ -370,7 +370,7 @@ OverworldSceneTryRoomTransition:
 	call    Memcpy
 
         ld      a, 0
-        ld      [var_room_load_x_counter], a
+        ld      [var_room_load_counter], a
 
         jr      .done
 
@@ -393,7 +393,7 @@ OverworldSceneTryRoomTransition:
 	call    Memcpy
 
         ld      a, 31
-        ld      [var_room_load_x_counter], a
+        ld      [var_room_load_counter], a
 
 .done:
         ret
