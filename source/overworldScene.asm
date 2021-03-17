@@ -305,17 +305,95 @@ OverworldSceneStartTransition:
 
         ld      de, var_player_struct
         call    EntityBufferEnqueue
-
         ret
 
 
 OverworldSceneTryRoomTransition:
         ld      a, [var_player_coord_y]
-        cp      247
-        jr      C, .noYTransition
+        cp      246
+        jr      C, .tryUpTransition
 
         ld      de, RoomTransitionSceneDownUpdate
         call    OverworldSceneStartTransition
 
-.noYTransition:
+        ld      de, RoomTransitionSceneDownVBlank
+        call    SceneSetVBlankFn
+
+        ld      hl, TEST_MAP_2
+        ld      bc, TEST_MAP_2_END - TEST_MAP_2
+        ld      de, var_map_info
+	call    Memcpy
+
+        ld      a, 0
+        ld      [var_room_load_y_counter], a
+
+        jr      .done
+
+.tryUpTransition:
+
+        ld      a, [var_player_coord_y]
+        ld      b, a
+        ld      a, 8
+        cp      b
+        jr      C, .tryRightTransition
+
+        ld      de, RoomTransitionSceneUpUpdate
+        call    OverworldSceneStartTransition
+
+        ld      de, RoomTransitionSceneUpVBlank
+        call    SceneSetVBlankFn
+
+        ld      hl, TEST_MAP
+        ld      bc, TEST_MAP_END - TEST_MAP
+        ld      de, var_map_info
+	call    Memcpy
+
+        ld      a, 31
+        ld      [var_room_load_y_counter], a
+
+        jr      .done
+
+.tryRightTransition:
+        ld      a, [var_player_coord_x]
+        cp      246
+        jr      C, .tryLeftTransition
+
+        ld      de, RoomTransitionSceneRightUpdate
+        call    OverworldSceneStartTransition
+
+        ld      de, RoomTransitionSceneRightVBlank
+        call    SceneSetVBlankFn
+
+	ld      hl, TEST_MAP_2
+        ld      bc, TEST_MAP_2_END - TEST_MAP_2
+        ld      de, var_map_info
+        call    Memcpy
+
+        ld      a, 0
+        ld      [var_room_load_x_counter], a
+
+        jr      .done
+
+.tryLeftTransition:
+        ld      a, [var_player_coord_x]
+        ld      b, a
+        ld      a, 8
+        cp      b
+        jr      C, .done
+
+        ld      de, RoomTransitionSceneLeftUpdate
+        call    OverworldSceneStartTransition
+
+        ld      de, RoomTransitionSceneLeftVBlank
+        call    SceneSetVBlankFn
+
+        ld      hl, TEST_MAP_2
+        ld      bc, TEST_MAP_2_END - TEST_MAP_2
+        ld      de, var_map_info
+	call    Memcpy
+
+        ld      a, 31
+        ld      [var_room_load_x_counter], a
+
+.done:
         ret

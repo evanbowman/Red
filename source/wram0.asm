@@ -58,7 +58,9 @@ MAP_WIDTH EQU SCRN_VX / MAP_TILE_WIDTH
 MAP_HEIGHT EQU SCRN_VY / MAP_TILE_WIDTH
 
 var_map_info:    DS     MAP_WIDTH * MAP_HEIGHT
-var_map_scratch: DS     MAP_WIDTH * MAP_HEIGHT
+
+var_room_x:     DS      1
+var_room_y:     DS      1
 
 
 ;;; SECTION MAP_INFO
@@ -147,6 +149,10 @@ var_last_entity_idx:    DS      1
 
 var_view_x:    DS      1
 var_view_y:    DS      1
+
+var_room_load_x_counter:      DS      1
+var_room_load_y_counter:      DS      1
+var_room_load_parity:         DS      1
 
 
 ;;; ############################################################################

@@ -47,6 +47,153 @@ MapInit:
 
         ret
 
+
+;;; ----------------------------------------------------------------------------
+
+MapShowColumn:
+;;; c - column
+        bit     0, e
+        ld      a, 0
+        jr      Z, .setParity
+        ld      a, 1
+.setParity:
+        ld      [var_room_load_parity], a
+
+
+        ld      hl, _SCRN0
+
+        ld      d, 0                    ; \
+        ld      e, c                    ; | Jump to proper column
+        add     hl, de                  ; /
+
+
+        push    hl
+
+        ld      hl, var_map_info
+
+        ld      e, c
+	srl     e
+        ld      d, 0
+
+        add     hl, de
+        ld      d, h
+        ld      e, l
+
+        pop     hl
+
+;;; TODO...
+
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+MapShowRow:
+;;; c - row
+        push    bc                      ; \
+        ld      hl, _SCRN0              ; |
+        ld      e, 32                   ; |
+        ld      d, 0                    ; |
+.loop:                                  ; | seek offset in vram
+        ld      a, 0                    ; |
+        or      c                       ; |
+	jr      Z, .ready               ; |
+        dec     c                       ; |
+        add     hl, de                  ; |
+        jr      .loop                   ; /
+.ready:
+        pop     bc
+
+        ;; Now, hl contains pointer to correct row in vram
+
+        push    hl
+
+        ld      hl, var_map_info
+        ld      e, c
+
+;;; Because tiles are 16x16
+        bit     0, e                    ; Determine which row we are in
+        ld      a, 0
+        jr      Z, .setParity
+        ld      a, 1
+.setParity:
+        ld      [var_room_load_parity], a
+
+
+        srl     e                       ; 32x32 index as input, downsample
+        ld      d, 0
+
+        ;; Map tiles are 16x16. Multiply y by 16 and add, to jump to row.
+        swap    e
+
+        add     hl, de
+        ld      d, h
+        ld      e, l
+
+        pop     hl
+
+        ;; Now, de holds a pointer to the map row, and hl holds a pointer to
+        ;; the vram row.
+
+        ld      b, 0
+.copy:
+        ld      a, [var_room_load_parity]
+        or      a
+        ld      a, [de]
+        jr      Z, .evenParity
+
+
+        sla     a                       ; \ Four tiles per metatile in vram,
+        sla     a                       ; / so multiply by four
+        add     $90                     ; $90 is the first map tile in vram
+
+        ;; For odd parity, skip to the next two vram indices
+        inc     a
+        inc     a
+        jr      .meta
+
+.evenParity:
+        sla     a                       ; \ Four tiles per metatile in vram,
+        sla     a                       ; / so multiply by four
+        add     $90                     ; $90 is the first map tile in vram
+
+.meta:
+        ld      [hl], a
+
+        push    af
+        ld	a, 1                    ; \
+	ld	[rVBK], a               ; |
+        ld      a, 2                    ; | Set Palette
+        ld      [hl], a                 ; |
+        ld      a, 0                    ; |
+	ld	[rVBK], a               ; /
+        pop     af
+
+        inc     hl
+
+        inc     a
+        ld      [hl], a
+
+        ld	a, 1                    ; \
+	ld	[rVBK], a               ; |
+        ld      a, 2                    ; | Set Palette
+        ld      [hl], a                 ; |
+        ld      a, 0                    ; |
+	ld	[rVBK], a               ; /
+
+        inc     hl
+
+        inc     de
+
+        inc     b
+        ld      a, b
+        cp      16
+        jr      NZ, .copy
+
+        ret
+
+
 ;;; ----------------------------------------------------------------------------
 
 ;;; Copy map from wram to vram
@@ -56,12 +203,12 @@ MapShow:
 
 .outerLoop:
 	ld      b, 0
-        ld      a, 16
+        ld      a, 16           ; map height
         cp      c
         jr      Z, .done
 
 .innerLoop:
-        ld      a, 16
+        ld      a, 16           ; map width
         cp      b
         jr      Z, .outerLoopInc
 

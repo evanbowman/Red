@@ -43,6 +43,69 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+RoomTransitionSceneDownVBlank:
+        ld      a, [var_room_load_y_counter]
+
+;;; Why only 24 rows? Otherwise, we will see the rows change as the screen
+;;; scrolls. We will finish up the rest of the rows after the transition.
+        cp      24
+
+	jr      Z, .done
+
+        ld      c, a
+
+        push    bc
+
+        call    MapShowRow
+
+        pop     bc
+
+        inc     c
+        ld      a, c
+        ld      [var_room_load_y_counter], a
+
+.done:
+        jp      VBlankFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+;;; This handler takes care of the remaining rows, after the transition is
+;;; complete.
+RoomTransitionSceneDownFinishUpVBlank:
+        ld      a, [var_room_load_y_counter]
+
+        cp      32
+
+	jr      Z, .done
+
+        ld      c, a
+
+        push    bc
+
+        call    MapShowRow
+
+        pop     bc
+
+        inc     c
+        ld      a, c
+        ld      [var_room_load_y_counter], a
+
+        jr      .return
+.done:
+
+        ld      de, OverworldSceneUpdate
+        call    SceneSetUpdateFn
+
+        ld      de, OverworldSceneOnVBlank
+        call    SceneSetVBlankFn
+
+.return:
+        jp      VBlankFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
 RoomTransitionSceneDownUpdate:
         ld      a, [var_view_y]
         cp      0
@@ -50,17 +113,246 @@ RoomTransitionSceneDownUpdate:
 
         inc     a
         inc     a
+        inc     a
         cp      1
         jr      NZ, .skip
         ld      a, 0
+        cp      2
+        jr      NZ, .skip
+        ld      a, 0
+
 
 .skip:
         ld      [var_view_y], a
+
+	ld      hl, var_player_coord_y
+        ld      b, 0
+	ld      c, 148
+        call    FixnumAdd
 
         call    DrawEntities
 
         jr      .continue
 .done:
+;;; No more update code to run, set a void handler, and let the vblank handler
+;;; take care of populating the remaining map rows.
+        ld      de, VoidUpdateFn
+        call    SceneSetUpdateFn
+
+        ld      de, RoomTransitionSceneDownFinishUpVBlank
+        call    SceneSetVBlankFn
+
 ;;; ...
 .continue:
         jp      UpdateFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionSceneUpUpdate:
+        ld      a, [var_view_y]
+        cp      121
+        jr      Z, .done
+
+        dec     a
+        dec     a
+        dec     a
+
+        cp      121
+        jr      C, .fixView     ; fix overcorrection (aka clamp)
+        jr      .setView
+.fixView:
+        ld      a, 121
+
+.setView:
+        ld      [var_view_y], a
+
+        ld      hl, var_player_coord_y
+        ld      b, 0
+	ld      c, 148
+        call    FixnumSub
+
+        call    DrawEntities
+        jr      .continue
+
+.done:
+        ld      de, VoidUpdateFn
+        call    SceneSetUpdateFn
+
+        ld      de, RoomTransitionSceneUpFinishUpVBlank
+        call    SceneSetVBlankFn
+
+.continue:
+	jp      UpdateFnResume
+
+
+
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionSceneUpVBlank:
+        ld      a, [var_room_load_y_counter]
+
+;;; Why only 24 rows? Otherwise, we will see the rows change as the screen
+;;; scrolls. We will finish up the rest of the rows after the transition.
+        cp      8
+
+	jr      Z, .done
+
+        ld      c, a
+
+        push    bc
+
+        call    MapShowRow
+
+        pop     bc
+
+        dec     c
+        ld      a, c
+        ld      [var_room_load_y_counter], a
+
+.done:
+        jp      VBlankFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionSceneUpFinishUpVBlank:
+        ld      a, [var_room_load_y_counter]
+
+        cp      255                     ; Intentional overflow
+
+	jr      Z, .done
+
+        ld      c, a
+
+        push    bc
+
+        call    MapShowRow
+
+        pop     bc
+
+        dec     c
+        ld      a, c
+        ld      [var_room_load_y_counter], a
+
+        jr      .return
+.done:
+
+        ld      de, OverworldSceneUpdate
+        call    SceneSetUpdateFn
+
+        ld      de, OverworldSceneOnVBlank
+        call    SceneSetVBlankFn
+
+.return:
+        jp      VBlankFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionSceneRightUpdate:
+        ld      a, [var_view_x]
+        cp      0
+        jr      Z, .done
+
+        inc     a
+        inc     a
+        inc     a
+        cp      1
+        jr      NZ, .skip
+        ld      a, 0
+        cp      2
+        jr      NZ, .skip
+        ld      a, 0
+
+.skip:
+        ld      [var_view_x], a
+
+	ld      hl, var_player_coord_x
+        ld      b, 0
+	ld      c, 148
+        call    FixnumAdd
+
+        call    DrawEntities
+
+        jr      .continue
+.done:
+
+        ld      de, OverworldSceneUpdate
+        call    SceneSetUpdateFn
+
+        ld      de, OverworldSceneOnVBlank
+        call    SceneSetVBlankFn
+
+
+;;; TODO...
+        ;; ld      de, VoidUpdateFn
+        ;; call    SceneSetUpdateFn
+
+        ;; ld      de, RoomTransitionSceneDownFinishUpVBlank
+        ;; call    SceneSetVBlankFn
+
+;;; ...
+.continue:
+        jp      UpdateFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionSceneRightVBlank:
+;;; TODO...
+        jp      VBlankFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionSceneLeftUpdate:
+        ld      a, [var_view_x]
+        cp      95
+        jr      Z, .done
+
+        dec     a
+        dec     a
+        dec     a
+
+        cp      95
+        jr      C, .fixView     ; fix overcorrection (aka clamp)
+        jr      .setView
+.fixView:
+        ld      a, 95
+
+.setView:
+        ld      [var_view_x], a
+
+        ld      hl, var_player_coord_x
+        ld      b, 0
+	ld      c, 148
+        call    FixnumSub
+
+        call    DrawEntities
+        jr      .continue
+
+.done:
+        ld      de, OverworldSceneUpdate
+        call    SceneSetUpdateFn
+
+        ld      de, OverworldSceneOnVBlank
+        call    SceneSetVBlankFn
+
+        ;; ld      de, VoidUpdateFn
+        ;; call    SceneSetUpdateFn
+
+        ;; ld      de, RoomTransitionSceneUpFinishUpVBlank
+        ;; call    SceneSetVBlankFn
+
+.continue:
+	jp      UpdateFnResume
+
+
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionSceneLeftVBlank:
+        jp      VBlankFnResume
+
+
+;;; ----------------------------------------------------------------------------
