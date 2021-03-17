@@ -11,6 +11,7 @@ SOURCES := source data
 SOURCES := $(shell find $(SOURCES) -type d -print)
 
 ASMFILES := $(foreach dir,$(SOURCES),$(wildcard $(dir)/main.asm))
+ASMDEPS := $(foreach dir,$(SOURCES),$(wildcard $(dir)/*.asm))
 
 INCLUDES := $(foreach dir,$(SOURCES),-i$(dir)/)
 
@@ -24,9 +25,12 @@ clean:
 	@echo rm $(OBJ) $(ROM) $(NAME).sym $(NAME).map
 	@rm -f $(OBJ) $(ROM) $(NAME).sym $(NAME).map
 
-%.o : %.asm
-	@echo rgbasm $(INCLUDES) -E -o$@ $<
-	@$(RGBASM) $(INCLUDES) -E -o$@ $<
+# Yeah, I know, this is kind of lazy. The main asm file simply includes the
+# other source files. I have reasons for doing this.
+source/main.o : $(ASMDEPS)
+	@echo rgbasm $(INCLUDES) -E -osource/main.o source/main.asm
+	@$(RGBASM) $(INCLUDES) -E -osource/main.o source/main.asm
+
 
 $(ROM): $(OBJ)
 	@echo linking $(ROM)

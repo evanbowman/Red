@@ -53,7 +53,6 @@ OverworldSceneEnter:
 
         call    LoadOverworldPalettes
 
-
         ld      hl, OverlayTiles
         ld      bc, OverlayTilesEnd - OverlayTiles
         ld      de, $9000
@@ -161,26 +160,26 @@ EntityUpdateLoop:
         dec     a
         push    af
 
-        ld      a, [de]         ; fetch entity pointer from buffer
-        ld      h, a
-        inc     de
-        ld      a, [de]
-        ld      l, a            ; entity pointer now in hl
-        inc     de
+        ld      a, [de]         ; \
+        ld      h, a            ; |
+        inc     de              ; |  entity pointer from buffer into hl
+        ld      a, [de]         ; |
+        ld      l, a            ; |
+        inc     de              ; /
 
 	push    de              ; save entity buffer pointer on stack
 
-        ld      e, 13
-        ld      d, 0
-        add     hl, de          ; jump to position of update routine in entity
+        ld      e, 13           ; \
+        ld      d, 0            ; | jump to position of update routine in entity
+        add     hl, de          ; /
 
-        ld      d, [hl]
-        inc     hl
-        ld      e, [hl]         ; load entity update function ptr
+        ld      d, [hl]         ; \
+        inc     hl              ; | load entity update function ptr
+        ld      e, [hl]         ; /
 
-        ld      h, d
-        ld      l, e
-        jp      hl              ; Jump to entity update address
+        ld      h, d            ; \
+        ld      l, e            ; | Jump to entity update address
+        jp      hl              ; /
 
 ;;; Now, we could push the stack pointer, thus allowing entity update functions
 ;;; to be actual functions. For now, entity update functions need to jump back
@@ -463,10 +462,10 @@ OverworldSceneOnVBlank:
         jr      C, .textureCopyLoopTimeout
 
 
-        ld      a, [de]         ; Fetch entity pointer from entity buffer
-        ld      h, a
-        inc     de
-        ld      a, [de]
+        ld      a, [de]         ; \
+        ld      h, a            ; |
+        inc     de              ; |  Fetch entity pointer from entity buffer
+        ld      a, [de]         ; /
         ld      l, a            ; Now we have the entity pointer in hl
         inc     de
 
