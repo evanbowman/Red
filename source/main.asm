@@ -74,6 +74,13 @@ SPRID_BONFIRE   EQU     34
 
         INCLUDE "hram.asm"
         INCLUDE "wram0.asm"
+        INCLUDE "wram1.asm"
+        INCLUDE "wram2.asm"
+        INCLUDE "wram3.asm"
+        INCLUDE "wram4.asm"
+        INCLUDE "wram5.asm"
+        INCLUDE "wram6.asm"
+        INCLUDE "wram7.asm"
 
 
 ;; ############################################################################
@@ -191,7 +198,7 @@ Main:
 
         call    CopyDMARoutine
 
-        ld      de, OverworldSceneEnter
+        ld      de, IntroCreditsSceneEnter
         call    SceneSetUpdateFn
 
         ld      de, VoidVBlankFn
