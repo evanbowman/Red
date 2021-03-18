@@ -297,6 +297,9 @@ OverworldSceneStartTransition:
 
         ld      de, var_player_struct
         call    EntityBufferEnqueue
+
+        ld      a, [var_joypad_raw]
+        ld      [var_room_load_joypad_cache], a
         ret
 
 

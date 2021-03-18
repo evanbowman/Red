@@ -70,6 +70,20 @@ RoomTransitionSceneDownVBlank:
 .done:
         ret
 
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionDone:
+	ld      de, OverworldSceneUpdate
+        call    SceneSetUpdateFn
+
+        ld      de, OverworldSceneOnVBlank
+        call    SceneSetVBlankFn
+
+;;; In case we missed any key presses during the transition
+        ld      a, [var_room_load_joypad_cache]
+        ld      [var_joypad_raw], a
+        ret
+
 
 ;;; ----------------------------------------------------------------------------
 
@@ -97,11 +111,7 @@ RoomTransitionSceneDownFinishUpVBlank:
         jr      .return
 .done:
 
-        ld      de, OverworldSceneUpdate
-        call    SceneSetUpdateFn
-
-        ld      de, OverworldSceneOnVBlank
-        call    SceneSetVBlankFn
+        call    RoomTransitionDone
 
 .return:
         ret
@@ -246,11 +256,7 @@ RoomTransitionSceneUpFinishUpVBlank:
         jr      .return
 .done:
 
-        ld      de, OverworldSceneUpdate
-        call    SceneSetUpdateFn
-
-        ld      de, OverworldSceneOnVBlank
-        call    SceneSetVBlankFn
+        call    RoomTransitionDone
 
 .return:
         ret
@@ -322,11 +328,7 @@ RoomTransitionSceneRightFinishUpVBlank:
         jr      .return
 .done:
 
-        ld      de, OverworldSceneUpdate
-        call    SceneSetUpdateFn
-
-        ld      de, OverworldSceneOnVBlank
-        call    SceneSetVBlankFn
+        call    RoomTransitionDone
 
 .return:
         ret
@@ -469,11 +471,7 @@ RoomTransitionSceneLeftFinishUpVBlank:
         jr      .return
 .done:
 
-        ld      de, OverworldSceneUpdate
-        call    SceneSetUpdateFn
-
-        ld      de, OverworldSceneOnVBlank
-        call    SceneSetVBlankFn
+        call    RoomTransitionDone
 
 .return:
         ret
