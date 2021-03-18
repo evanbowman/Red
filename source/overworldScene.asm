@@ -364,8 +364,8 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneRightVBlank
         call    SceneSetVBlankFn
 
-        ld      hl, TEST_MAP
-        ld      bc, TEST_MAP_END - TEST_MAP
+        ld      hl, TEST_MAP_3
+        ld      bc, TEST_MAP_3_END - TEST_MAP_3
         ld      de, var_map_info
 	call    Memcpy
 
@@ -387,8 +387,8 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneLeftVBlank
         call    SceneSetVBlankFn
 
-        ld      hl, TEST_MAP
-        ld      bc, TEST_MAP_END - TEST_MAP
+        ld      hl, TEST_MAP_2
+        ld      bc, TEST_MAP_2_END - TEST_MAP_2
         ld      de, var_map_info
 	call    Memcpy
 
