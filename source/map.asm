@@ -352,3 +352,39 @@ MapLoad:
 
 
 ;;; ----------------------------------------------------------------------------
+
+MapLoad0:
+        SET_BANK 7
+        ld      hl, TEST_MAP
+        ld      bc, TEST_MAP_END - TEST_MAP
+        ld      de, var_map_info
+	call    Memcpy
+        SET_BANK 1
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+MapLoad2:
+        SET_BANK 7
+        ld      hl, TEST_MAP_2
+        ld      bc, TEST_MAP_2_END - TEST_MAP_2
+        ld      de, var_map_info
+	call    Memcpy
+        SET_BANK 1
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+MapLoad3:
+        SET_BANK 7
+        ld      hl, TEST_MAP_3
+        ld      bc, TEST_MAP_3_END - TEST_MAP_3
+        ld      de, var_map_info
+	call    Memcpy
+        SET_BANK 1
+        ret
+
+
+;;; ----------------------------------------------------------------------------

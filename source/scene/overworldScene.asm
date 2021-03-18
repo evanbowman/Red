@@ -46,6 +46,8 @@
 OverworldSceneEnter:
         call    VBlankIntrWait
 
+        SET_BANK 7
+
         call    LoadOverworldPalettes
 
         ld      hl, OverlayTiles
@@ -211,8 +213,7 @@ OverworldSceneOnVBlank:
 ;;; bunch of work upfront, because we do not always need to actually run the
 ;;; dma. Iterate through each entity, check its swap flag. If the entity
 ;;; requires a texture swap, map the texture into vram with GDMA.
-        ld      a, SPRITESHEET1_ROM_BANK
-        ld      [rROMB0], a
+        SET_BANK SPRITESHEET1_ROM_BANK
 
         ld      de, var_entity_buffer
         ld      a, [var_entity_buffer_size]
@@ -279,8 +280,7 @@ OverworldSceneOnVBlank:
 ;;; The whole point of the above loop was to copy sprites from various rom banks
 ;;; into vram. So we should set the rom bank back to one, which is the standard
 ;;; rom bank for most purposes.
-        ld      a, 1
-        ld      [rROMB0], a
+        SET_BANK 1
 
 .done:
         jp      VBlankFnResume
@@ -311,10 +311,7 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneDownVBlank
         call    SceneSetVBlankFn
 
-        ld      hl, TEST_MAP_2
-        ld      bc, TEST_MAP_2_END - TEST_MAP_2
-        ld      de, var_map_info
-	call    Memcpy
+        call    MapLoad2
 
         ld      a, 0
         ld      [var_room_load_counter], a
@@ -335,10 +332,7 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneUpVBlank
         call    SceneSetVBlankFn
 
-        ld      hl, TEST_MAP
-        ld      bc, TEST_MAP_END - TEST_MAP
-        ld      de, var_map_info
-	call    Memcpy
+        call    MapLoad0
 
         ld      a, 31
         ld      [var_room_load_counter], a
@@ -356,10 +350,7 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneRightVBlank
         call    SceneSetVBlankFn
 
-        ld      hl, TEST_MAP_3
-        ld      bc, TEST_MAP_3_END - TEST_MAP_3
-        ld      de, var_map_info
-	call    Memcpy
+        call    MapLoad3
 
         ld      a, 0
         ld      [var_room_load_counter], a
@@ -379,10 +370,7 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneLeftVBlank
         call    SceneSetVBlankFn
 
-        ld      hl, TEST_MAP_2
-        ld      bc, TEST_MAP_2_END - TEST_MAP_2
-        ld      de, var_map_info
-	call    Memcpy
+        call    MapLoad2
 
         ld      a, 31
         ld      [var_room_load_counter], a

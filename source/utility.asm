@@ -58,6 +58,7 @@ Memset:
 	jr	nz, .fill
 	dec	b
 	jr	nz, .fill
+.done:
 	ret
 
 
@@ -85,57 +86,11 @@ Memcpy:
 
 ;;; ----------------------------------------------------------------------------
 
-VBlankPoll:
-; Intended for waiting on vblank while interrupts are disabled, but the screen
-; is still on.
-        ld      a, [rLY]
-        cp      SCRN_Y
-        jr      nz, VBlankPoll
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
 Reset:
         ld      a, $0
         ld      b, a
         ld      a, BOOTUP_A_CGB
         jp      $0100
-
-
-;;; ----------------------------------------------------------------------------
-
-InitRam:
-;;; trashes hl, bc, a
-        ld      a, 0
-
-        ld      hl, _HRAM
-        ld      bc, $80
-        call    Memset
-
-        ld      hl, _RAM
-        ld      bc, $CFFF - _RAM        ; size == pRamEnd - pRam
-        call    Memset
-
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-SetCpuFast:
-        ld      a, [rKEY1]
-        bit     7, a
-        jr      z, .impl
-        ret
-
-.impl:
-        ld      a, $30
-        ld      [rP1], a
-        ld      a, $01
-        ld      [rKEY1], a
-
-        stop
-        ret
 
 
 ;;; ----------------------------------------------------------------------------

@@ -68,7 +68,7 @@ IntroCreditsSceneUpdate:
         ld      a, [var_scene_counter]
         inc     a
         ld      [var_scene_counter], a
-        cp      127
+        cp      2
         jr      Z, .nextScene
 	jr      .done
 

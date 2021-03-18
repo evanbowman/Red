@@ -463,31 +463,6 @@ OamSetParams:
 
 ;;; ----------------------------------------------------------------------------
 
-CopyDMARoutine:
-        ld      hl, DMARoutine
-        ld      b, DMARoutineEnd - DMARoutine ; Number of bytes to copy
-        ld      c, LOW(hOAMDMA) ; Low byte of the destination address
-.copy
-        ld      a, [hli]
-        ldh     [c], a
-        inc     c
-        dec     b
-        jr      nz, .copy
-        ret
-
-DMARoutine:
-        ldh     [rDMA], a
-
-        ld      a, 40
-.wait
-        dec     a
-        jr      nz, .wait
-        ret
-DMARoutineEnd:
-
-
-;;; ----------------------------------------------------------------------------
-
 LoadBackgroundColors:
 ;;; hl - source array
 ;;; b - count
@@ -767,6 +742,8 @@ TestOverlay:
 ;;; ----------------------------------------------------------------------------
 
 LoadFont:
+        SET_BANK 7
+
         ld      hl, FontTiles
         ld      bc, FontTilesEnd - FontTiles
         ld      de, $9330

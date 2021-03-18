@@ -164,3 +164,14 @@ var_scene_counter:      DS      1
 
 
 ;;; ############################################################################
+
+STACK_SIZE EQU 200
+STACK_BEGIN EQU $CFFF
+STACK_END EQU (STACK_BEGIN - STACK_SIZE) + 1
+
+        SECTION "STACK", WRAM0[STACK_END]
+
+__stack:   DS      STACK_SIZE
+
+
+;;; ############################################################################

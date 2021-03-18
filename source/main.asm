@@ -72,6 +72,25 @@ SPRID_PLAYER_SU EQU     33
 SPRID_BONFIRE   EQU     34
 
 
+;;; NOTE: LONG_CALL does not restore the current rom bank
+LONG_CALL: MACRO
+        ld      a, \2
+        ld      hl, \1
+        rst     $08
+ENDM
+
+
+INVOKE_HL: MACRO
+        rst     $10
+ENDM
+
+
+SET_BANK: MACRO
+        ld      a, \1
+        ld      [rROMB0], a
+ENDM
+
+
         INCLUDE "hram.asm"
         INCLUDE "wram0.asm"
         INCLUDE "wram1.asm"
@@ -81,6 +100,19 @@ SPRID_BONFIRE   EQU     34
         INCLUDE "wram5.asm"
         INCLUDE "wram6.asm"
         INCLUDE "wram7.asm"
+
+
+;; ############################################################################
+
+        SECTION "RESTART_VECTOR_08",ROM0[$0008]
+        ld      [rROMB0], a
+        jp      hl
+
+
+;; ############################################################################
+
+        SECTION "RESTART_VECTOR_10",ROM0[$0010]
+        jp      hl
 
 
 ;; ############################################################################
@@ -138,14 +170,13 @@ EntryPoint:
 
 
 Start:
-        di                              ; Turn of interrupts during startup.
-        ld      sp, $E000               ; Setup stack.
-
+        di                              ; Turn off interrupts during startup.
+        ld      sp, STACK_BEGIN         ; Setup stack (end of wram0).
 
 .checkGameboyColor:
         cp      a, BOOTUP_A_CGB         ; Boot leaves value in reg-a
         jr      z, .gbcDetected         ; if a == 0, then we have gbc
-        jr      .checkGameboyColor      ; Freeze
+        LONG_CALL GameboyColorNotDetected, 1
 
 ;;; TODO: Display some text to indicate that the game requires a gbc. There's no
 ;;; need to waste space in bank zero for this stuff, though.
@@ -162,14 +193,12 @@ Start:
 ;;; game will not be playable on the gba, as the color palettes would not
 ;;; look too good anyway.
 .agbDetected:
-        ld      a, 1
-        ldh     [agb_detected], a
-        jr      .agbDetected
+        LONG_CALL GameboyAdvanceDetected, 1
 
 
 .configure:
-        call    SetCpuFast
-        call    VBlankPoll              ; Wait for vbl before disabling lcd.
+        LONG_CALL SetCpuFast, 1
+        LONG_CALL VBlankPoll, 1         ; Wait for vbl before disabling lcd.
 
         call    LcdOff
 
@@ -184,7 +213,7 @@ Start:
 	ld	[rSVBK], a
 	ld	[rRP], a
 
-        call    InitRam
+        LONG_CALL InitRam, 1
 
         jr      Main
 
@@ -196,7 +225,7 @@ Main:
         ld	a, IEF_VBLANK	        ; vblank interrupt
 	ld	[rIE], a	        ; setup
 
-        call    CopyDMARoutine
+        LONG_CALL CopyDMARoutine, 1
 
         ld      de, IntroCreditsSceneEnter
         call    SceneSetUpdateFn
@@ -325,9 +354,8 @@ MapSpriteBlock:
 ;;; ----------------------------------------------------------------------------
 
 
-;;; I ran into issues where the linker would generate incorrect code. This
-;;; isn't such a terrible alternative, though. At least this way, I have some
-;;; idea of the order in which my code will be laid out in the ROM.
+;;; I ran into issues where the I see illegal instruction errors when separating
+;;; my source code into different sections.
         INCLUDE "animation.asm"
         INCLUDE "entity.asm"
         INCLUDE "player.asm"
@@ -341,6 +369,9 @@ MapSpriteBlock:
         INCLUDE "map.asm"
         INCLUDE "video.asm"
         INCLUDE "data.asm"
+        INCLUDE "rom1_code.asm"
+        INCLUDE "rom2_data.asm"
+        INCLUDE "rom7_data.asm"
 
 
 ;;; SECTION START
@@ -349,7 +380,6 @@ MapSpriteBlock:
 ;;; ----------------------------------------------------------------------------
 
 ;;; ############################################################################
-
 
         SECTION "OAM_DMA_ROUTINE", HRAM
 
