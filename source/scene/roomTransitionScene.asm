@@ -59,7 +59,7 @@ RoomTransitionSceneDownVBlank:
 
         push    bc
 
-        call    MapShowRow
+        LONG_CALL MapShowRow, 1
 
         pop     bc
 
@@ -68,7 +68,7 @@ RoomTransitionSceneDownVBlank:
         ld      [var_room_load_counter], a
 
 .done:
-        jp      VBlankFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -86,7 +86,7 @@ RoomTransitionSceneDownFinishUpVBlank:
 
         push    bc
 
-        call    MapShowRow
+        LONG_CALL MapShowRow, 1
 
         pop     bc
 
@@ -104,7 +104,7 @@ RoomTransitionSceneDownFinishUpVBlank:
         call    SceneSetVBlankFn
 
 .return:
-        jp      VBlankFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -133,13 +133,17 @@ RoomTransitionSceneDownUpdate:
 
         call    DrawEntities
 
+        ld      a, [var_room_load_counter]
+        ld      c, a
+        LONG_CALL MapExpandRow, 1
+
         jr      .continue
 .done:
 ;;; The vblank handler is still updating map rows, so we won't set the vblank
 ;;; handler for remapping sprites yet. But if we don't allow the player to move
 ;;; while we're copying the rest of the map rows, it's kind of annoying to the
 ;;; user, because there's a split-second pause otherwise.
-        ld      de, VoidUpdateFn
+        ld      de, RoomTransitionSceneUDUpdateRest
         call    SceneSetUpdateFn
 
         ld      de, RoomTransitionSceneDownFinishUpVBlank
@@ -147,7 +151,7 @@ RoomTransitionSceneDownUpdate:
 
 ;;; ...
 .continue:
-        jp      UpdateFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -174,17 +178,22 @@ RoomTransitionSceneUpUpdate:
         call    FixnumSub
 
         call    DrawEntities
+
+        ld      a, [var_room_load_counter]
+        ld      c, a
+        LONG_CALL MapExpandRow, 1
+
         jr      .continue
 
 .done:
-        ld      de, VoidUpdateFn
+        ld      de, RoomTransitionSceneUDUpdateRest
         call    SceneSetUpdateFn
 
         ld      de, RoomTransitionSceneUpFinishUpVBlank
         call    SceneSetVBlankFn
 
 .continue:
-	jp      UpdateFnResume
+	ret
 
 
 
@@ -201,7 +210,7 @@ RoomTransitionSceneUpVBlank:
 
         push    bc
 
-        call    MapShowRow
+        LONG_CALL MapShowRow, 1
 
         pop     bc
 
@@ -210,7 +219,7 @@ RoomTransitionSceneUpVBlank:
         ld      [var_room_load_counter], a
 
 .done:
-        jp      VBlankFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -226,7 +235,7 @@ RoomTransitionSceneUpFinishUpVBlank:
 
         push    bc
 
-        call    MapShowRow
+        LONG_CALL MapShowRow, 1
 
         pop     bc
 
@@ -244,7 +253,7 @@ RoomTransitionSceneUpFinishUpVBlank:
         call    SceneSetVBlankFn
 
 .return:
-        jp      VBlankFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -272,17 +281,21 @@ RoomTransitionSceneRightUpdate:
 
         call    DrawEntities
 
+        ld      a, [var_room_load_counter]
+        ld      c, a
+        LONG_CALL MapExpandColumn, 1
+
         jr      .continue
 .done:
 
-        ld      de, VoidUpdateFn
+        ld      de, RoomTransitionSceneLRUpdateRest
         call    SceneSetUpdateFn
 
         ld      de, RoomTransitionSceneRightFinishUpVBlank
         call    SceneSetVBlankFn
 
 .continue:
-        jp      UpdateFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -298,7 +311,7 @@ RoomTransitionSceneRightFinishUpVBlank:
 
         push    bc
 
-        call    MapShowColumn
+        LONG_CALL MapShowColumn, 1
 
         pop     bc
 
@@ -316,7 +329,7 @@ RoomTransitionSceneRightFinishUpVBlank:
         call    SceneSetVBlankFn
 
 .return:
-        jp      VBlankFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -333,7 +346,7 @@ RoomTransitionSceneRightVBlank:
 
         push    bc
 
-        call    MapShowColumn
+        LONG_CALL MapShowColumn, 1
 
         pop     bc
 
@@ -342,7 +355,7 @@ RoomTransitionSceneRightVBlank:
         ld      [var_room_load_counter], a
 
 .done:
-        jp      VBlankFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -369,17 +382,41 @@ RoomTransitionSceneLeftUpdate:
         call    FixnumSub
 
         call    DrawEntities
+
+        ld      a, [var_room_load_counter]
+        ld      c, a
+        LONG_CALL MapExpandColumn, 1
+
         jr      .continue
 
 .done:
-        ld      de, VoidUpdateFn
+        ld      de, RoomTransitionSceneLRUpdateRest
         call    SceneSetUpdateFn
 
         ld      de, RoomTransitionSceneLeftFinishUpVBlank
         call    SceneSetVBlankFn
 
 .continue:
-	jp      UpdateFnResume
+	ret
+
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionSceneUDUpdateRest:
+        ld      a, [var_room_load_counter]
+        ld      c, a
+        LONG_CALL MapExpandRow, 1
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+RoomTransitionSceneLRUpdateRest:
+        ld      a, [var_room_load_counter]
+        ld      c, a
+        LONG_CALL MapExpandColumn, 1
+
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -395,7 +432,7 @@ RoomTransitionSceneLeftVBlank:
 
         push    bc
 
-        call    MapShowColumn
+        LONG_CALL MapShowColumn, 1
 
         pop     bc
 
@@ -404,7 +441,7 @@ RoomTransitionSceneLeftVBlank:
         ld      [var_room_load_counter], a
 
 .done:
-        jp      VBlankFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -421,7 +458,7 @@ RoomTransitionSceneLeftFinishUpVBlank:
 
         push    bc
 
-        call    MapShowColumn
+        LONG_CALL MapShowColumn, 1
 
         pop     bc
 
@@ -439,7 +476,7 @@ RoomTransitionSceneLeftFinishUpVBlank:
         call    SceneSetVBlankFn
 
 .return:
-        jp      VBlankFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------

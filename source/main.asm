@@ -247,7 +247,7 @@ Main:
         ei
 
 .loop:
-        call    ReadKeys
+        LONG_CALL ReadKeys, 1
         ld      a, b
         ldh     [var_joypad_raw], a
 
@@ -258,10 +258,8 @@ Main:
         ld      h, a                    ; | Fetch scene update fn
         ld      a, [de]                 ; |
         ld      l, a                    ; /
-        jp      hl                      ; Jump to scene update code
+        INVOKE_HL                       ; Jump to scene update code
 
-UpdateFnResume:                         ; This label is global, so that the
-                                        ; update code can jump back.
 
 .sched_sleep:
         ldh     a, [var_sleep_counter]
@@ -289,12 +287,10 @@ UpdateFnResume:                         ; This label is global, so that the
         ld      de, var_scene_vblank_fn ; \
         ld      a, [de]                 ; |
         inc     de                      ; |
-        ld      h, a                    ; | Fetch scene update fn
+        ld      h, a                    ; | Fetch scene vblank fn
         ld      a, [de]                 ; |
         ld      l, a                    ; /
-        jp      hl                      ; Jump to scene vblank code
-
-VBlankFnResume:
+        INVOKE_HL                       ; Jump to scene vblank code
 
 ;;; As per my own testing, I can fit about five DMA block copies for 32x32 pixel
 ;;; sprites in within the vblank window.
@@ -314,13 +310,13 @@ VBlankFnResume:
 ;;; ----------------------------------------------------------------------------
 
 VoidVBlankFn:
-	jr      VBlankFnResume
+	ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 VoidUpdateFn:
-        jr      UpdateFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -364,7 +360,6 @@ MapSpriteBlock:
         INCLUDE "introCreditsScene.asm"
         INCLUDE "roomTransitionScene.asm"
         INCLUDE "utility.asm"
-        INCLUDE "joypad.asm"
         INCLUDE "fixnum.asm"
         INCLUDE "map.asm"
         INCLUDE "video.asm"

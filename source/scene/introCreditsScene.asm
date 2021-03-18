@@ -46,6 +46,8 @@
 IntroCreditsSceneEnter:
         call    VBlankIntrWait
 
+        SET_BANK 7
+
         call    LoadOverworldPalettes
 
         ld      hl, OverlayTiles
@@ -59,7 +61,7 @@ IntroCreditsSceneEnter:
         ld      a, 0
         ld      [var_scene_counter], a
 
-        jp      UpdateFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -77,7 +79,7 @@ IntroCreditsSceneUpdate:
         call    SceneSetUpdateFn
 
 .done:
-        jp      UpdateFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------

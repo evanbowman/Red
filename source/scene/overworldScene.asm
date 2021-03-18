@@ -84,7 +84,7 @@ OverworldSceneEnter:
         call    SceneSetVBlankFn
 
 
-        jp      UpdateFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -200,7 +200,7 @@ EntityUpdateLoopDone:
 ;;; TODO: left, right, up transitions. The level map that I drew only has an
 ;;; exit on one side.
 
-        jp      UpdateFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -283,7 +283,7 @@ OverworldSceneOnVBlank:
         SET_BANK 1
 
 .done:
-        jp      VBlankFnResume
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -315,6 +315,8 @@ OverworldSceneTryRoomTransition:
 
         ld      a, 0
         ld      [var_room_load_counter], a
+        ld      c, a
+        LONG_CALL MapExpandRow, 1
 
         jr      .done
 
@@ -336,6 +338,8 @@ OverworldSceneTryRoomTransition:
 
         ld      a, 31
         ld      [var_room_load_counter], a
+        ld      c, a
+        LONG_CALL MapExpandRow, 1
 
         jr      .done
 
@@ -354,6 +358,8 @@ OverworldSceneTryRoomTransition:
 
         ld      a, 0
         ld      [var_room_load_counter], a
+        ld      c, a
+        LONG_CALL MapExpandColumn, 1
 
         jr      .done
 
@@ -374,6 +380,8 @@ OverworldSceneTryRoomTransition:
 
         ld      a, 31
         ld      [var_room_load_counter], a
+        ld      c, a
+        LONG_CALL MapExpandColumn, 1
 
 .done:
         ret
