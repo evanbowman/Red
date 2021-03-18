@@ -46,27 +46,24 @@
 OverworldSceneEnter:
         call    VBlankIntrWait
 
-        ld      a, 0
-	ld	[rLCDC], a
-
-;;; LCD Disabled
-
         call    LoadOverworldPalettes
 
         ld      hl, OverlayTiles
         ld      bc, OverlayTilesEnd - OverlayTiles
         ld      de, $9000
-        call    Memcpy
+        call    VramSafeMemcpy
 
         ld      hl, BackgroundTiles
         ld      bc, BackgroundTilesEnd - BackgroundTiles
         ld      de, $8800
-        call    Memcpy
+        call    VramSafeMemcpy
 
         ld      hl, SpriteDropShadow
         ld      bc, SpriteDropShadowEnd - SpriteDropShadow
         ld      de, $87c0
-        call    Memcpy
+        call    VramSafeMemcpy
+
+        call    VBlankIntrWait
 
         ld      a, 136
         ld      [rWY], a
@@ -77,11 +74,6 @@ OverworldSceneEnter:
         call    TestOverlay
 
 ;;; TODO: reload map tiles
-
-        ld      a, SCREEN_MODE
-        ld      [rLCDC], a
-
-;;; LCD Enabled
 
         ld      de, OverworldSceneUpdate
         call    SceneSetUpdateFn

@@ -160,6 +160,7 @@ var_room_load_parity:         DS      1
 
 var_scene_update_fn:    DS      2
 var_scene_vblank_fn:    DS      2
+var_scene_counter:      DS      1
 
 
 ;;; ############################################################################

@@ -168,3 +168,44 @@ VBlankIntrWait:
 
 
 ;;; ----------------------------------------------------------------------------
+
+;;; This function should only be used for loading stuff during scene
+;;; transitions, when you don't want to turn off the lcd. High overhead.
+;;; Note: do not assume anything about the scanline position after calling this
+;;; function. VramSafeMemcpy may likely return during the blank window, but
+;;; don't anything.
+VramSafeMemcpy:
+;;; hl - source
+;;; de - dest
+;;; bc - size
+
+;;; TODO: technically, we can also speed this up by copying during the hblanks,
+;;; right?
+	call    VBlankIntrWait
+
+	inc	b
+	inc	c
+	jr	.skip
+.top:
+        ld      a, [rLY]
+        cp      152
+        jr      Z, .vsync
+        jr      .copy
+
+.vsync:
+	call    VBlankIntrWait
+
+.copy:
+	ld	a, [hl+]
+	ld	[de], a
+	inc	de
+.skip:
+	dec	c
+	jr	nz, .top
+	dec	b
+	jr	nz, .top
+
+	ret
+
+
+;;; ----------------------------------------------------------------------------

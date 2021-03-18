@@ -164,9 +164,10 @@ Start:
         call    SetCpuFast
         call    VBlankPoll              ; Wait for vbl before disabling lcd.
 
+        call    LcdOff
+
 	ld	a, 0
 	ld	[rIF], a
-	ld	[rLCDC], a
 	ld	[rSTAT], a
 	ld	[rSCX], a
 	ld	[rSCY], a
@@ -205,9 +206,8 @@ Main:
 
         call    DebugInit
 
-.activate_screen:
-        ld	a, SCREEN_MODE
-        ld	[rLCDC], a	        ; enable lcd
+        call    LcdOn
+
         ei
 
 .loop:
@@ -326,6 +326,7 @@ MapSpriteBlock:
         INCLUDE "player.asm"
         INCLUDE "scene.asm"
         INCLUDE "overworldScene.asm"
+        INCLUDE "introCreditsScene.asm"
         INCLUDE "roomTransitionScene.asm"
         INCLUDE "utility.asm"
         INCLUDE "joypad.asm"
