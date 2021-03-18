@@ -188,6 +188,7 @@ VramSafeMemcpy:
 	jr	.skip
 .top:
         ld      a, [rLY]
+        ; We could keep copying during line 153, but that's a bit dicey.
         cp      152
         jr      Z, .vsync
         jr      .copy
