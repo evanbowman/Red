@@ -173,7 +173,7 @@ VBlankIntrWait:
 ;;; transitions, when you don't want to turn off the lcd. High overhead.
 ;;; Note: do not assume anything about the scanline position after calling this
 ;;; function. VramSafeMemcpy may likely return during the blank window, but
-;;; don't anything.
+;;; don't assume anything.
 VramSafeMemcpy:
 ;;; hl - source
 ;;; de - dest
