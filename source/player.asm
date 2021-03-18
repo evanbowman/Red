@@ -767,11 +767,11 @@ PlayerJoypadResponse:
 ;;; diagonally, otherwise, we will move faster in the diagonal direction.
         jr      NZ, .moveDiagonalFwd
         ld      b, 1
-        ld      c, 25
+        ld      c, 40
         jr      .moveFwd
 .moveDiagonalFwd:
         ld      b, 0
-        ld      c, 198
+        ld      c, 206
 .moveFwd:
 
         call    FixnumAdd
@@ -784,15 +784,15 @@ PlayerJoypadResponse:
 
         jr      NZ, .moveDiagonalRev
         ld      b, 1
-        ld      c, 25
+        ld      c, 40
         jr      .moveRev
 .moveDiagonalRev:
         ld      b, 0
-        ld      c, 198
+        ld      c, 206
 .moveRev:
 
         ld      b, 1
-        ld      c, 25
+        ld      c, 40
         call    FixnumSub
         pop     bc
 	jr      .done

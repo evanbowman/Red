@@ -51,7 +51,7 @@ RoomTransitionSceneDownVBlank:
 
 ;;; Why only 24 rows? Otherwise, we will see the rows change as the screen
 ;;; scrolls. We will finish up the rest of the rows after the transition.
-        cp      24
+        cp      30
 
 	jr      Z, .done
 
@@ -114,14 +114,12 @@ RoomTransitionSceneDownUpdate:
         cp      0
         jr      Z, .done
 
-        inc     a
-        inc     a
-        inc     a
-        cp      1
-        jr      NZ, .skip
-        ld      a, 0
-        cp      2
-        jr      NZ, .skip
+        add     4
+
+        cp      5
+        jr      C, .correct
+        jr      .skip
+.correct:
         ld      a, 0
 
 
@@ -137,8 +135,10 @@ RoomTransitionSceneDownUpdate:
 
         jr      .continue
 .done:
-;;; No more update code to run, set a void handler, and let the vblank handler
-;;; take care of populating the remaining map rows.
+;;; The vblank handler is still updating map rows, so we won't set the vblank
+;;; handler for remapping sprites yet. But if we don't allow the player to move
+;;; while we're copying the rest of the map rows, it's kind of annoying to the
+;;; user, because there's a split-second pause otherwise.
         ld      de, VoidUpdateFn
         call    SceneSetUpdateFn
 
@@ -157,9 +157,7 @@ RoomTransitionSceneUpUpdate:
         cp      121
         jr      Z, .done
 
-        dec     a
-        dec     a
-        dec     a
+        sub     4
 
         cp      121
         jr      C, .fixView     ; fix overcorrection (aka clamp)
@@ -195,7 +193,7 @@ RoomTransitionSceneUpUpdate:
 RoomTransitionSceneUpVBlank:
         ld      a, [var_room_load_counter]
 
-        cp      8
+        cp      2
 
 	jr      Z, .done
 
@@ -256,14 +254,12 @@ RoomTransitionSceneRightUpdate:
         cp      0
         jr      Z, .done
 
-        inc     a
-        inc     a
-        inc     a
-        cp      1
-        jr      NZ, .skip
-        ld      a, 0
-        cp      2
-        jr      NZ, .skip
+        add     4
+
+        cp      5
+        jr      C, .correct
+        jr      .skip
+.correct:
         ld      a, 0
 
 .skip:
@@ -329,7 +325,7 @@ RoomTransitionSceneRightFinishUpVBlank:
 RoomTransitionSceneRightVBlank:
         ld      a, [var_room_load_counter]
 
-        cp      20
+        cp      23
 
 	jr      Z, .done
 
@@ -356,9 +352,7 @@ RoomTransitionSceneLeftUpdate:
         cp      95
         jr      Z, .done
 
-        dec     a
-        dec     a
-        dec     a
+        sub     4
 
         cp      95
         jr      C, .fixView     ; fix overcorrection (aka clamp)
@@ -393,7 +387,7 @@ RoomTransitionSceneLeftUpdate:
 RoomTransitionSceneLeftVBlank:
         ld      a, [var_room_load_counter]
 
-        cp      12
+        cp      7
 
 	jr      Z, .done
 
