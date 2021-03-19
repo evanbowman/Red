@@ -60,6 +60,7 @@ def blend(lhs, rhs, amount):
 
 
 black = (0, 0, 1)
+tan = (27, 24, 18)
 
 
 def to_gbc_color(c):
@@ -67,12 +68,23 @@ def to_gbc_color(c):
     # The byte order is swapped on the gbc
     print("$" + fmt[2:4] + ",$" + fmt[0:2], end = ", ")
 
-
+print("black::")
 for i in range(0, 32):
     print(".blend_" + str(i) + "::")
     for line in lines:
         print("DB ", end="")
         for elem in line:
             to_gbc_color(blend(black, elem, i / 31))
+        print("")
+    print(".blend_" + str(i) + "_end::")
+
+
+print("tan::")
+for i in range(0, 32):
+    print(".blend_" + str(i) + "::")
+    for line in lines:
+        print("DB ", end="")
+        for elem in line:
+            to_gbc_color(blend(tan, elem, i / 31))
         print("")
     print(".blend_" + str(i) + "_end::")

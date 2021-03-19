@@ -44,7 +44,7 @@
 
 
 OverworldSceneFadeInVBlank:
-        ld      a, [var_temp]
+        ld      a, [var_scene_counter]
 	ld      c, a
         sub     4
         jr      C, .transition
@@ -55,7 +55,10 @@ OverworldSceneFadeInVBlank:
         call    SceneSetVBlankFn
 
 .continue:
-        ld      [var_temp], a
+        ld      [var_scene_counter], a
+        SET_BANK 7
+        ld      hl, BackgroundPaletteFadeToBlack
+        ld      de, SpritePaletteFadeToBlack
         call    Fade
 
 	call    VBlankCopySpriteTextures
@@ -64,22 +67,20 @@ OverworldSceneFadeInVBlank:
 
 ;;; ----------------------------------------------------------------------------
 
-OverworldSceneEnter:
-        call    VBlankIntrWait
-
-        ld      c, 255
-        call    Fade
-
-        call    VBlankIntrWait
-        call    UpdateStaminaBar
-
-
-        SET_BANK 7
+OverworldSceneLoadOverlayTiles:
+	SET_BANK 7
 
         ld      hl, OverlayTiles
         ld      bc, OverlayTilesEnd - OverlayTiles
         ld      de, $9000
         call    VramSafeMemcpy
+
+        ret
+
+
+OverworldSceneLoadTiles:
+
+        call    OverworldSceneLoadOverlayTiles
 
         ld      hl, BackgroundTiles
         ld      bc, BackgroundTilesEnd - BackgroundTiles
@@ -91,6 +92,26 @@ OverworldSceneEnter:
         ld      de, $87c0
         call    VramSafeMemcpy
 
+        ret
+
+
+OverworldSceneEnter:
+        call    VBlankIntrWait
+
+        ld      c, 255
+        SET_BANK 7
+        ld      hl, BackgroundPaletteFadeToBlack
+        ld      de, SpritePaletteFadeToBlack
+        call    Fade
+
+        call    VBlankIntrWait
+        call    TestOverlay
+
+        call    VBlankIntrWait
+        call    UpdateStaminaBar
+
+        call    OverworldSceneLoadTiles
+
         call    VBlankIntrWait
 
         ld      a, 136
@@ -99,17 +120,13 @@ OverworldSceneEnter:
         ld      a, 7
         ld      [rWX], a
 
-        call    TestOverlay
-
 ;;; TODO: reload map tiles
 
         ld      de, OverworldSceneUpdate
         call    SceneSetUpdateFn
 
-        ;; ld      de, OverworldSceneOnVBlank
-
         ld      a, 255
-        ld      [var_temp], a
+        ld      [var_scene_counter], a
 
         ld      de, OverworldSceneFadeInVBlank
         call    SceneSetVBlankFn
@@ -176,6 +193,20 @@ OverworldSceneUpdateView:
 
 
 OverworldSceneUpdate:
+
+        ldh     a, [var_joypad_current]
+        bit     PADB_SELECT, a
+        jr      Z, .updateEntities
+
+        ld      de, WorldmapSceneEnter
+        call    SceneSetUpdateFn
+
+        ld      de, VoidVBlankFn
+        call    SceneSetVBlankFn
+
+
+.updateEntities:
+
         ld      de, var_entity_buffer
         ld      a, [var_entity_buffer_size]
 

@@ -176,7 +176,11 @@ Start:
 .checkGameboyColor:
         cp      a, BOOTUP_A_CGB         ; Boot leaves value in reg-a
         jr      z, .gbcDetected         ; if a == 0, then we have gbc
-        LONG_CALL GameboyColorNotDetected, 1
+
+        di
+        call    LcdOff
+        call    LoadFont
+	LONG_CALL GameboyColorNotDetected, 1
 
 ;;; TODO: Display some text to indicate that the game requires a gbc. There's no
 ;;; need to waste space in bank zero for this stuff, though.
@@ -193,6 +197,8 @@ Start:
 ;;; game will not be playable on the gba, as the color palettes would not
 ;;; look too good anyway.
 .agbDetected:
+        call    LcdOff
+        call    LoadFont
         LONG_CALL GameboyAdvanceDetected, 1
 
 
@@ -364,6 +370,7 @@ MapSpriteBlock:
         INCLUDE "overworldScene.asm"
         INCLUDE "introCreditsScene.asm"
         INCLUDE "roomTransitionScene.asm"
+        INCLUDE "worldmapScene.asm"
         INCLUDE "utility.asm"
         INCLUDE "fixnum.asm"
         INCLUDE "map.asm"

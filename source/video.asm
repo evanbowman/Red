@@ -495,9 +495,13 @@ LoadObjectColors:
 
 Fade:
 ;;; c - amount
+;;; de - foreground palettes base ptr
+;;; hl - background palettes base ptr
 ;;; trashes hl, b
 
         ld      b, 0
+
+        push    de
 
         push    bc
 
@@ -525,18 +529,16 @@ Fade:
         sla     c                       ; \
         sla     c                       ; | Perform the shift.
         sla     c                       ; /
-.here:
-        SET_BANK 7
 
-        ld      hl, BackgroundPalette
-        add     bc
+
+        add     hl, bc
 
         ld      b, 64
         call    LoadBackgroundColors
 
 
         pop     bc
-
+        pop     hl                      ; We pushed from de, see above
 
         ld      a, c
 ;;; All of the code below is copy-pasted from above, just so that we can offset
@@ -565,8 +567,7 @@ Fade:
         sla     c                       ; /
 
 
-        ld      hl, SpritePalettes
-        add     bc
+        add     hl, bc                  ; See pop, above
 
         ld      b, 64
         call    LoadObjectColors
@@ -574,6 +575,7 @@ Fade:
         ret
 .skip:
         pop bc
+        pop de
 
         ret
 
@@ -582,11 +584,11 @@ Fade:
 
 LoadOverworldPalettes:
         ld      b, 64
-        ld      hl, SpritePalettes.blend_0
+        ld      hl, SpritePalettes
         call    LoadObjectColors
 
         ld      b, 64
-        ld      hl, BackgroundPalette.blend_0
+        ld      hl, BackgroundPalette
         call    LoadBackgroundColors
         ret
 
@@ -797,13 +799,13 @@ TestOverlay:
 
         inc     c
 
-        ld      a, $A
+        ld      a, $2
         call    SetOverlayTile
 
         inc     c
 
 .loop1:
-        ld      a, $A
+        ld      a, $2
         call    SetOverlayTile
         inc     c
         ld      a, 17

@@ -129,6 +129,8 @@ VBlankIntrWait:
 ;;; Note: do not assume anything about the scanline position after calling this
 ;;; function. VramSafeMemcpy may likely return during the blank window, but
 ;;; don't assume anything.
+;;; Also note: this is a blocking call, and the cpu will be halted outside of
+;;; the vblank window.
 VramSafeMemcpy:
 ;;; hl - source
 ;;; de - dest
@@ -136,8 +138,16 @@ VramSafeMemcpy:
 
 ;;; TODO: technically, we can also speed this up by copying during the hblanks,
 ;;; right?
-	call    VBlankIntrWait
 
+        ld      a, [rLY]
+        cp      145
+        jr      C, .needsInitialVSync
+	jr      .start
+
+.needsInitialVSync:
+        call    VBlankIntrWait
+
+.start:
 	inc	b
 	inc	c
 	jr	.skip
