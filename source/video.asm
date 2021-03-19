@@ -499,7 +499,7 @@ LoadOverworldPalettes:
         call    LoadObjectColors
 
         ld      b, 64
-        ld      hl, BackgroundPalette
+        ld      hl, BackgroundPalette.blend_0
         call    LoadBackgroundColors
         ret
 

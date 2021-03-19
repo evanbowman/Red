@@ -3,6 +3,17 @@
 # cheat and just use canned data. If you feed the assembly code for a color
 # palette into this script, it will output a canned fade animation, 32 steps in
 # size.
+#
+# e.g. of input data:
+# DB $00,$00, $69,$72, $1A,$20, $03,$00,
+# DB $00,$00, $FF,$7F, $F8,$37, $5F,$19,
+# DB $00,$00, $54,$62, $F8,$37, $1A,$20,
+# DB $00,$00, $00,$00, $00,$00, $00,$00,
+# DB $00,$00, $00,$00, $00,$00, $00,$00,
+# DB $00,$00, $00,$00, $00,$00, $00,$00,
+# DB $00,$00, $00,$00, $00,$00, $00,$00,
+# DB $00,$00, $00,$00, $00,$00, $00,$00,
+#
 
 
 def get_rgb(bgr_555):
@@ -25,7 +36,9 @@ with open('palette_data.txt') as data:
             p = elem.strip()
             p = p.strip("$")
             if parity:
+                # Add strs in this order intentionally, to unswap the byteorder.
                 coll = p + coll
+
                 coll.strip()
                 parity = False
                 vector.append(get_rgb(int(coll, 16)))
@@ -51,7 +64,7 @@ black = (0, 0, 1)
 
 def to_gbc_color(c):
     fmt = '{0:0{1}X}'.format(((c[0]) + ((c[1]) << 5) + ((c[2]) << 10)), 4)
-
+    # The byte order is swapped on the gbc
     print("$" + fmt[2:4] + ",$" + fmt[0:2], end = ", ")
 
 
