@@ -494,11 +494,11 @@ LoadObjectColors:
 ;;; ----------------------------------------------------------------------------
 
 LoadOverworldPalettes:
-        ld      b, 24
-        ld      hl, PlayerCharacterPalette
+        ld      b, 64
+        ld      hl, SpritePalettes.blend_0
         call    LoadObjectColors
 
-        ld      b, 24
+        ld      b, 64
         ld      hl, BackgroundPalette
         call    LoadBackgroundColors
         ret
@@ -746,7 +746,7 @@ LoadFont:
 
         ld      hl, FontTiles
         ld      bc, FontTilesEnd - FontTiles
-        ld      de, $9330
+        ld      de, $9320
 
         ld	a, 1
 	ld	[rVBK], a
@@ -761,9 +761,74 @@ LoadFont:
 
 ;;; ----------------------------------------------------------------------------
 
+test_string:
+        DB      "Evan Bowman Presents", 0
+
+
+AsciiToGlyph:
+;;; a - ascii char
+;;; return glyph in a
+        cp      32
+        jr      Z, .space
+        cp      46
+        jr      Z, .period
+        cp      44
+        jr      Z, .comma
+        cp      58
+        jr      C, .numeral
+	cp      91
+        jr      C, .uppercase
+        cp      123
+        jr      C, .lowercase
+
+        ret
+
+.space:
+        ld      a, $32
+        ret
+.numeral:
+	sub     3
+        ret
+.period:
+        ld      a, $56
+        ret
+.comma:
+        ld      a, $57
+        ret
+.uppercase:
+        add     $18
+        ret
+.lowercase:
+        sub     $24
+        ret
+
+
+
 PutText:
 ;;; hl - text
+;;; b - x
+;;; c - y
+        ld      de, _SCRN1
+.loop:
+        ld      a, [hl]
+        cp      0
+	jr      Z, .done
 
+        call    AsciiToGlyph
+        ld      [de], a
+
+        ld      a, 1
+        ld      [rVBK], a
+        ld      a, $88
+        ld      [de], a
+        ld      a, 0
+	ld      [rVBK], a
+
+        inc     hl
+        inc     de
+
+        jr      .loop
+.done:
         ret
 
 

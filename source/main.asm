@@ -242,6 +242,11 @@ Main:
 
         call    DebugInit
 
+        ld      hl, test_string
+        ld      b, 0
+        ld      c, 0
+        call    PutText
+
         call    LcdOn
 
         ei
