@@ -496,7 +496,10 @@ LoadObjectColors:
 Fade:
 ;;; c - amount
 ;;; trashes hl, b
+
         ld      b, 0
+
+        push    bc
 
 ;;; We want to convert from an index in the range of 0-255 to 0-31, as we
 ;;; support 32 levels of fading. Then, we'll want to shift left by six bits
@@ -511,7 +514,7 @@ Fade:
         cp      c
         ld      a, c
         ld      [var_last_fade_amount], a
-        jr      Z, .done
+        jr      Z, .skip
 
         ld      a, c                    ; \
         and     $e0                     ; | Transfer the upper three bits into
@@ -525,21 +528,53 @@ Fade:
 .here:
         SET_BANK 7
 
-        ld      hl, SpritePalettes
-        add     bc
-
-        push    bc
-        ld      b, 64
-        call    LoadObjectColors
-        pop     bc
-
         ld      hl, BackgroundPalette
         add     bc
 
         ld      b, 64
         call    LoadBackgroundColors
 
-.done:
+
+        pop     bc
+
+
+        ld      a, c
+;;; All of the code below is copy-pasted from above, just so that we can offset
+;;; the sprite fades from the background fades.
+        sub     16
+        jr      C, .zero
+        jr      .nominal
+.zero:
+        ld      a, 0
+.nominal:
+        ld      c, a
+
+
+        ld      a, c
+        and     $f8
+        ld      c, a
+
+        ld      a, c                    ; \
+        and     $e0                     ; | Transfer the upper three bits into
+        swap    a                       ; | register b.
+        srl     a                       ; |
+	ld      b, a                    ; /
+
+        sla     c                       ; \
+        sla     c                       ; | Perform the shift.
+        sla     c                       ; /
+
+
+        ld      hl, SpritePalettes
+        add     bc
+
+        ld      b, 64
+        call    LoadObjectColors
+
+        ret
+.skip:
+        pop bc
+
         ret
 
 
