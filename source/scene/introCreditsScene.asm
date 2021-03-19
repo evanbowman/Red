@@ -48,9 +48,6 @@ IntroCreditsSceneEnter:
 
         SET_BANK 7
 
-	;; ld      hl, IntroCreditsPalette
-        ;; ld      b, 8
-        ;; call    LoadBackgroundColors
         call    LoadOverworldPalettes
 
         ld      hl, OverlayTiles
@@ -76,7 +73,7 @@ IntroCreditsSceneUpdate:
         ld      a, [var_scene_counter]
         inc     a
         ld      [var_scene_counter], a
-        cp      255
+        cp      30
         jr      Z, .nextScene
 	jr      .done
 

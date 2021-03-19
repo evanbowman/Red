@@ -157,6 +157,8 @@ var_room_load_joypad_cache:   DS      1
 var_room_load_slab:           DS      32
 var_room_load_colors:         DS      32
 
+var_temp:       DS      1
+
 
 ;;; ############################################################################
 
@@ -165,6 +167,13 @@ var_room_load_colors:         DS      32
 var_scene_update_fn:    DS      2
 var_scene_vblank_fn:    DS      2
 var_scene_counter:      DS      1
+
+
+;;; ############################################################################
+
+        SECTION "FADE", WRAM0
+
+var_last_fade_amount:   DS      1
 
 
 ;;; ############################################################################

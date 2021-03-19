@@ -43,12 +43,38 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+OverworldSceneFadeInVBlank:
+        ld      a, [var_temp]
+	ld      c, a
+        sub     4
+        jr      C, .transition
+	jr      .continue
+
+.transition:
+        ld      de, OverworldSceneOnVBlank
+        call    SceneSetVBlankFn
+
+.continue:
+        ld      [var_temp], a
+        call    Fade
+
+	call    VBlankCopySpriteTextures
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 OverworldSceneEnter:
         call    VBlankIntrWait
 
-        SET_BANK 7
+        ld      c, 255
+        call    Fade
 
-        call    LoadOverworldPalettes
+        call    VBlankIntrWait
+        call    UpdateStaminaBar
+
+
+        SET_BANK 7
 
         ld      hl, OverlayTiles
         ld      bc, OverlayTilesEnd - OverlayTiles
@@ -80,7 +106,12 @@ OverworldSceneEnter:
         ld      de, OverworldSceneUpdate
         call    SceneSetUpdateFn
 
-        ld      de, OverworldSceneOnVBlank
+        ;; ld      de, OverworldSceneOnVBlank
+
+        ld      a, 255
+        ld      [var_temp], a
+
+        ld      de, OverworldSceneFadeInVBlank
         call    SceneSetVBlankFn
 
 
@@ -206,9 +237,7 @@ EntityUpdateLoopDone:
 ;;; ----------------------------------------------------------------------------
 
 
-OverworldSceneOnVBlank:
-        call    UpdateStaminaBar
-
+VBlankCopySpriteTextures:
 ;;; Now, this entity buffer code looks pretty nasty. But, we are just doing a
 ;;; bunch of work upfront, because we do not always need to actually run the
 ;;; dma. Iterate through each entity, check its swap flag. If the entity
@@ -280,9 +309,18 @@ OverworldSceneOnVBlank:
 ;;; The whole point of the above loop was to copy sprites from various rom banks
 ;;; into vram. So we should set the rom bank back to one, which is the standard
 ;;; rom bank for most purposes.
+.done:
         SET_BANK 1
 
-.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+OverworldSceneOnVBlank:
+        call    UpdateStaminaBar
+
+	call    VBlankCopySpriteTextures
         ret
 
 

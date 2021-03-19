@@ -493,6 +493,58 @@ LoadObjectColors:
 
 ;;; ----------------------------------------------------------------------------
 
+Fade:
+;;; c - amount
+;;; trashes hl, b
+        ld      b, 0
+
+;;; We want to convert from an index in the range of 0-255 to 0-31, as we
+;;; support 32 levels of fading. Then, we'll want to shift left by six bits
+;;; (each palette bank takes up 64 bytes). Because we essentially shifting
+;;; right by three bits, and then shifting left by six bits, we can skip a bunch
+;;; of the shifts by simply masking off the lower three bits.
+        ld      a, c
+        and     $f8
+        ld      c, a
+
+        ld      a, [var_last_fade_amount]
+        cp      c
+        ld      a, c
+        ld      [var_last_fade_amount], a
+        jr      Z, .done
+
+        ld      a, c                    ; \
+        and     $e0                     ; | Transfer the upper three bits into
+        swap    a                       ; | register b.
+        srl     a                       ; |
+	ld      b, a                    ; /
+
+        sla     c                       ; \
+        sla     c                       ; | Perform the shift.
+        sla     c                       ; /
+.here:
+        SET_BANK 7
+
+        ld      hl, SpritePalettes
+        add     bc
+
+        push    bc
+        ld      b, 64
+        call    LoadObjectColors
+        pop     bc
+
+        ld      hl, BackgroundPalette
+        add     bc
+
+        ld      b, 64
+        call    LoadBackgroundColors
+
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 LoadOverworldPalettes:
         ld      b, 64
         ld      hl, SpritePalettes.blend_0
@@ -710,13 +762,13 @@ TestOverlay:
 
         inc     c
 
-        ld      a, $2
+        ld      a, $A
         call    SetOverlayTile
 
         inc     c
 
 .loop1:
-        ld      a, $2
+        ld      a, $A
         call    SetOverlayTile
         inc     c
         ld      a, 17
