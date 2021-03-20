@@ -230,6 +230,8 @@ Main:
 	ld	[rIE], a	        ; setup
 
         LONG_CALL r1_CopyDMARoutine, 1
+	LONG_CALL r1_SetRoomVisited, 1
+
 
         ld      de, IntroCreditsSceneEnter
         call    SceneSetUpdateFn

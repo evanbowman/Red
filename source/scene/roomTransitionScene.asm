@@ -49,7 +49,7 @@
 RoomTransitionSceneDownVBlank:
         ld      a, [var_room_load_counter]
 
-;;; Why only 24 rows? Otherwise, we will see the rows change as the screen
+;;; Why only 30 rows? Otherwise, we will see the rows change as the screen
 ;;; scrolls. We will finish up the rest of the rows after the transition.
         cp      30
 
@@ -78,6 +78,8 @@ RoomTransitionDone:
 
         ld      de, OverworldSceneOnVBlank
         call    SceneSetVBlankFn
+
+        LONG_CALL r1_SetRoomVisited, 1
 
 ;;; In case we missed any key presses during the transition
         ld      a, [var_room_load_joypad_cache]
@@ -110,6 +112,10 @@ RoomTransitionSceneDownFinishUpVBlank:
 
         jr      .return
 .done:
+	ld      a, [var_room_y]
+        inc     a
+        ld      [var_room_y], a
+
 
         call    RoomTransitionDone
 
@@ -255,6 +261,10 @@ RoomTransitionSceneUpFinishUpVBlank:
 
         jr      .return
 .done:
+        ld      a, [var_room_y]
+        dec     a
+        ld      [var_room_y], a
+
 
         call    RoomTransitionDone
 
@@ -327,6 +337,10 @@ RoomTransitionSceneRightFinishUpVBlank:
 
         jr      .return
 .done:
+	ld      a, [var_room_x]
+        inc     a
+        ld      [var_room_x], a
+
 
         call    RoomTransitionDone
 
@@ -470,6 +484,10 @@ RoomTransitionSceneLeftFinishUpVBlank:
 
         jr      .return
 .done:
+        ld      a, [var_room_x]
+        dec     a
+        ld      [var_room_x], a
+
 
         call    RoomTransitionDone
 

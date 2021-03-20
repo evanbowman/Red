@@ -59,6 +59,9 @@ MAP_HEIGHT EQU SCRN_VY / MAP_TILE_WIDTH
 
 var_map_info:    DS     MAP_WIDTH * MAP_HEIGHT
 
+var_room_x:     DS      1
+var_room_y:     DS      1
+
 
 ;;; SECTION MAP_INFO
 

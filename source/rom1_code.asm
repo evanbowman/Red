@@ -626,6 +626,86 @@ r1_WorldMapShow:
 
 ;;; ---------------------------------------------------------------------------
 
+;;; Used for indexing into our world map. The map is 18 blocks wide and 16
+;;; blocks tall. We assume here that inputs are less than 16. This code will
+;;; not work correctly if you pass a y value greater than 15.
+r1_l16Mul18Fast:
+;;; c - y value less than 16
+;;; result in hl
+;;; trashes b
+        ld      h, 0
+        ld      b, 0
+
+;;; swap (aka left-shift by four for the x16 multiplication)
+        ld      a, c
+        swap    a
+        ld      l, a
+
+;;; Then, add twice, to reach x18
+        add     hl, bc
+        add     hl, bc
+
+        ret
+
+
+;;; ---------------------------------------------------------------------------
+
+r1_IsRoomVisited::
+;;; b - room x
+;;; c - room y
+;;; trashes c, hl
+;;; result in b
+        ld      a, [var_room_y]
+        ld      c, a
+
+        ld      a, 1
+        ld      [rSVBK], a
+
+	call    r1_l16Mul18Fast         ; \
+        ld      a, [var_room_x]         ; |
+        ld      c, a                    ; | hl = x + y * 18
+        ld      b, 0                    ; |
+        add     hl, bc                  ; /
+
+        ld      bc, wram1_var_world_map_visited
+        add     hl, bc                  ; p = world_map_visited + hl
+
+        ld      a, [hl]
+        ld      b, a
+
+        ld      a, 0
+        ld      [rSVBK], a
+
+        ret
+
+
+r1_SetRoomVisited::
+        ld      a, [var_room_y]
+        ld      c, a
+
+        ld      a, 1
+        ld      [rSVBK], a
+
+	call    r1_l16Mul18Fast         ; \
+        ld      a, [var_room_x]         ; |
+        ld      c, a                    ; | hl = x + y * 18
+        ld      b, 0                    ; |
+        add     hl, bc                  ; /
+
+        ld      bc, wram1_var_world_map_visited
+        add     hl, bc                  ; p = world_map_visited + hl
+
+        ld      a, 1
+        ld      [hl], a                 ; world_map_visited[x + y * 18] = true
+
+        ld      a, 0
+        ld      [rSVBK], a
+
+        ret
+
+
+;;; ---------------------------------------------------------------------------
+
 r1_SmoothstepLut::
 DB $00, $00, $00, $00, $00, $00, $00, $00,
 DB $00, $00, $01, $01, $01, $01, $02, $02,
