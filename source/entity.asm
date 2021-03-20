@@ -48,6 +48,34 @@ EntityBufferReset:
         ld      [var_entity_buffer_size], a
         ret
 
+;;; ----------------------------------------------------------------------------
+
+EntityGetType:
+;;; hl - entity
+;;; return b - type
+;;; trashes c
+;;; preserves hl
+        push    hl
+        ld      bc, var_player_type - var_player_struct
+        add     hl, bc
+        ld      b, [hl]
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+EntitySetType:
+;;; hl - entity
+;;; a - type
+;;; trashes bc
+        push    hl
+        ld      bc, var_player_type - var_player_struct
+        add     hl, bc
+        ld      [hl], a
+        pop     hl
+        ret
+
 
 ;;; ----------------------------------------------------------------------------
 

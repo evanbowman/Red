@@ -836,6 +836,185 @@ r1_SetRoomVisited:
 
         ret
 
+
+;;; ----------------------------------------------------------------------------
+
+r1_LoadRoomEntities:
+        ld      a, 1
+        ld      [rSVBK], a
+
+        ld      a, [var_room_x]
+        ld      b, a
+        ld      a, [var_room_y]
+        ld      c, a
+        call    r1_LoadRoom
+
+        inc     hl              ; \
+        inc     hl              ; | skip room header
+        inc     hl              ; /
+
+        ld      b, 0
+.loop:
+        ld      a, b
+        cp      ROOM_ENTITYDESC_ARRAY_SIZE / 2
+        jr      Z, .endloop
+
+        ld      a, [hl]
+        cp      0
+        jr      NZ, .test
+        jr      .here
+.test:
+        push    hl
+	push    bc
+	;; call    VBlankIntrWait
+        ;; call    LcdOff
+        ;; call    DebugInit
+        ;; call    LcdOn
+        pop     bc
+        pop     hl
+
+        ;; TODO: spawn entity if type nonzero.
+.here:
+        inc     hl
+        inc     hl
+        inc     b
+        jr      .loop
+.endloop:
+
+        ;; TODO: create entities based on contents of room's entity array.
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+;;; NOTE: assumes that the ram bank is already set to bank 1.
+r1_CurrentRoomClearEntities:
+        ld      a, [var_room_x]
+        ld      b, a
+        ld      a, [var_room_y]
+        ld      c, a
+        call    r1_LoadRoom
+
+        ld      bc, ROOM_HEADER_SIZE
+        add     hl, bc
+
+        ld      a, 0
+        ld      bc, ROOM_ENTITYDESC_ARRAY_SIZE
+        call    Memset
+
+        ret
+
+
+;;; ---------------------------------------------------------------------------
+
+;;; NOTE: assumes that the ram bank is already set to bank 1.
+r1_CurrentRoomAppendEntityDesc:
+;;; a - entity x tile coord
+;;; c - entity y tile coord
+;;; b - entity type
+        swap    c
+        or      c
+        ld      c, a            ; glob x and y into one byte
+
+        push    de
+        push    bc
+        ld      a, [var_room_x]
+        ld      b, a
+        ld      a, [var_room_y]
+        ld      c, a
+        call    r1_LoadRoom
+        pop     bc
+
+        inc     hl              ; skip header bytes
+        inc     hl
+        inc     hl
+
+        ld      d, 0
+.loop:
+	ld      a, d
+        cp      ROOM_ENTITYDESC_ARRAY_SIZE / 2
+        jr      Z, .endloop
+
+        ld      a, [hl]
+        or      a
+        jr      Z, .push
+	jr      .next
+.push:
+        ld      [hl], b         ; Set entity desc type
+        inc     hl
+        ld      [hl], c         ; Set entity desc coordinate
+        jr      .endloop
+.next:
+        inc     hl
+        inc     hl
+        inc     d
+        jr      .loop
+.endloop:
+
+        pop     de
+	ret
+
+
+;;; ---------------------------------------------------------------------------
+
+;;; Called when switching to a different room. Store entities info in memory.
+r1_StoreRoomEntities:
+        ld      a, 1
+        ld      [rSVBK], a
+
+        call    r1_CurrentRoomClearEntities
+
+        ld      de, var_entity_buffer
+        ld      a, [var_entity_buffer_size]
+
+.loop:
+        cp      0               ; test loop counter
+        jr      Z, .loopEnd
+        dec     a
+        push    af
+
+        ld      a, [de]         ; \
+        ld      h, a            ; |
+        inc     de              ; |  entity pointer from buffer into hl
+        ld      a, [de]         ; |
+        ld      l, a            ; |
+        inc     de              ; /
+
+        call    EntityGetType
+	ld      a, b
+        cp      0
+        jr      Z, .skip        ; Do not store the player entity in the room
+
+        inc     hl
+        ld      a, [hl]         ; fetch y coordinate
+        and     $f0             ; \ convert to tile coordinate (y / 16)
+        swap    a               ; /
+        ld      c, a
+
+        inc     hl
+        inc     hl
+        inc     hl
+
+        ld      a, [hl]         ; \
+        and     $f0             ; | fetch x coordinate
+        swap    a               ; /
+
+        call    r1_CurrentRoomAppendEntityDesc
+
+.skip:
+
+        pop     af
+        jr      .loop
+
+.loopEnd:
+        ;; TODO: erase contents of room's entity array, serialize entities.
+
+        call    EntityBufferReset
+
+        ret
+
+
 ;;; ---------------------------------------------------------------------------
 
 r1_SaveGame:

@@ -370,8 +370,9 @@ OverworldSceneStartTransition:
 ;;; de - transition fn
 	call    SceneSetUpdateFn
 
-        call    EntityBufferReset
+	call    EntityBufferReset
 
+        ;; The player entity is always present in every room (obviously?)
         ld      de, var_player_struct
         call    EntityBufferEnqueue
 
@@ -384,6 +385,8 @@ OverworldSceneTryRoomTransition:
         ld      a, [var_player_coord_y]
         cp      246
         jr      C, .tryUpTransition
+
+        LONG_CALL r1_StoreRoomEntities, 1
 
 	ld      a, [var_room_y]
         inc     a
@@ -412,6 +415,8 @@ OverworldSceneTryRoomTransition:
         cp      b
         jr      C, .tryRightTransition
 
+        LONG_CALL r1_StoreRoomEntities, 1
+
 	ld      a, [var_room_y]
         dec     a
         ld      [var_room_y], a
@@ -435,6 +440,8 @@ OverworldSceneTryRoomTransition:
         ld      a, [var_player_coord_x]
         cp      246
         jr      C, .tryLeftTransition
+
+        LONG_CALL r1_StoreRoomEntities, 1
 
 	ld      a, [var_room_x]
         inc     a
@@ -461,6 +468,8 @@ OverworldSceneTryRoomTransition:
         ld      a, 8
         cp      b
         jr      C, .done
+
+        LONG_CALL r1_StoreRoomEntities, 1
 
 	ld      a, [var_room_x]
         dec     a

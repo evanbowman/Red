@@ -63,6 +63,10 @@ DebugInit:
         ld      de, DebugUpdate
         call    EntitySetUpdateFn
 
+        ld      hl, var_debug_struct
+        ld      a, ENTITY_TYPE_BONFIRE
+        call    EntitySetType
+
         ld      de, var_debug_struct
         call    EntityBufferEnqueue
 
@@ -88,7 +92,7 @@ DebugInit:
         ld      a, 1
         ld      [var_debug_palette], a
 
-;;; NOTE: this needs to be done in vblank!
+;;; note: requires vsync
         ld      a, 10
         ld      d, 10
         ld      e, $80
@@ -104,6 +108,9 @@ PlayerInit:
         ld      bc, var_player_struct_end - var_player_struct
         ld      a, 0
         call    Memset
+
+        ld      a, 0
+        ld      [var_player_type], a
 
         ld      hl, var_player_coord_x
         ld      bc, $81

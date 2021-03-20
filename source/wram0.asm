@@ -63,6 +63,9 @@ var_room_y:     DS      1
 
 var_player_stamina:     DS      FIXNUM_SIZE
 
+var_inventory:  DS      60
+
+
 PERSISTENT_STATE_DATA_END:
 
 
@@ -77,6 +80,22 @@ MAP_HEIGHT EQU SCRN_VY / MAP_TILE_WIDTH
 var_map_info:    DS     MAP_WIDTH * MAP_HEIGHT
 
 ;;; SECTION MAP_INFO
+
+;;; ############################################################################
+
+        SECTION "ENTITY_BUFFER", WRAM0
+
+ENTITY_BUFFER_CAPACITY EQU 8
+ENTITY_POINTER_SIZE EQU 2
+
+var_entity_buffer_size: DS      1
+var_entity_buffer:      DS      ENTITY_POINTER_SIZE * ENTITY_BUFFER_CAPACITY
+
+;;; Used as a placeholder value while sorting entities by y value.
+var_last_entity_y:      DS      1
+var_last_entity_idx:    DS      1
+
+;;; SECTION ENTITY_BUFFER
 
 ;;; ############################################################################
 
@@ -104,21 +123,26 @@ var_player_palette:     DS   1
 var_player_display_flag:DS   1
 
 var_player_update_fn:   DS   2  ; Engine will call this fn to update player
+var_player_type:        DS   1
 
 var_player_struct_end:
 
-ENTITY_SIZE EQU var_player_struct_end - var_player_struct
 
+ENTITY_HEADER_SIZE EQU var_player_struct_end - var_player_struct
 
-COLLISION_LEFT EQU $01
-COLLISION_RIGHT EQU $02
-COLLISION_UP EQU $04
-COLLISION_DOWN EQU $08
 
 ;;; Just a scratch variable that simplifies other code.
 var_player_spill1:      DS      1
 var_player_spill2:      DS      1
 
+;;; SECTION Player
+
+;;; ############################################################################
+
+	SECTION "DEBUG_TEST_ENTITY", WRAM0
+
+;;; We don't have entity allocation code written yet, so we just have one hard-
+;;; coded entity for testing purposes.
 
 var_debug_struct:
 var_debug_swap_spr:     DS      1
@@ -135,23 +159,18 @@ var_debug_palette:     DS   1
 var_debug_display_flag:   DS      1
 
 var_debug_update_fn:    DS      2
+var_debug_type:         DS      1
 var_debug_struct_end:
-
 
 
 ;;; ############################################################################
 
-        SECTION "ENTITY_BUFFER", WRAM0
+        SECTION "ENTITY_RAM", WRAM0
 
-ENTITY_BUFFER_CAPACITY EQU 8
-ENTITY_POINTER_SIZE EQU 2
+var_entity_reserved_mem: DS  (ENTITY_HEADER_SIZE + 6) * ENTITY_BUFFER_CAPACITY
 
-var_entity_buffer_size: DS      1
-var_entity_buffer:      DS      ENTITY_POINTER_SIZE * ENTITY_BUFFER_CAPACITY
 
-;;; Used as a placeholder value while sorting entities by y value.
-var_last_entity_y:      DS      1
-var_last_entity_idx:    DS      1
+;;; SECTION ENTITY_RAM
 
 
 ;;; ############################################################################

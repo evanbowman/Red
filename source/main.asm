@@ -49,6 +49,7 @@
 ;;;     char vram_index_;
 ;;;     char display_flags_;
 ;;;     Pointer update_fn_;
+;;;     char type_;
 ;;; };
 ;;;
 
@@ -59,17 +60,9 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
 
         INCLUDE "hardware.inc"
         INCLUDE "defs.inc"
+        INCLUDE "sprid.inc"
+        INCLUDE "entityType.inc"
 
-;;; Player spritesheet constants (needs to match the ordering of data in bank 2)
-SPRID_PLAYER_WR EQU     0
-SPRID_PLAYER_SR EQU     5
-SPRID_PLAYER_WL EQU     6
-SPRID_PLAYER_SL EQU     11
-SPRID_PLAYER_WD EQU     12
-SPRID_PLAYER_SD EQU     22
-SPRID_PLAYER_WU EQU     23
-SPRID_PLAYER_SU EQU     33
-SPRID_BONFIRE   EQU     34
 
 
 ;;; NOTE: LONG_CALL does not restore the current rom bank

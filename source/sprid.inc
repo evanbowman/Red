@@ -30,46 +30,19 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 ;;;
+;;; tl;dr: Do whatever you want with the code, just don't blame me if something
+;;; goes wrong.
+;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-;;; ############################################################################
-
-        SECTION "WORLD_MAP", WRAMX, BANK[1]
-
-WORLD_MAP_WIDTH EQU 18
-WORLD_MAP_HEIGHT EQU 16
-WORLD_ROOM_COUNT EQU WORLD_MAP_WIDTH * WORLD_MAP_HEIGHT
-
-
-ROOM_HEADER_SIZE EQU 3
-ROOM_ENTITYDESC_ARRAY_SIZE EQU 10
-ROOM_DESC_SIZE EQU ROOM_HEADER_SIZE + ROOM_ENTITYDESC_ARRAY_SIZE
-
-;;; For reference:
-;;;
-;;; struct Room {
-;;;     char visited_ : 1;        \
-;;;     char reserved_ : 3;       |  First byte.
-;;;     char connections_ : 4:    /
-;;;
-;;;     char room_variant_;       Second byte.
-;;;
-;;;     char reserved_;           Third byte.
-;;;
-;;;     EntityDesc entities_[5];  Ten bytes.
-;;; }; (13 bytes)
-;;;
-;;; struct EntityDesc {
-;;;     char type_;
-;;;     char x_ : 4;
-;;;     char y_ : 4;
-;;; }; (2 bytes)
-;;;
-
-wram1_var_world_map_info::
-DS      WORLD_ROOM_COUNT * ROOM_DESC_SIZE
-wram1_var_world_map_info_end::
-
-
-;;; ############################################################################
+;;; Spritesheet constants (needs to match the ordering of data in bank 2)
+SPRID_PLAYER_WR EQU     0
+SPRID_PLAYER_SR EQU     5
+SPRID_PLAYER_WL EQU     6
+SPRID_PLAYER_SL EQU     11
+SPRID_PLAYER_WD EQU     12
+SPRID_PLAYER_SD EQU     22
+SPRID_PLAYER_WU EQU     23
+SPRID_PLAYER_SU EQU     33
+SPRID_BONFIRE   EQU     34
