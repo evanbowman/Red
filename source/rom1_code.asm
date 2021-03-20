@@ -562,6 +562,69 @@ r1_WorldMapShowRowPair:
         ret
 
 
+r1_WorldMapShowRooms:
+        call    VBlankIntrWait
+
+        ld      a, 1
+        ld      [rSVBK], a
+
+        ld      hl, wram1_var_world_map_info
+        ld      de, $9C21       ; Pointer to data in scrn1
+
+
+        ld      c, 0            ; y counter
+.outer_loop:
+        ld      b, 0            ; x counter
+
+.inner_loop:
+        ld      a, WORLD_MAP_WIDTH
+        cp      b
+        jr      Z, .outer_loop_step
+
+
+        ld      a, [rLY]
+        cp      152
+        jr      Z, .vsync
+        jr      .write
+.vsync:
+        call    VBlankIntrWait
+.write:
+        ld      a, [hl]
+        and     $80                     ; Check for room visited flag
+        jr      Z, .skip                ; The tile is empty by default
+
+        ld      a, $0a
+        ld      [de], a
+
+.skip:
+        push    de                      ; \
+        ld      d, 0                    ; |
+        ld      e, ROOM_DESC_SIZE       ; | Increment room pointer by room size
+        add     hl, de                  ; |
+        pop     de                      ; /
+
+        inc     de                      ; Increment pointer to vram scrn1 tile
+
+        inc     b
+        jr      .inner_loop
+
+.outer_loop_step:
+        push    hl                      ; \
+        ld      hl, $0e                 ; |
+        add     hl, de                  ; | Jump de to next row in scrn1
+        ld      d, h                    ; |
+        ld      e, l                    ; |
+        pop     hl                      ; /
+
+        inc     c
+        ld      a, WORLD_MAP_HEIGHT
+        cp      c
+
+        jr      NZ, .outer_loop
+
+	ret
+
+
 r1_WorldMapShow:
         ld      hl, r1_WorldMapTemplateTop
         ld      bc, r1_WorldMapTemplateTopEnd - r1_WorldMapTemplateTop
@@ -604,6 +667,8 @@ r1_WorldMapShow:
         ld      bc, r1_WorldMapTemplateBottomEnd - r1_WorldMapTemplateBottom
         ld      de, $9E20
         call    VramSafeMemcpy
+
+        call    r1_WorldMapShowRooms
 
         call    VBlankIntrWait
         ld      b, r1_WorldMapPalettesEnd - r1_WorldMapPalettes
@@ -648,61 +713,105 @@ r1_l16Mul18Fast:
         ret
 
 
+;;; I guess it's not _that_ fast :)
+r1_Mul13Fast:
+;;; hl - number, result
+;;; trashes bc
+
+        push    hl
+
+;;; left-shift by three, then add five times
+	ld      a, l
+        and     $e0
+        swap    a
+	srl     a
+
+        sla     h
+        sla     h
+        sla     h
+
+        or      h
+        ld      h, a
+
+        sla     l
+        sla     l
+        sla     l
+
+        pop     bc
+
+        add     bc
+        add     bc
+        add     bc
+        add     bc
+        add     bc
+
+        ret
+
+
+
 ;;; ---------------------------------------------------------------------------
 
-r1_IsRoomVisited::
+;;; IMPORTANT: assumes that the switchable ram bank, where we store map info, is
+;;; already set to bank 1!
+r1_LoadRoom:
 ;;; b - room x
 ;;; c - room y
-;;; trashes c, hl
-;;; result in b
-        ld      a, [var_room_y]
-        ld      c, a
+;;; trashes a, bc
+;;; result in hl
 
+;;; Ok, so we have 18 rooms per row, and each room is thirteen bytes. So:
+;;; room = &rooms[x * 13 + (y * 18 * 13)];
+        push    bc
+
+        ;; hl = y * 18 * 13
+        call    r1_l16Mul18Fast
+        call    r1_Mul13Fast
+
+        pop     bc
+        push    hl
+
+        ;; hl = x * 13
+        ld      l, b
+        ld      h, 0
+        call    r1_Mul13Fast
+
+        pop     bc              ; previous hl to bc
+
+        ;; hl = (x * 13) + (y * 18 * 13)
+        add     bc
+
+        ld      bc, wram1_var_world_map_info
+        add     bc
+
+        ret
+
+
+;;; IMPORTANT: assumes that the switchable ram bank, where we store map info, is
+;;; already set to bank 1!
+r1_IsRoomVisited:
+        ret
+
+
+;;; NOTE: Sets ram bank to bank 1!
+r1_SetRoomVisited:
+;;; trashes a, hl, bc
         ld      a, 1
         ld      [rSVBK], a
 
-	call    r1_l16Mul18Fast         ; \
-        ld      a, [var_room_x]         ; |
-        ld      c, a                    ; | hl = x + y * 18
-        ld      b, 0                    ; |
-        add     hl, bc                  ; /
-
-        ld      bc, wram1_var_world_map_visited
-        add     hl, bc                  ; p = world_map_visited + hl
-
-        ld      a, [hl]
+        ld      a, [var_room_x]
         ld      b, a
 
-        ld      a, 0
-        ld      [rSVBK], a
-
-        ret
-
-
-r1_SetRoomVisited::
         ld      a, [var_room_y]
         ld      c, a
 
-        ld      a, 1
-        ld      [rSVBK], a
+.test:
+        call    r1_LoadRoom
+        ld      a, [hl]
 
-	call    r1_l16Mul18Fast         ; \
-        ld      a, [var_room_x]         ; |
-        ld      c, a                    ; | hl = x + y * 18
-        ld      b, 0                    ; |
-        add     hl, bc                  ; /
-
-        ld      bc, wram1_var_world_map_visited
-        add     hl, bc                  ; p = world_map_visited + hl
-
-        ld      a, 1
-        ld      [hl], a                 ; world_map_visited[x + y * 18] = true
-
-        ld      a, 0
-        ld      [rSVBK], a
+        or      $80
+        ld      [hl], a
 
         ret
-
 
 ;;; ---------------------------------------------------------------------------
 
