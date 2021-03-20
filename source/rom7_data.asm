@@ -6,8 +6,8 @@ SECTION "MISC_SPRITES", ROMX, BANK[7]
 
 ;;; I generate these fade palettes by feeding .blend_0 contents into a script,
 ;;; see generate_fade_palette.py in tools/
-SpritePalettes::
-SpritePaletteFadeToBlack::
+r7_SpritePalettes::
+r7_SpritePaletteFadeToBlack::
 .blend_0::
 DB $00,$00, $69,$72, $1A,$20, $03,$00,
 DB $00,$00, $FF,$7F, $F8,$37, $5F,$19,
@@ -328,7 +328,7 @@ DB $00,$04, $00,$04, $00,$04, $00,$04,
 DB $00,$04, $00,$04, $00,$04, $00,$04,
 DB $00,$04, $00,$04, $00,$04, $00,$04,
 .blend_31_end::
-SpritePaletteFadeToTan::
+r7_SpritePaletteFadeToTan::
 .blend_0::
 DB $00,$00, $69,$72, $1A,$20, $03,$00,
 DB $00,$00, $FF,$7F, $F8,$37, $5F,$19,
@@ -656,8 +656,8 @@ DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
 ;;; We convert the actual color to hex, and then flip the order of the bytes.
 ;;; python> hex(((70 >> 3)) | ((141 >> 3) << 5) | ((199 >> 3) << 10))
 
-BackgroundPalette::
-BackgroundPaletteFadeToBlack::
+r7_BackgroundPalette::
+r7_BackgroundPaletteFadeToBlack::
 .blend_0::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
 DB $BF,$73, $53,$5E, $4B,$3D, $86,$18,
@@ -979,7 +979,7 @@ DB $00,$04, $00,$04, $00,$04, $00,$04,
 DB $00,$04, $00,$04, $00,$04, $00,$04,
 .blend_31_end::
 
-BackgroundPaletteFadeToTan::
+r7_BackgroundPaletteFadeToTan::
 .blend_0::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$00,
 DB $BF,$73, $53,$5E, $4B,$3D, $86,$18,
@@ -1303,7 +1303,7 @@ DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
 
 
 
-TEST_MAP::
+r7_TEST_MAP::
 DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0e, $00, $00, $00, $00, $00, $0e, $0e, $0e, $0e, $0e, $0e
@@ -1320,10 +1320,10 @@ DB $0e, $0e, $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $05, $0e, $0e, $0e, $0
 DB $0e, $0e, $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0b, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0e, $0b, $0f, $0f, $0f, $0f, $05, $0e, $0e, $0e, $0e, $0e
-TEST_MAP_END::
+r7_TEST_MAP_END::
 
 
-TEST_MAP_2::
+r7_TEST_MAP_2::
 DB $0e, $0e, $0e, $0e, $0e, $08, $0f, $0f, $0f, $0f, $02, $0e, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $08, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e, $0e, $0e, $0e
@@ -1340,10 +1340,10 @@ DB $0e, $0e, $0e, $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $05, $0e, $0e, $0e, $0
 DB $0e, $0e, $0e, $0e, $0c, $0f, $0f, $0f, $10, $0f, $0f, $06, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0c, $0f, $0f, $0f, $0f, $0f, $0f, $06, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0e, $0b, $0f, $0f, $0f, $0f, $05, $0e, $0e, $0e, $0e, $0e
-TEST_MAP_2_END::
+r7_TEST_MAP_2_END::
 
 
-TEST_MAP_3::
+r7_TEST_MAP_3::
 DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
@@ -1360,10 +1360,10 @@ DB $0e, $0e, $0e, $0e, $0d, $0d, $0b, $0f, $0f, $0f, $05, $0d, $0e, $0e, $0e, $0
 DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0d, $0d, $0d, $0e, $0e, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
 DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
-TEST_MAP_3_END::
+r7_TEST_MAP_3_END::
 
 
-FontTiles::
+r7_FontTiles::
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$E7,$E7,$DB,$DB
@@ -1520,10 +1520,10 @@ DB $FB,$FB,$F7,$F7,$F7,$F7,$EF,$EF
 DB $EF,$EF,$DF,$DF,$DF,$DF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$83,$83
 DB $FF,$FF,$83,$83,$FF,$FF,$FF,$FF
-FontTilesEnd::
+r7_FontTilesEnd::
 
 
-WorldMapTiles::
+r7_WorldMapTiles::
 DB $00,$00,$00,$00,$00,$00,$00,$1F
 DB $00,$1F,$00,$18,$00,$18,$00,$18
 DB $00,$00,$00,$00,$00,$00,$F8,$00
@@ -1604,10 +1604,10 @@ DB $E7,$E7,$81,$81,$81,$81,$00,$18
 DB $00,$18,$81,$81,$81,$81,$FF,$FF
 DB $E7,$E7,$81,$81,$81,$81,$00,$18
 DB $00,$18,$81,$81,$81,$81,$E7,$E7
-WorldMapTilesEnd::
+r7_WorldMapTilesEnd::
 
 
-OverlayTiles::
+r7_OverlayTiles::
 ;;; Empty tile
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -1635,9 +1635,9 @@ DB $FF,$00,$FF,$00,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$7F,$FF,$7F
 DB $FF,$7F,$FF,$7F,$FF,$7F,$FF,$FF
 ;;; debug
-OverlayTilesEnd::
+r7_OverlayTilesEnd::
 
-BackgroundTiles::
+r7_BackgroundTiles::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1806,10 +1806,10 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$18,$00,$08,$00
 DB $08,$00,$48,$00,$40,$00,$00,$00
-BackgroundTilesEnd::
+r7_BackgroundTilesEnd::
 
 
-SpriteDropShadow::
+r7_SpriteDropShadow::
 DB $00,$00,$00,$00,$00,$00,$0F,$00
 DB $3F,$00,$7F,$00,$7F,$00,$7F,$00
 DB $7F,$00,$3F,$00,$0F,$00,$00,$00
@@ -1818,7 +1818,7 @@ DB $00,$00,$00,$00,$00,$00,$F0,$00
 DB $FC,$00,$FE,$00,$FE,$00,$FE,$00
 DB $FE,$00,$FC,$00,$F0,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpriteDropShadowEnd::
+r7_SpriteDropShadowEnd::
 
 
 ;;; ############################################################################

@@ -50,8 +50,8 @@ IntroCreditsSceneEnter:
 
         call    LoadOverworldPalettes
 
-        ld      hl, OverlayTiles
-        ld      bc, OverlayTilesEnd - OverlayTiles
+        ld      hl, r7_OverlayTiles
+        ld      bc, r7_OverlayTilesEnd - r7_OverlayTiles
         ld      de, $9000
         call    VramSafeMemcpy
 

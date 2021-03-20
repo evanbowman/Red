@@ -70,7 +70,7 @@ WorldmapSceneUpdate:
         call    VBlankIntrWait
 ;;; i.e. Hide all tiles onscreen
         ld      b, 64
-        ld      hl, BackgroundPaletteFadeToTan.blend_31
+        ld      hl, r7_BackgroundPaletteFadeToTan.blend_31
         call    LoadBackgroundColors
 
         call    OverworldSceneInitOverlayVRam
@@ -104,26 +104,26 @@ WorldmapSceneFadeinVBlank:
         call    SceneSetUpdateFn
 
         ld      b, 64
-        ld      hl, BackgroundPaletteFadeToTan.blend_31
+        ld      hl, r7_BackgroundPaletteFadeToTan.blend_31
         call    LoadBackgroundColors
 
         ld      b, 64
-        ld      hl, SpritePaletteFadeToTan.blend_31
+        ld      hl, r7_SpritePaletteFadeToTan.blend_31
         call    LoadObjectColors
 
-        ld      hl, WorldMapTiles
-        ld      bc, WorldMapTilesEnd - WorldMapTiles
+        ld      hl, r7_WorldMapTiles
+        ld      bc, r7_WorldMapTilesEnd - r7_WorldMapTiles
         ld      de, $9000
         call    VramSafeMemcpy
 
-        LONG_CALL WorldMapShow, 1
+        LONG_CALL r1_WorldMapShow, 1
 
         ret
 
 .continue:
         ld      [var_scene_counter], a
-        ld      hl, BackgroundPaletteFadeToTan
-        ld      de, SpritePaletteFadeToTan
+        ld      hl, r7_BackgroundPaletteFadeToTan
+        ld      de, r7_SpritePaletteFadeToTan
         call    Fade
 
         ret
@@ -142,11 +142,11 @@ WorldmapSceneFadeOutVBlank:
 
 .transition:
 	ld      b, 64
-        ld      hl, BackgroundPaletteFadeToTan.blend_0
+        ld      hl, r7_BackgroundPaletteFadeToTan.blend_0
         call    LoadBackgroundColors
 
         ld      b, 64
-        ld      hl, SpritePaletteFadeToTan.blend_0
+        ld      hl, r7_SpritePaletteFadeToTan.blend_0
         call    LoadObjectColors
 
 
@@ -160,8 +160,8 @@ WorldmapSceneFadeOutVBlank:
 
 .continue:
         ld      [var_scene_counter], a
-        ld      hl, BackgroundPaletteFadeToTan
-        ld      de, SpritePaletteFadeToTan
+        ld      hl, r7_BackgroundPaletteFadeToTan
+        ld      de, r7_SpritePaletteFadeToTan
         call    Fade
 
         ret

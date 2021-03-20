@@ -59,7 +59,7 @@ RoomTransitionSceneDownVBlank:
 
         push    bc
 
-        LONG_CALL MapShowRow, 1
+        LONG_CALL r1_MapShowRow, 1
 
         pop     bc
 
@@ -100,7 +100,7 @@ RoomTransitionSceneDownFinishUpVBlank:
 
         push    bc
 
-        LONG_CALL MapShowRow, 1
+        LONG_CALL r1_MapShowRow, 1
 
         pop     bc
 
@@ -145,7 +145,7 @@ RoomTransitionSceneDownUpdate:
 
         ld      a, [var_room_load_counter]
         ld      c, a
-        LONG_CALL MapExpandRow, 1
+        LONG_CALL r1_MapExpandRow, 1
 
         jr      .continue
 .done:
@@ -191,7 +191,7 @@ RoomTransitionSceneUpUpdate:
 
         ld      a, [var_room_load_counter]
         ld      c, a
-        LONG_CALL MapExpandRow, 1
+        LONG_CALL r1_MapExpandRow, 1
 
         jr      .continue
 
@@ -220,7 +220,7 @@ RoomTransitionSceneUpVBlank:
 
         push    bc
 
-        LONG_CALL MapShowRow, 1
+        LONG_CALL r1_MapShowRow, 1
 
         pop     bc
 
@@ -245,7 +245,7 @@ RoomTransitionSceneUpFinishUpVBlank:
 
         push    bc
 
-        LONG_CALL MapShowRow, 1
+        LONG_CALL r1_MapShowRow, 1
 
         pop     bc
 
@@ -289,7 +289,7 @@ RoomTransitionSceneRightUpdate:
 
         ld      a, [var_room_load_counter]
         ld      c, a
-        LONG_CALL MapExpandColumn, 1
+        LONG_CALL r1_MapExpandColumn, 1
 
         jr      .continue
 .done:
@@ -317,7 +317,7 @@ RoomTransitionSceneRightFinishUpVBlank:
 
         push    bc
 
-        LONG_CALL MapShowColumn, 1
+        LONG_CALL r1_MapShowColumn, 1
 
         pop     bc
 
@@ -348,7 +348,7 @@ RoomTransitionSceneRightVBlank:
 
         push    bc
 
-        LONG_CALL MapShowColumn, 1
+        LONG_CALL r1_MapShowColumn, 1
 
         pop     bc
 
@@ -387,7 +387,7 @@ RoomTransitionSceneLeftUpdate:
 
         ld      a, [var_room_load_counter]
         ld      c, a
-        LONG_CALL MapExpandColumn, 1
+        LONG_CALL r1_MapExpandColumn, 1
 
         jr      .continue
 
@@ -406,7 +406,7 @@ RoomTransitionSceneLeftUpdate:
 RoomTransitionSceneUDUpdateRest:
         ld      a, [var_room_load_counter]
         ld      c, a
-        LONG_CALL MapExpandRow, 1
+        LONG_CALL r1_MapExpandRow, 1
 
         ret
 
@@ -416,7 +416,7 @@ RoomTransitionSceneUDUpdateRest:
 RoomTransitionSceneLRUpdateRest:
         ld      a, [var_room_load_counter]
         ld      c, a
-        LONG_CALL MapExpandColumn, 1
+        LONG_CALL r1_MapExpandColumn, 1
 
         ret
 
@@ -434,7 +434,7 @@ RoomTransitionSceneLeftVBlank:
 
         push    bc
 
-        LONG_CALL MapShowColumn, 1
+        LONG_CALL r1_MapShowColumn, 1
 
         pop     bc
 
@@ -460,7 +460,7 @@ RoomTransitionSceneLeftFinishUpVBlank:
 
         push    bc
 
-        LONG_CALL MapShowColumn, 1
+        LONG_CALL r1_MapShowColumn, 1
 
         pop     bc
 

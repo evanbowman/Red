@@ -41,11 +41,11 @@ SECTION "ROM1_CODE", ROMX, BANK[1]
 
 ;;; ----------------------------------------------------------------------------
 
-GameboyColorNotDetectedText::
+r1_GameboyColorNotDetectedText::
 DB " CGB  Required", 0
 
 
-DMGPutText:
+r1_DMGPutText:
 ;;; hl - text
 ;;; b - x
 ;;; c - y
@@ -67,7 +67,7 @@ DMGPutText:
 
 
 ;;; NOTE: This function MUST be in rom0 or rom1.
-GameboyColorNotDetected:
+r1_GameboyColorNotDetected:
         ld      hl, _SCRN1
         ld      a, $32
         ld      bc, $9FFF - $9C00 ; size of scrn1
@@ -80,8 +80,8 @@ GameboyColorNotDetected:
 
         ld      b, 1
         ld      c, 1
-        ld      hl, GameboyColorNotDetectedText
-        call    DMGPutText
+        ld      hl, r1_GameboyColorNotDetectedText
+        call    r1_DMGPutText
         call    LcdOn
 
         ld      a, 7
@@ -92,18 +92,18 @@ GameboyColorNotDetected:
 
 ;;; ----------------------------------------------------------------------------
 
-VBlankPoll:
+r1_VBlankPoll:
 ; Intended for waiting on vblank while interrupts are disabled, but the screen
 ; is still on.
         ld      a, [rLY]
         cp      SCRN_Y
-        jr      nz, VBlankPoll
+        jr      nz, r1_VBlankPoll
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
-GameboyAdvanceDetected:
+r1_GameboyAdvanceDetected:
         ld      a, 1
         ldh     [agb_detected], a
 
@@ -112,7 +112,7 @@ GameboyAdvanceDetected:
 
 ;;; ----------------------------------------------------------------------------
 
-InitWRam:
+r1_InitWRam:
         ld      a, 0
         ld      hl, _RAM
         ;; We don't want to zero the stack, or how will we return from this fn?
@@ -143,7 +143,7 @@ InitWRam:
         ret
 
 
-InitRam:
+r1_InitRam:
 ;;; trashes hl, bc, a
         ld      a, 0
 
@@ -151,14 +151,14 @@ InitRam:
         ld      bc, $80
         call    Memset
 
-        call    InitWRam
+        call    r1_InitWRam
 
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
-SetCpuFast:
+r1_SetCpuFast:
         ld      a, [rKEY1]
         bit     7, a
         jr      z, .impl
@@ -176,7 +176,7 @@ SetCpuFast:
 
 ;;; ----------------------------------------------------------------------------
 
-CopyDMARoutine:
+r1_CopyDMARoutine:
         ld      hl, DMARoutine
         ld      b, DMARoutineEnd - DMARoutine ; Number of bytes to copy
         ld      c, LOW(hOAMDMA) ; Low byte of the destination address
@@ -201,7 +201,7 @@ DMARoutineEnd:
 
 ;;; ----------------------------------------------------------------------------
 
-MapExpandRow:
+r1_MapExpandRow:
 ;;; c - row
         ld      e, c
 
@@ -270,7 +270,7 @@ MapExpandRow:
 ;;; ----------------------------------------------------------------------------
 
 
-MapShowRow:
+r1_MapShowRow:
 ;;; c - row
         push    bc                      ; \
         ld      hl, _SCRN0              ; |
@@ -331,7 +331,7 @@ MapShowRow:
 
 ;;; Fills var_room_slab with expanded tile data. Then, the vblank handler just
 ;;; needs to copy stuff.
-MapExpandColumn:
+r1_MapExpandColumn:
         ld      e, c
         bit     0, e
         ld      a, 0
@@ -403,7 +403,7 @@ MapExpandColumn:
 
 ;;; ----------------------------------------------------------------------------
 
-MapShowColumn:
+r1_MapShowColumn:
 ;;; c - column
 
         ld      hl, _SCRN0
@@ -463,7 +463,7 @@ MapShowColumn:
 
 ;;; ----------------------------------------------------------------------------
 
-ReadKeys:
+r1_ReadKeys:
 ; b - returns raw state
 ; c - returns debounced state (edge-triggered)
 ; d - trashed
@@ -514,100 +514,100 @@ ReadKeys:
 
 ;;; ---------------------------------------------------------------------------
 
-WorldMapPalettes::
+r1_WorldMapPalettes::
 DB $1B,$4B, $57,$32, $ed,$10, $23,$34,
-WorldMapPalettesEnd::
+r1_WorldMapPalettesEnd::
 
 
-WorldMapTemplateTop::
+r1_WorldMapTemplateTop::
 DB $00, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05
 DB $04, $05, $04, $05, $01
-WorldMapTemplateTopEnd::
+r1_WorldMapTemplateTopEnd::
 
 
-WorldMapTemplateRow0::
+r1_WorldMapTemplateRow0::
 DB $06, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08
 DB $08, $08, $08, $08, $07
-WorldMapTemplateRow0End::
+r1_WorldMapTemplateRow0End::
 
 
-WorldMapTemplateRow1::
+r1_WorldMapTemplateRow1::
 DB $07, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08
 DB $08, $08, $08, $08, $06
-WorldMapTemplateRow1End::
+r1_WorldMapTemplateRow1End::
 
 
-WorldMapTemplateBottom::
+r1_WorldMapTemplateBottom::
 DB $03, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04
 DB $05, $04, $05, $04, $02
-WorldMapTemplateBottomEnd::
+r1_WorldMapTemplateBottomEnd::
 
 
 
 
-WorldMapShowRowPair:
+r1_WorldMapShowRowPair:
 ;;; de - first row address
 ;;; hl - second row address
         push    hl
 
-        ld      hl, WorldMapTemplateRow0
-        ld      bc, WorldMapTemplateRow0End - WorldMapTemplateRow0
+        ld      hl, r1_WorldMapTemplateRow0
+        ld      bc, r1_WorldMapTemplateRow0End - r1_WorldMapTemplateRow0
         call    VramSafeMemcpy
 
         pop     de
 
-        ld      hl, WorldMapTemplateRow1
-        ld      bc, WorldMapTemplateRow1End - WorldMapTemplateRow1
+        ld      hl, r1_WorldMapTemplateRow1
+        ld      bc, r1_WorldMapTemplateRow1End - r1_WorldMapTemplateRow1
         call    VramSafeMemcpy
         ret
 
 
-WorldMapShow:
-        ld      hl, WorldMapTemplateTop
-        ld      bc, WorldMapTemplateTopEnd - WorldMapTemplateTop
+r1_WorldMapShow:
+        ld      hl, r1_WorldMapTemplateTop
+        ld      bc, r1_WorldMapTemplateTopEnd - r1_WorldMapTemplateTop
         ld      de, $9C00
         call    VramSafeMemcpy
 
         ld      de, $9C20
         ld      hl, $9C40
-        call    WorldMapShowRowPair
+        call    r1_WorldMapShowRowPair
 
         ld      de, $9C60
         ld      hl, $9C80
-        call    WorldMapShowRowPair
+        call    r1_WorldMapShowRowPair
 
         ld      de, $9CA0
         ld      hl, $9CC0
-        call    WorldMapShowRowPair
+        call    r1_WorldMapShowRowPair
 
         ld      de, $9CE0
         ld      hl, $9D00
-        call    WorldMapShowRowPair
+        call    r1_WorldMapShowRowPair
 
         ld      de, $9D20
         ld      hl, $9D40
-        call    WorldMapShowRowPair
+        call    r1_WorldMapShowRowPair
 
         ld      de, $9D60
         ld      hl, $9D80
-        call    WorldMapShowRowPair
+        call    r1_WorldMapShowRowPair
 
         ld      de, $9DA0
         ld      hl, $9DC0
-        call    WorldMapShowRowPair
+        call    r1_WorldMapShowRowPair
 
         ld      de, $9DE0
         ld      hl, $9E00
-        call    WorldMapShowRowPair
+        call    r1_WorldMapShowRowPair
 
-        ld      hl, WorldMapTemplateBottom
-        ld      bc, WorldMapTemplateBottomEnd - WorldMapTemplateBottom
+        ld      hl, r1_WorldMapTemplateBottom
+        ld      bc, r1_WorldMapTemplateBottomEnd - r1_WorldMapTemplateBottom
         ld      de, $9E20
         call    VramSafeMemcpy
 
         call    VBlankIntrWait
-        ld      b, WorldMapPalettesEnd - WorldMapPalettes
-        ld      hl, WorldMapPalettes
+        ld      b, r1_WorldMapPalettesEnd - r1_WorldMapPalettes
+        ld      hl, r1_WorldMapPalettes
         call    LoadBackgroundColors
 
         ld      hl, $9E12
@@ -626,7 +626,7 @@ WorldMapShow:
 
 ;;; ---------------------------------------------------------------------------
 
-SmoothstepLut::
+r1_SmoothstepLut::
 DB $00, $00, $00, $00, $00, $00, $00, $00,
 DB $00, $00, $01, $01, $01, $01, $02, $02,
 DB $02, $03, $03, $04, $04, $04, $05, $05,
@@ -659,15 +659,15 @@ DB $F4, $F5, $F5, $F6, $F7, $F7, $F8, $F8,
 DB $F9, $F9, $FA, $FA, $FA, $FB, $FB, $FC,
 DB $FC, $FC, $FD, $FD, $FD, $FD, $FE, $FE,
 DB $FE, $FE, $FE, $FE, $FE, $FE, $FE, $FF,
-SmoothstepLutEnd::
+r1_SmoothstepLutEnd::
 
 
-Smoothstep:
+r1_Smoothstep:
 ;;; c - value
 ;;; a - return value
 ;;; trashes hl, b
         ld      b, 0
-        ld      hl, SmoothstepLut
+        ld      hl, r1_SmoothstepLut
         add     hl, bc
         ld      a, [hl]
         ld      c, a

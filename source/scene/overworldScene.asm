@@ -57,8 +57,8 @@ OverworldSceneFadeInVBlank:
 .continue:
         ld      [var_scene_counter], a
         SET_BANK 7
-        ld      hl, BackgroundPaletteFadeToBlack
-        ld      de, SpritePaletteFadeToBlack
+        ld      hl, r7_BackgroundPaletteFadeToBlack
+        ld      de, r7_SpritePaletteFadeToBlack
         call    Fade
 
 	call    VBlankCopySpriteTextures
@@ -70,8 +70,8 @@ OverworldSceneFadeInVBlank:
 OverworldSceneInitOverlayVRam:
 	SET_BANK 7
 
-        ld      hl, OverlayTiles
-        ld      bc, OverlayTilesEnd - OverlayTiles
+        ld      hl, r7_OverlayTiles
+        ld      bc, r7_OverlayTilesEnd - r7_OverlayTiles
         ld      de, $9000
         call    VramSafeMemcpy
 
@@ -89,15 +89,15 @@ OverworldSceneInitOverlayVRam:
 
 OverworldSceneLoadTiles:
 
-        call    OverworldSceneInitOverlayVRam
+        call    OverworldSceneInitOverlayVRam ; Sets rom bank 7
 
-        ld      hl, BackgroundTiles
-        ld      bc, BackgroundTilesEnd - BackgroundTiles
+        ld      hl, r7_BackgroundTiles
+        ld      bc, r7_BackgroundTilesEnd - r7_BackgroundTiles
         ld      de, $8800
         call    VramSafeMemcpy
 
-        ld      hl, SpriteDropShadow
-        ld      bc, SpriteDropShadowEnd - SpriteDropShadow
+        ld      hl, r7_SpriteDropShadow
+        ld      bc, r7_SpriteDropShadowEnd - r7_SpriteDropShadow
         ld      de, $87c0
         call    VramSafeMemcpy
         ret
@@ -108,8 +108,8 @@ OverworldSceneEnter:
 
         ld      c, 255
         SET_BANK 7
-        ld      hl, BackgroundPaletteFadeToBlack
-        ld      de, SpritePaletteFadeToBlack
+        ld      hl, r7_BackgroundPaletteFadeToBlack
+        ld      de, r7_SpritePaletteFadeToBlack
         call    Fade
 
         call    OverworldSceneLoadTiles
@@ -390,7 +390,7 @@ OverworldSceneTryRoomTransition:
         ld      a, 0
         ld      [var_room_load_counter], a
         ld      c, a
-        LONG_CALL MapExpandRow, 1
+        LONG_CALL r1_MapExpandRow, 1
 
         jr      .done
 
@@ -413,7 +413,7 @@ OverworldSceneTryRoomTransition:
         ld      a, 31
         ld      [var_room_load_counter], a
         ld      c, a
-        LONG_CALL MapExpandRow, 1
+        LONG_CALL r1_MapExpandRow, 1
 
         jr      .done
 
@@ -433,7 +433,7 @@ OverworldSceneTryRoomTransition:
         ld      a, 0
         ld      [var_room_load_counter], a
         ld      c, a
-        LONG_CALL MapExpandColumn, 1
+        LONG_CALL r1_MapExpandColumn, 1
 
         jr      .done
 
@@ -455,7 +455,7 @@ OverworldSceneTryRoomTransition:
         ld      a, 31
         ld      [var_room_load_counter], a
         ld      c, a
-        LONG_CALL MapExpandColumn, 1
+        LONG_CALL r1_MapExpandColumn, 1
 
 .done:
         ret

@@ -5,8 +5,8 @@
 SECTION "SPRITESHEET1", ROMX, ALIGN[8], BANK[SPRITESHEET1_ROM_BANK]
 ;;; I'm putting this data in a separate rom bank, so that I can keep most of the
 ;;; code in bank 0.
-SpriteSheetData::
-SpritePlayerWalkCycleRight::
+r2_SpriteSheetData::
+r2_SpritePlayerWalkCycleRight::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -167,8 +167,8 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpritePlayerWalkCycleRightEnd::
-SpritePlayerStillRight::
+r2_SpritePlayerWalkCycleRightEnd::
+r2_SpritePlayerStillRight::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -201,8 +201,8 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpritePlayerStillRightEnd::
-SpritePlayerWalkCycleLeft::
+r2_SpritePlayerStillRightEnd::
+r2_SpritePlayerWalkCycleLeft::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -363,8 +363,8 @@ DB $00,$00,$00,$00,$00,$00,$00,$80
 DB $00,$C0,$00,$C0,$00,$80,$00,$80
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpritePlayerWalkCycleLeftEnd::
-SpritePlayerStillLeft::
+r2_SpritePlayerWalkCycleLeftEnd::
+r2_SpritePlayerStillLeft::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -397,8 +397,8 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpritePlayerStillLeftEnd::
-SpritePlayerWalkCycleDown::
+r2_SpritePlayerStillLeftEnd::
+r2_SpritePlayerWalkCycleDown::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -719,8 +719,8 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpritePlayerWalkCycleDownEnd::
-SpritePlayerStillDown::
+r2_SpritePlayerWalkCycleDownEnd::
+r2_SpritePlayerStillDown::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -753,8 +753,8 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpritePlayerStillDownEnd::
-SpritePlayerWalkCycleUp::
+r2_SpritePlayerStillDownEnd::
+r2_SpritePlayerWalkCycleUp::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1075,8 +1075,8 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpritePlayerWalkCycleUpEnd::
-SpritePlayerStillUp::
+r2_SpritePlayerWalkCycleUpEnd::
+r2_SpritePlayerStillUp::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1109,8 +1109,8 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpritePlayerStillUpEnd::
-SpriteBonfire::
+r2_SpritePlayerStillUpEnd::
+r2_SpriteBonfire::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1303,7 +1303,7 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-SpriteBonfireEnd::
+r2_SpriteBonfireEnd::
 
 
 ;;; ############################################################################

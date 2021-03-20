@@ -180,7 +180,7 @@ Start:
         di
         call    LcdOff
         call    LoadFont
-	LONG_CALL GameboyColorNotDetected, 1
+	LONG_CALL r1_GameboyColorNotDetected, 1
 
 ;;; TODO: Display some text to indicate that the game requires a gbc. There's no
 ;;; need to waste space in bank zero for this stuff, though.
@@ -197,12 +197,12 @@ Start:
 ;;; game will not be playable on the gba, as the color palettes would not
 ;;; look too good anyway.
 .agbDetected:
-        LONG_CALL GameboyAdvanceDetected, 1
+        LONG_CALL r1_GameboyAdvanceDetected, 1
 
 
 .configure:
-        LONG_CALL SetCpuFast, 1
-        LONG_CALL VBlankPoll, 1         ; Wait for vbl before disabling lcd.
+        LONG_CALL r1_SetCpuFast, 1
+        LONG_CALL r1_VBlankPoll, 1         ; Wait for vbl before disabling lcd.
 
         call    LcdOff
 
@@ -217,7 +217,7 @@ Start:
 	ld	[rSVBK], a
 	ld	[rRP], a
 
-        LONG_CALL InitRam, 1
+        LONG_CALL r1_InitRam, 1
 
         jr      Main
 
@@ -229,7 +229,7 @@ Main:
         ld	a, IEF_VBLANK	        ; vblank interrupt
 	ld	[rIE], a	        ; setup
 
-        LONG_CALL CopyDMARoutine, 1
+        LONG_CALL r1_CopyDMARoutine, 1
 
         ld      de, IntroCreditsSceneEnter
         call    SceneSetUpdateFn
@@ -256,7 +256,7 @@ Main:
         ei
 
 .loop:
-        LONG_CALL ReadKeys, 1
+        LONG_CALL r1_ReadKeys, 1
         ld      a, b
         ldh     [var_joypad_raw], a
 
@@ -339,7 +339,7 @@ MapSpriteBlock:
 ;;; FIXME: In the future, if we want to support more than 256 sprites, what to
 ;;; do?
 ;;; TODO: parameterize vram dest
-        ld      de, SpriteSheetData
+        ld      de, r2_SpriteSheetData
         ld      l, 0
         add     hl, de                  ; h is in upper bits, so x256 for free
 

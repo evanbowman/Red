@@ -584,11 +584,11 @@ Fade:
 
 LoadOverworldPalettes:
         ld      b, 64
-        ld      hl, SpritePalettes
+        ld      hl, r7_SpritePalettes
         call    LoadObjectColors
 
         ld      b, 64
-        ld      hl, BackgroundPalette
+        ld      hl, r7_BackgroundPalette
         call    LoadBackgroundColors
         ret
 
@@ -833,8 +833,8 @@ TestOverlay:
 LoadFont:
         SET_BANK 7
 
-        ld      hl, FontTiles
-        ld      bc, FontTilesEnd - FontTiles
+        ld      hl, r7_FontTiles
+        ld      bc, r7_FontTilesEnd - r7_FontTiles
         ld      de, $9320
 
         ld	a, 1
