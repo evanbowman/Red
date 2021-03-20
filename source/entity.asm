@@ -46,7 +46,16 @@
 EntityBufferReset:
         ld      a, 0
         ld      [var_entity_buffer_size], a
+
+;;; Because only the entity buffer is allowed to retain pointers to entity
+;;; memory, we might as well free everything in bulk.
+        ld      hl, var_entity_mem_used
+        ld      bc, var_entity_mem_used_end - var_entity_mem_used
+        ld      a, 0
+        call    Memset
+
         ret
+
 
 ;;; ----------------------------------------------------------------------------
 
