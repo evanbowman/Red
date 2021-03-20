@@ -36,7 +36,7 @@ $(ROM): $(OBJ)
 	@echo linking $(ROM)
 	@$(RGBLINK) -o $(ROM) -p 0xFF -m $(NAME).map -n $(NAME).sym $(OBJ)
 	@echo rgbfix $(ROM)
-	@$(RGBFIX) -C -p 0xFF -v $(ROM)
+	@$(RGBFIX) -p 0xFF --mbc-type 0x1B --ram-size 4 -C -t RED -v $(ROM)
 	@echo ROM fixed!
 
 run: $(ROM) all

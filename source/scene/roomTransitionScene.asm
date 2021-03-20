@@ -112,11 +112,6 @@ RoomTransitionSceneDownFinishUpVBlank:
 
         jr      .return
 .done:
-	ld      a, [var_room_y]
-        inc     a
-        ld      [var_room_y], a
-
-
         call    RoomTransitionDone
 
 .return:
@@ -261,11 +256,6 @@ RoomTransitionSceneUpFinishUpVBlank:
 
         jr      .return
 .done:
-        ld      a, [var_room_y]
-        dec     a
-        ld      [var_room_y], a
-
-
         call    RoomTransitionDone
 
 .return:
@@ -337,11 +327,6 @@ RoomTransitionSceneRightFinishUpVBlank:
 
         jr      .return
 .done:
-	ld      a, [var_room_x]
-        inc     a
-        ld      [var_room_x], a
-
-
         call    RoomTransitionDone
 
 .return:
@@ -484,11 +469,6 @@ RoomTransitionSceneLeftFinishUpVBlank:
 
         jr      .return
 .done:
-        ld      a, [var_room_x]
-        dec     a
-        ld      [var_room_x], a
-
-
         call    RoomTransitionDone
 
 .return:

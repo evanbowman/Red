@@ -842,9 +842,44 @@ r1_SaveGame:
         ld      a, 1
         ld      [rSVBK], a
 
+        ld      a, $0a                  ; \ Enable SRAM writes
+        ld      [rRAMG], a              ; /
 
+        ld      a, 0
+        ld      [rRAMB], a
+
+        ld      hl, wram1_var_world_map_info
+        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
+        ld      de, _SRAM
+        call    Memcpy
+
+        ld      a, 0                    ; \ Disable SRAM writes
+        ld      [rRAMG], a              ; /
 
         ret
+
+
+r1_LoadGame:
+        ld      a, 1
+        ld      [rSVBK], a
+
+        ld      a, $0a                  ; \ Enable SRAM writes
+        ld      [rRAMG], a              ; /
+
+        ld      a, 0
+        ld      [rRAMB], a
+
+        ld      hl, _SRAM
+        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
+        ld      de, wram1_var_world_map_info
+        call    Memcpy
+
+        ld      a, 0                    ; \ Disable SRAM writes
+        ld      [rRAMG], a              ; /
+
+        ret
+
+
 
 ;;; ---------------------------------------------------------------------------
 

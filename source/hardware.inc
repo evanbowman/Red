@@ -792,6 +792,8 @@ CART_ROM_BANDAI_TAMA5        EQU $FD
 CART_ROM_HUDSON_HUC3         EQU $FE
 CART_ROM_HUDSON_HUC1         EQU $FF
 
+CART_RAM_1M                  EQU 4
+
 ; $0148 ROM size
 ; these are kilobytes
 CART_ROM_32KB   EQU $00 ; 2 banks

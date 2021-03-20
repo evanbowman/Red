@@ -51,6 +51,23 @@ var_oam_bottom_counter:  DS      1
 
 ;;; ############################################################################
 
+        SECTION "PERSISTENT_DATA", WRAM0
+
+;;; A bunch of data that we want to write to sram. Put it all in one place so
+;;; that we can simply memcpy this stuff.
+
+PERSISTENT_STATE_DATA:
+
+var_room_x:     DS      1
+var_room_y:     DS      1
+
+var_player_stamina:     DS      FIXNUM_SIZE
+
+PERSISTENT_STATE_DATA_END:
+
+
+;;; ############################################################################
+
         SECTION "MAP_INFO", WRAM0
 
 MAP_TILE_WIDTH EQU 16
@@ -58,10 +75,6 @@ MAP_WIDTH EQU SCRN_VX / MAP_TILE_WIDTH
 MAP_HEIGHT EQU SCRN_VY / MAP_TILE_WIDTH
 
 var_map_info:    DS     MAP_WIDTH * MAP_HEIGHT
-
-var_room_x:     DS      1
-var_room_y:     DS      1
-
 
 ;;; SECTION MAP_INFO
 
@@ -95,8 +108,6 @@ var_player_update_fn:   DS   2  ; Engine will call this fn to update player
 var_player_struct_end:
 
 ENTITY_SIZE EQU var_player_struct_end - var_player_struct
-
-var_player_stamina:     DS      FIXNUM_SIZE
 
 
 COLLISION_LEFT EQU $01

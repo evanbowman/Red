@@ -198,14 +198,20 @@ OverworldSceneUpdate:
 
         ldh     a, [var_joypad_current]
         bit     PADB_SELECT, a
-        jr      Z, .updateEntities
+        jr      Z, .checkStart
 
         ld      de, WorldmapSceneEnter
         call    SceneSetUpdateFn
 
         ld      de, VoidVBlankFn
         call    SceneSetVBlankFn
+        jr      .updateEntities
 
+.checkStart:
+        bit     PADB_START, a
+        jr      Z, .updateEntities
+
+        ;; TODO: map inventory or options to the start button
 
 .updateEntities:
 
@@ -379,6 +385,10 @@ OverworldSceneTryRoomTransition:
         cp      246
         jr      C, .tryUpTransition
 
+	ld      a, [var_room_y]
+        inc     a
+        ld      [var_room_y], a
+
         ld      de, RoomTransitionSceneDownUpdate
         call    OverworldSceneStartTransition
 
@@ -392,7 +402,7 @@ OverworldSceneTryRoomTransition:
         ld      c, a
         LONG_CALL r1_MapExpandRow, 1
 
-        jr      .done
+        ret
 
 .tryUpTransition:
 
@@ -402,25 +412,33 @@ OverworldSceneTryRoomTransition:
         cp      b
         jr      C, .tryRightTransition
 
+	ld      a, [var_room_y]
+        dec     a
+        ld      [var_room_y], a
+
         ld      de, RoomTransitionSceneUpUpdate
         call    OverworldSceneStartTransition
 
         ld      de, RoomTransitionSceneUpVBlank
         call    SceneSetVBlankFn
 
-        call    MapLoad0
+        call    MapLoad2
 
         ld      a, 31
         ld      [var_room_load_counter], a
         ld      c, a
         LONG_CALL r1_MapExpandRow, 1
 
-        jr      .done
+        ret
 
 .tryRightTransition:
         ld      a, [var_player_coord_x]
         cp      246
         jr      C, .tryLeftTransition
+
+	ld      a, [var_room_x]
+        inc     a
+        ld      [var_room_x], a
 
         ld      de, RoomTransitionSceneRightUpdate
         call    OverworldSceneStartTransition
@@ -428,14 +446,14 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneRightVBlank
         call    SceneSetVBlankFn
 
-        call    MapLoad3
+        call    MapLoad2
 
         ld      a, 0
         ld      [var_room_load_counter], a
         ld      c, a
         LONG_CALL r1_MapExpandColumn, 1
 
-        jr      .done
+        ret
 
 .tryLeftTransition:
         ld      a, [var_player_coord_x]
@@ -443,6 +461,10 @@ OverworldSceneTryRoomTransition:
         ld      a, 8
         cp      b
         jr      C, .done
+
+	ld      a, [var_room_x]
+        dec     a
+        ld      [var_room_x], a
 
         ld      de, RoomTransitionSceneLeftUpdate
         call    OverworldSceneStartTransition
