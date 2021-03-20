@@ -35,11 +35,16 @@
 
 ;;; ############################################################################
 
-        SECTION "WRAM1_UNUSED", WRAMX, BANK[1]
+        SECTION "WORLD_MAP", WRAMX, BANK[1]
+
+WORLD_MAP_WIDTH EQU 18
+WORLD_MAP_HEIGHT EQU 16
 
 
-;;; TODO...
-var_wram1_TODO:   DS      1
+
+
+wram1_var_world_map_visited:    DS      1
+wram1_var_world_map_info:       DS      1
 
 
 ;;; ############################################################################

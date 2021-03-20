@@ -67,7 +67,7 @@ OverworldSceneFadeInVBlank:
 
 ;;; ----------------------------------------------------------------------------
 
-OverworldSceneLoadOverlayTiles:
+OverworldSceneInitOverlayVRam:
 	SET_BANK 7
 
         ld      hl, OverlayTiles
@@ -75,12 +75,21 @@ OverworldSceneLoadOverlayTiles:
         ld      de, $9000
         call    VramSafeMemcpy
 
+        ld      a, 136
+        ld      [rWY], a
+
+        call    VBlankIntrWait
+        call    TestOverlay
+
+	call    VBlankIntrWait
+        call    UpdateStaminaBar
+
         ret
 
 
 OverworldSceneLoadTiles:
 
-        call    OverworldSceneLoadOverlayTiles
+        call    OverworldSceneInitOverlayVRam
 
         ld      hl, BackgroundTiles
         ld      bc, BackgroundTilesEnd - BackgroundTiles
@@ -91,7 +100,6 @@ OverworldSceneLoadTiles:
         ld      bc, SpriteDropShadowEnd - SpriteDropShadow
         ld      de, $87c0
         call    VramSafeMemcpy
-
         ret
 
 
@@ -103,12 +111,6 @@ OverworldSceneEnter:
         ld      hl, BackgroundPaletteFadeToBlack
         ld      de, SpritePaletteFadeToBlack
         call    Fade
-
-        call    VBlankIntrWait
-        call    TestOverlay
-
-        call    VBlankIntrWait
-        call    UpdateStaminaBar
 
         call    OverworldSceneLoadTiles
 

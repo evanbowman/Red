@@ -74,7 +74,7 @@ WorldmapSceneUpdate:
         ld      hl, BackgroundPaletteFadeToTan.blend_31
         call    LoadBackgroundColors
 
-        call    OverworldSceneLoadTiles
+        call    OverworldSceneInitOverlayVRam
 
 	ld      de, WorldmapSceneFadeOutVBlank
         call    SceneSetVBlankFn
@@ -139,6 +139,15 @@ WorldmapSceneFadeOutVBlank:
 	jr      .continue
 
 .transition:
+	ld      b, 64
+        ld      hl, BackgroundPaletteFadeToTan.blend_0
+        call    LoadBackgroundColors
+
+        ld      b, 64
+        ld      hl, SpritePaletteFadeToTan.blend_0
+        call    LoadObjectColors
+
+
         ld      de, OverworldSceneUpdate
         call    SceneSetUpdateFn
 

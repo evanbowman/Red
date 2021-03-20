@@ -517,7 +517,112 @@ ReadKeys:
 
 ;;; ---------------------------------------------------------------------------
 
+WorldMapPalettes::
+DB $1B,$4B, $57,$32, $ed,$10, $23,$34,
+WorldMapPalettesEnd::
+
+
+WorldMapTemplateTop::
+DB $00, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05
+DB $04, $05, $04, $05, $01
+WorldMapTemplateTopEnd::
+
+
+WorldMapTemplateRow0::
+DB $06, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08
+DB $08, $08, $08, $08, $07
+WorldMapTemplateRow0End::
+
+
+WorldMapTemplateRow1::
+DB $07, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08
+DB $08, $08, $08, $08, $06
+WorldMapTemplateRow1End::
+
+
+WorldMapTemplateBottom::
+DB $03, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04
+DB $05, $04, $05, $04, $02
+WorldMapTemplateBottomEnd::
+
+
+
+
+WorldMapShowRowPair:
+;;; de - first row address
+;;; hl - second row address
+        push    hl
+
+        ld      hl, WorldMapTemplateRow0
+        ld      bc, WorldMapTemplateRow0End - WorldMapTemplateRow0
+        call    VramSafeMemcpy
+
+        pop     de
+
+        ld      hl, WorldMapTemplateRow1
+        ld      bc, WorldMapTemplateRow1End - WorldMapTemplateRow1
+        call    VramSafeMemcpy
+        ret
+
+
 WorldMapShow:
+        ld      hl, WorldMapTemplateTop
+        ld      bc, WorldMapTemplateTopEnd - WorldMapTemplateTop
+        ld      de, $9C00
+        call    VramSafeMemcpy
+
+        ld      de, $9C20
+        ld      hl, $9C40
+        call    WorldMapShowRowPair
+
+        ld      de, $9C60
+        ld      hl, $9C80
+        call    WorldMapShowRowPair
+
+        ld      de, $9CA0
+        ld      hl, $9CC0
+        call    WorldMapShowRowPair
+
+        ld      de, $9CE0
+        ld      hl, $9D00
+        call    WorldMapShowRowPair
+
+        ld      de, $9D20
+        ld      hl, $9D40
+        call    WorldMapShowRowPair
+
+        ld      de, $9D60
+        ld      hl, $9D80
+        call    WorldMapShowRowPair
+
+        ld      de, $9DA0
+        ld      hl, $9DC0
+        call    WorldMapShowRowPair
+
+        ld      de, $9DE0
+        ld      hl, $9E00
+        call    WorldMapShowRowPair
+
+        ld      hl, WorldMapTemplateBottom
+        ld      bc, WorldMapTemplateBottomEnd - WorldMapTemplateBottom
+        ld      de, $9E20
+        call    VramSafeMemcpy
+
+        call    VBlankIntrWait
+        ld      b, WorldMapPalettesEnd - WorldMapPalettes
+        ld      hl, WorldMapPalettes
+        call    LoadBackgroundColors
+
+        ld      hl, $9E12
+        ld      a, $09
+        ld      [hl], a
+
+        ld      hl, $9C21
+        ld      a, $0a
+        ld      [hl], a
+
+        ld      a, 0
+        ld      [rWY], a
 
         ret
 
