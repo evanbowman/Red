@@ -516,6 +516,7 @@ r1_ReadKeys:
 
 r1_WorldMapPalettes::
 DB $1B,$4B, $57,$32, $ed,$10, $23,$34,
+DB $1B,$4B, $57,$32, $1f,$21, $23,$34,
 r1_WorldMapPalettesEnd::
 
 
@@ -593,8 +594,34 @@ r1_WorldMapShowRooms:
         and     $80                     ; Check for room visited flag
         jr      Z, .skip                ; The tile is empty by default
 
-        ld      a, $0a
+        ld      a, [hl]
+        and     $0f                     ; Lower four bits hold connection mask
+
+        push    af
+	ld      a, [var_room_x]
+        cp      b
+        jr      NZ, .notCurrentRoom
+        ld      a, [var_room_y]
+        cp      c
+        jr      NZ, .notCurrentRoom
+        pop     af
+
+.currentRoom:
+        add     $19
+        jr      .setTile
+.notCurrentRoom:
+	pop     af
+        add     $0a                     ; tile start index in vram
+.setTile:
         ld      [de], a
+
+        ld      a, 1
+        ld	[rVBK], a
+        ld      a, 1
+        ld      [de],  a
+        ld      a, 0
+        ld      [rVBK], a
+
 
 .skip:
         push    de                      ; \
@@ -677,10 +704,6 @@ r1_WorldMapShow:
 
         ld      hl, $9E12
         ld      a, $09
-        ld      [hl], a
-
-        ld      hl, $9C21
-        ld      a, $0a
         ld      [hl], a
 
         ld      a, 0
