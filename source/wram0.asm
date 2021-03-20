@@ -128,7 +128,7 @@ var_player_type:        DS   1
 var_player_struct_end:
 
 
-ENTITY_HEADER_SIZE EQU var_player_struct_end - var_player_struct
+ENTITY_SIZE EQU var_player_struct_end - var_player_struct
 
 
 ;;; Just a scratch variable that simplifies other code.
@@ -167,8 +167,12 @@ var_debug_struct_end:
 
         SECTION "ENTITY_RAM", WRAM0
 
-var_entity_reserved_mem: DS  (ENTITY_HEADER_SIZE + 6) * ENTITY_BUFFER_CAPACITY
+STATIC_ASSERT(ENTITY_SIZE <= 32)
+var_entity_mem:         DS  (ENTITY_SIZE + (32 - ENTITY_SIZE)) * ENTITY_BUFFER_CAPACITY
 
+var_entity_mem_used::
+DS      ENTITY_BUFFER_CAPACITY
+var_entity_mem_used_end::
 
 ;;; SECTION ENTITY_RAM
 

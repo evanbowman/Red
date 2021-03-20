@@ -28,8 +28,8 @@ clean:
 # Yeah, I know, this is kind of lazy. The main asm file simply includes the
 # other source files. I have reasons for doing this.
 source/main.o : $(ASMDEPS)
-	@echo rgbasm $(INCLUDES) -E -osource/main.o source/main.asm
-	@$(RGBASM) $(INCLUDES) -E -osource/main.o source/main.asm
+	@echo rgbasm -Wall -Wextra $(INCLUDES) -E -osource/main.o source/main.asm
+	@$(RGBASM) -Wall -Wextra $(INCLUDES) -E -osource/main.o source/main.asm
 
 
 $(ROM): $(OBJ)

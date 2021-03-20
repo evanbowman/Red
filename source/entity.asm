@@ -371,3 +371,73 @@ EntitySwap:
 
 
 ;;; ----------------------------------------------------------------------------
+
+Mul32:
+;;; bc - number to shift by five
+        ld      d, c
+        ;; Right-shift contents of c by three, so upper five bits are now lsb
+        srl     d
+        srl     d
+        srl     d
+
+        ;; swap upper and lower nibbles in b, then shift left, and mask off upper three
+        swap    b
+        sla     b
+        ld      a, b
+        and     $e0
+
+        ;; combine with the five bits from lower byte
+        or      d
+        ld      b, a
+
+        ld      a, c
+        swap    a
+        sla     a
+        and     $e0
+        ld      c, a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+AllocateEntity:
+;;; hl - return value
+;;; trashes bc
+        ld      bc, 0
+
+        ld      hl, var_entity_mem_used
+.loop:
+        ld      a, c
+        cp      ENTITY_BUFFER_CAPACITY
+        jr      Z, .failed
+
+        ld      a, [hl]
+        or      a
+        jr      Z, .found
+        jr      .next
+
+.found:
+        ld      a, 1
+        ld      [hl], a         ; set entity mem used
+
+        ;; Now, we want to multiply bc by the size of an entity (32)...
+	call    Mul32
+
+        ld      hl, var_entity_mem
+        add     hl, bc
+
+        ret
+
+.next:
+        inc     hl
+        inc     c
+        jr      .loop
+
+.failed:
+        ld      hl, 0
+        ret
+
+
+;;; ----------------------------------------------------------------------------
