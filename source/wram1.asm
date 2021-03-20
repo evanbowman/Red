@@ -41,8 +41,6 @@ WORLD_MAP_WIDTH EQU 18
 WORLD_MAP_HEIGHT EQU 16
 WORLD_ROOM_COUNT EQU WORLD_MAP_WIDTH * WORLD_MAP_HEIGHT
 
-wram1_var_world_map_visited:    DS      WORLD_ROOM_COUNT
-
 
 ROOM_DESC_SIZE EQU 13
 
@@ -67,8 +65,9 @@ ROOM_DESC_SIZE EQU 13
 ;;; }; (2 bytes)
 ;;;
 
-
-wram1_var_world_map_info:       DS      WORLD_ROOM_COUNT * ROOM_DESC_SIZE
+wram1_var_world_map_info::
+DS      WORLD_ROOM_COUNT * ROOM_DESC_SIZE
+wram1_var_world_map_info_end::
 
 
 ;;; ############################################################################

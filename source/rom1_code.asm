@@ -617,7 +617,7 @@ r1_WorldMapShowRooms:
 
         ld      a, 1
         ld	[rVBK], a
-        ld      a, 1
+        ld      a, $81                  ; palette 1, show over objects
         ld      [de],  a
         ld      a, 0
         ld      [rVBK], a
@@ -837,6 +837,17 @@ r1_SetRoomVisited:
         ret
 
 ;;; ---------------------------------------------------------------------------
+
+r1_SaveGame:
+        ld      a, 1
+        ld      [rSVBK], a
+
+
+
+        ret
+
+;;; ---------------------------------------------------------------------------
+
 
 r1_SmoothstepLut::
 DB $00, $00, $00, $00, $00, $00, $00, $00,
