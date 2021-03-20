@@ -197,8 +197,6 @@ Start:
 ;;; game will not be playable on the gba, as the color palettes would not
 ;;; look too good anyway.
 .agbDetected:
-        call    LcdOff
-        call    LoadFont
         LONG_CALL GameboyAdvanceDetected, 1
 
 

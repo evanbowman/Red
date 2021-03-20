@@ -107,9 +107,6 @@ GameboyAdvanceDetected:
         ld      a, 1
         ldh     [agb_detected], a
 
-;;; TODO: add color profiles for gameboy advance.
-        call    GameboyColorNotDetected
-
 	ret
 
 

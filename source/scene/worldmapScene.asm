@@ -47,8 +47,7 @@ WorldmapSceneEnter:
         ld      a, 0
         ld      [var_scene_counter], a
 
-
-	ld      de, WorldmapSceneUpdate
+	ld      de, VoidVBlankFn
         call    SceneSetUpdateFn
 
         ld      de, WorldmapSceneFadeinVBlank
@@ -100,6 +99,9 @@ WorldmapSceneFadeinVBlank:
 .transition:
         ld      de, VoidVBlankFn
         call    SceneSetVBlankFn
+
+	ld      de, WorldmapSceneUpdate
+        call    SceneSetUpdateFn
 
         ld      b, 64
         ld      hl, BackgroundPaletteFadeToTan.blend_31
