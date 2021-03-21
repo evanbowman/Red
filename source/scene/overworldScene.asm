@@ -56,10 +56,7 @@ OverworldSceneFadeInVBlank:
 
 .continue:
         ld      [var_scene_counter], a
-        SET_BANK 7
-        ld      hl, r7_BackgroundPaletteFadeToBlack
-        ld      de, r7_SpritePaletteFadeToBlack
-        call    Fade
+        call    FadeToBlack
 
 	call    VBlankCopySpriteTextures
         ret
@@ -107,10 +104,7 @@ OverworldSceneEnter:
         call    VBlankIntrWait
 
         ld      c, 255
-        SET_BANK 7
-        ld      hl, r7_BackgroundPaletteFadeToBlack
-        ld      de, r7_SpritePaletteFadeToBlack
-        call    Fade
+        call    FadeToBlack
 
         call    OverworldSceneLoadTiles
 

@@ -154,6 +154,43 @@ r1_LoadGame:
 
 ;;; ----------------------------------------------------------------------------
 
+r1_SetCgbColorProfile:
+        ld      a, 7
+        ld      [var_fade_bank], a
+
+
+        ld      bc, r7_BackgroundPaletteFadeToBlack
+        ld      a, b
+        ld      [var_fade_to_black_bkg_lut], a
+        ld      a, c
+        ld      [var_fade_to_black_bkg_lut + 1], a
+
+
+        ld      bc, r7_SpritePaletteFadeToBlack
+        ld      a, b
+        ld      [var_fade_to_black_spr_lut], a
+        ld      a, c
+        ld      [var_fade_to_black_spr_lut + 1], a
+
+
+        ld      bc, r7_BackgroundPaletteFadeToTan
+        ld      a, b
+        ld      [var_fade_to_tan_bkg_lut], a
+        ld      a, c
+        ld      [var_fade_to_tan_bkg_lut + 1], a
+
+
+        ld      bc, r7_SpritePaletteFadeToTan
+        ld      a, b
+        ld      [var_fade_to_tan_spr_lut], a
+        ld      a, c
+        ld      [var_fade_to_tan_spr_lut + 1], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 
 ;;; SECTION ROM1_CODE
 

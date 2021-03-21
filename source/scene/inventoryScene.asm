@@ -66,16 +66,8 @@ InventorySceneUpdate:
         ld      a, 255
         ld      [var_scene_counter], a
 
-        SET_BANK 7
         call    VBlankIntrWait
-;;; i.e. Hide all tiles onscreen
-        ld      b, 64
-        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_31
-        call    LoadBackgroundColors
-
-        ld      b, 8
-        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
-        call    LoadBackgroundColors
+        call    BlackScreenExcludeOverlay
 
 	ld      de, InventorySceneFadeOutVBlank
         call    SceneSetVBlankFn
@@ -105,17 +97,7 @@ InventorySceneFadeinVBlank:
 	ld      de, InventorySceneUpdate
         call    SceneSetUpdateFn
 
-        ld      b, 64
-        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_31
-        call    LoadBackgroundColors
-
-        ld      b, 8
-        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
-        call    LoadBackgroundColors
-
-        ld      b, 64
-        ld      hl, r7_SpritePaletteFadeToBlack.blend_31
-        call    LoadObjectColors
+        call    BlackScreenExcludeOverlay
 
         LONG_CALL r1_InventoryShow, 1
 
@@ -123,13 +105,7 @@ InventorySceneFadeinVBlank:
 
 .continue:
         ld      [var_scene_counter], a
-        ld      hl, r7_BackgroundPaletteFadeToBlack
-        ld      de, r7_SpritePaletteFadeToBlack
-        call    Fade
-
-        ld      b, 8
-        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
-        call    LoadBackgroundColors
+        call    FadeToBlackExcludeOverlay
 
         ret
 
@@ -146,14 +122,7 @@ InventorySceneFadeOutVBlank:
 	jr      .continue
 
 .transition:
-	ld      b, 64
-        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
-        call    LoadBackgroundColors
-
-        ld      b, 64
-        ld      hl, r7_SpritePaletteFadeToBlack.blend_0
-        call    LoadObjectColors
-
+        call    FadeNone
 
         ld      de, OverworldSceneUpdate
         call    SceneSetUpdateFn
@@ -165,12 +134,6 @@ InventorySceneFadeOutVBlank:
 
 .continue:
         ld      [var_scene_counter], a
-        ld      hl, r7_BackgroundPaletteFadeToBlack
-        ld      de, r7_SpritePaletteFadeToBlack
-        call    Fade
 
-        ld      b, 8
-        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
-        call    LoadBackgroundColors
-
+        call    FadeToBlackExcludeOverlay
         ret

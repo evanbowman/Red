@@ -991,3 +991,140 @@ FreeTexture:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+GetFadeToBlackBkgLut:
+;;; result in hl
+        ld      a, [var_fade_to_black_bkg_lut]
+        ld      h, a
+        ld      a, [var_fade_to_black_bkg_lut + 1]
+        ld      l, a
+        ret
+
+
+GetFadeToBlackSprLut:
+;;; result in de
+        ld      a, [var_fade_to_black_spr_lut]
+        ld      d, a
+        ld      a, [var_fade_to_black_spr_lut + 1]
+        ld      e, a
+        ret
+
+
+GetFadeToTanBkgLut:
+;;; result in hl
+        ld      a, [var_fade_to_tan_bkg_lut]
+        ld      h, a
+        ld      a, [var_fade_to_tan_bkg_lut + 1]
+        ld      l, a
+        ret
+
+
+GetFadeToTanSprLut:
+;;; result in de
+        ld      a, [var_fade_to_tan_spr_lut]
+        ld      d, a
+        ld      a, [var_fade_to_tan_spr_lut + 1]
+        ld      e, a
+        ret
+
+
+
+SetFadeBank:
+        ld      a, [var_fade_bank]
+        ld      [rROMB0], a
+        ret
+
+
+
+FadeToBlack:
+;;; c - amount
+        call    SetFadeBank
+
+        call    GetFadeToBlackBkgLut
+        call    GetFadeToBlackSprLut
+        call    Fade
+        ret
+
+
+FadeToBlackExcludeOverlay:
+;;; c - amount
+        call    SetFadeBank
+
+        call    GetFadeToBlackBkgLut
+        call    GetFadeToBlackSprLut
+        call    Fade
+
+        ld      b, 8
+        call    GetFadeToBlackBkgLut
+        call    LoadBackgroundColors
+
+        ret
+
+
+BlackScreenExcludeOverlay:
+        call    SetFadeBank
+
+
+        call    GetFadeToBlackBkgLut
+        ld      bc, 1984       ; 64 colors * 31 yields the entry with total fade
+        add     hl, bc
+        ld      b, 64
+        call    LoadBackgroundColors
+
+        ld      b, 8
+        call    GetFadeToBlackBkgLut
+        call    LoadBackgroundColors
+
+	call    GetFadeToBlackSprLut
+        ld      h, d
+        ld      l, e
+        ld      bc, 1984
+        add     hl, bc
+        ld      b, 64
+        call    LoadObjectColors
+
+        ret
+
+
+FadeNone:
+        call    SetFadeBank
+        ld      b, 64
+        call    GetFadeToBlackBkgLut
+        call    LoadBackgroundColors
+
+        ld      b, 64
+        call    GetFadeToBlackSprLut
+        ld      h, d
+        ld      l, e
+        call    LoadObjectColors
+        ret
+
+
+FadeToTan:
+        call    SetFadeBank
+        call    GetFadeToTanBkgLut
+        call    GetFadeToTanSprLut
+        call    Fade
+        ret
+
+
+TanScreen:
+        call    SetFadeBank
+	call    GetFadeToTanBkgLut
+        ld      bc, 1984       ; 64 colors * 31 yields the entry with total fade
+        add     hl, bc
+        ld      b, 64
+        call    LoadBackgroundColors
+
+        call    GetFadeToTanSprLut
+        ld      h, d
+        ld      l, e
+        ld      bc, 1984
+        add     hl, bc
+        ld      b, 64
+        call    LoadObjectColors
+        ret
+
+
+;;; ----------------------------------------------------------------------------

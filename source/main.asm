@@ -206,6 +206,8 @@ Main:
         ld	a, IEF_VBLANK	        ; vblank interrupt
 	ld	[rIE], a	        ; setup
 
+        LONG_CALL r1_SetCgbColorProfile, 1
+
         SET_BANK 10
         ld      a, 1
         ld      [rSVBK], a
@@ -373,6 +375,7 @@ MapSpriteBlock:
         INCLUDE "rom7_data.asm"
         INCLUDE "rom9_code.asm"
         INCLUDE "rom10_map_data.asm"
+        INCLUDE "rom11_data.asm"
 
 
 ;;; SECTION START

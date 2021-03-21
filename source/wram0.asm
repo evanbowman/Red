@@ -226,6 +226,17 @@ var_last_fade_amount:   DS      1
 
 ;;; ############################################################################
 
+        SECTION "COLOR_PROFILE", WRAM0
+
+var_fade_bank:          DS      1
+var_fade_to_black_spr_lut:      DS      2
+var_fade_to_black_bkg_lut:      DS      2
+var_fade_to_tan_spr_lut:        DS      2
+var_fade_to_tan_bkg_lut:        DS      2
+
+
+;;; ############################################################################
+
 STACK_SIZE EQU 200
 STACK_BEGIN EQU $CFFF
 STACK_END EQU (STACK_BEGIN - STACK_SIZE) + 1

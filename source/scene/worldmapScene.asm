@@ -66,12 +66,9 @@ WorldmapSceneUpdate:
         ld      a, 255
         ld      [var_scene_counter], a
 
-        SET_BANK 7
         call    VBlankIntrWait
 ;;; i.e. Hide all tiles onscreen
-        ld      b, 64
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_31
-        call    LoadBackgroundColors
+        call    TanScreen
 
         call    OverworldSceneInitOverlayVRam
 
@@ -103,14 +100,9 @@ WorldmapSceneFadeinVBlank:
 	ld      de, WorldmapSceneUpdate
         call    SceneSetUpdateFn
 
-        ld      b, 64
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_31
-        call    LoadBackgroundColors
+        call    TanScreen
 
-        ld      b, 64
-        ld      hl, r7_SpritePaletteFadeToTan.blend_31
-        call    LoadObjectColors
-
+        SET_BANK 7
         ld      hl, r7_WorldMapTiles
         ld      bc, r7_WorldMapTilesEnd - r7_WorldMapTiles
         ld      de, $9000
@@ -122,10 +114,7 @@ WorldmapSceneFadeinVBlank:
 
 .continue:
         ld      [var_scene_counter], a
-        ld      hl, r7_BackgroundPaletteFadeToTan
-        ld      de, r7_SpritePaletteFadeToTan
-        call    Fade
-
+        call    FadeToTan
         ret
 
 
@@ -141,13 +130,8 @@ WorldmapSceneFadeOutVBlank:
 	jr      .continue
 
 .transition:
-	ld      b, 64
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_0
-        call    LoadBackgroundColors
 
-        ld      b, 64
-        ld      hl, r7_SpritePaletteFadeToTan.blend_0
-        call    LoadObjectColors
+        call    FadeNone
 
 
         ld      de, OverworldSceneUpdate
@@ -160,8 +144,6 @@ WorldmapSceneFadeOutVBlank:
 
 .continue:
         ld      [var_scene_counter], a
-        ld      hl, r7_BackgroundPaletteFadeToTan
-        ld      de, r7_SpritePaletteFadeToTan
-        call    Fade
+        call    FadeToTan
 
         ret
