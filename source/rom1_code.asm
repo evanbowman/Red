@@ -38,6 +38,11 @@
 
 SECTION "ROM1_CODE", ROMX, BANK[1]
 
+;;;
+;;; Rom bank 1 contains various functions for loading entities and dealing with
+;;; map data, as well as misc utility code.
+;;;
+
 
 ;;; ----------------------------------------------------------------------------
 
@@ -878,7 +883,7 @@ r1_LoadRoomEntities:
         and     $0f
         swap    a
         ld      b, a
-        call    BonfireNew
+        call    r1_BonfireNew
 
         call    LcdOn
         pop     bc
@@ -1067,8 +1072,129 @@ r1_LoadGame:
         ret
 
 
+;;; ----------------------------------------------------------------------------
 
-;;; ---------------------------------------------------------------------------
+r1_PlayerNew:
+        ld      hl, var_player_struct
+        ld      bc, var_player_struct_end - var_player_struct
+        ld      a, 0
+        call    Memset
+
+        ld      a, 0
+        ld      [var_player_type], a
+
+        ld      hl, var_player_coord_x
+        ld      bc, $81
+        call    FixnumInit
+
+        ld      hl, var_player_coord_y
+        ld      bc, $75
+        call    FixnumInit
+
+        ld      a, SPRID_PLAYER_SD
+        ld      [var_player_fb], a
+
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+
+        or      SPRITE_SHAPE_T
+        ld      [var_player_display_flag], a
+
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdate
+        call    EntitySetUpdateFn
+
+        ld      de, var_player_struct
+        call    EntityBufferEnqueue
+
+        ld      hl, var_player_stamina
+        ld      bc, $ffff
+        ld      a, $ff
+        call    FixnumInit
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_BonfireNew:
+;;; b - x
+;;; c - y
+        push    bc
+        push    bc
+
+        call    AllocateEntity
+        ld      a, 0
+        or      h
+        or      l
+        jr      Z, .failedAlloc
+
+        push    hl
+        push    hl
+        pop     de
+	call    EntityBufferEnqueue
+
+        pop     hl
+        pop     bc
+
+        ld      a, 1
+        ld      [hl], a
+
+        call    EntitySetPos
+
+        ld      a, SPRID_BONFIRE
+        call    EntitySetFrameBase
+
+        ;; Fixme: allocate texture slots dynamically
+        push    hl
+        call    AllocateTexture
+        cp      0
+
+.texturePoolLeak:
+        jr      Z, .texturePoolLeak
+
+        pop     hl
+        call    EntitySetTexture
+
+        ld      a, 1
+        call    EntitySetPalette
+
+        ld      a, 0
+        call    EntitySetDisplayFlags
+
+        ld      a, ENTITY_TYPE_BONFIRE
+        call    EntitySetType
+
+        ld      de, BonfireUpdate
+        call    EntitySetUpdateFn
+
+        pop     bc
+        call    LcdOff
+        srl     b
+        srl     b
+        srl     b
+        dec     b
+        dec     b
+        ld      a, b
+        srl     c
+        srl     c
+        srl     c
+        dec     c
+        dec     c
+        ld      d, c
+        ld      e, $80
+        ld      c, 1
+        call    SetBackgroundTile32x32
+        call    LcdOn
+        ret
+
+.failedAlloc:
+        pop     bc
+        pop     bc
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 
 r1_SmoothstepLut::

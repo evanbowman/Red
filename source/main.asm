@@ -219,7 +219,7 @@ Main:
         ld      de, VoidVBlankFn
         call    SceneSetVBlankFn
 
-        call    PlayerInit
+        LONG_CALL r1_PlayerNew, 1
 
         call    LoadFont
 
@@ -235,7 +235,7 @@ Main:
 
         ld      b, 96
         ld      c, 96
-        call    BonfireNew
+        LONG_CALL r1_BonfireNew, 1
 
         ei
 

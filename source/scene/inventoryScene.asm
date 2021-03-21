@@ -70,11 +70,11 @@ InventorySceneUpdate:
         call    VBlankIntrWait
 ;;; i.e. Hide all tiles onscreen
         ld      b, 64
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_31
+        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_31
         call    LoadBackgroundColors
 
         ld      b, 8
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_0
+        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
         call    LoadBackgroundColors
 
         call    OverworldSceneInitOverlayVRam
@@ -108,27 +108,27 @@ InventorySceneFadeinVBlank:
         call    SceneSetUpdateFn
 
         ld      b, 64
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_31
+        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_31
         call    LoadBackgroundColors
 
         ld      b, 8
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_0
+        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
         call    LoadBackgroundColors
 
         ld      b, 64
-        ld      hl, r7_SpritePaletteFadeToTan.blend_31
+        ld      hl, r7_SpritePaletteFadeToBlack.blend_31
         call    LoadObjectColors
 
         ret
 
 .continue:
         ld      [var_scene_counter], a
-        ld      hl, r7_BackgroundPaletteFadeToTan
-        ld      de, r7_SpritePaletteFadeToTan
+        ld      hl, r7_BackgroundPaletteFadeToBlack
+        ld      de, r7_SpritePaletteFadeToBlack
         call    Fade
 
         ld      b, 8
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_0
+        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
         call    LoadBackgroundColors
 
         ret
@@ -147,11 +147,11 @@ InventorySceneFadeOutVBlank:
 
 .transition:
 	ld      b, 64
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_0
+        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
         call    LoadBackgroundColors
 
         ld      b, 64
-        ld      hl, r7_SpritePaletteFadeToTan.blend_0
+        ld      hl, r7_SpritePaletteFadeToBlack.blend_0
         call    LoadObjectColors
 
 
@@ -165,12 +165,12 @@ InventorySceneFadeOutVBlank:
 
 .continue:
         ld      [var_scene_counter], a
-        ld      hl, r7_BackgroundPaletteFadeToTan
-        ld      de, r7_SpritePaletteFadeToTan
+        ld      hl, r7_BackgroundPaletteFadeToBlack
+        ld      de, r7_SpritePaletteFadeToBlack
         call    Fade
 
         ld      b, 8
-        ld      hl, r7_BackgroundPaletteFadeToTan.blend_0
+        ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
         call    LoadBackgroundColors
 
         ret

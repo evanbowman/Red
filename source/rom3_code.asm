@@ -38,6 +38,10 @@
 
 SECTION "ROM3_CODE", ROMX, BANK[3]
 
+;;;
+;;; Rom3 contains code related to entity state changes.
+;;;
+
 
 r3_PlayerCheckWallCollisionLeft:
 ;;; a - wall tile x
@@ -558,7 +562,7 @@ r3_PlayerUpdateMovement:
         ldh     a, [var_joypad_raw]
         and     PADF_LEFT
         ld      e, SPRID_PLAYER_WL
-        call    PlayerJoypadResponse
+        call    r3_PlayerJoypadResponse
 
 
 
@@ -574,7 +578,7 @@ r3_PlayerUpdateMovement:
         ldh     a, [var_joypad_raw]
         and     PADF_RIGHT
         ld      e, SPRID_PLAYER_WR
-        call    PlayerJoypadResponse
+        call    r3_PlayerJoypadResponse
 
 
 
@@ -593,7 +597,7 @@ r3_PlayerUpdateMovement:
         ldh     a, [var_joypad_raw]
 	and     PADF_DOWN
         ld      e, SPRID_PLAYER_WD
-        call    PlayerJoypadResponse
+        call    r3_PlayerJoypadResponse
 
 
 
@@ -608,9 +612,267 @@ r3_PlayerUpdateMovement:
         ldh     a, [var_joypad_raw]
 	and     PADF_UP
         ld      e, SPRID_PLAYER_WU
-        call    PlayerJoypadResponse
+        call    r3_PlayerJoypadResponse
 
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r3_PlayerAnimate:
+        ld      a, [var_player_fb]
+
+        cp      SPRID_PLAYER_WR
+        jr      Z, .animateWalkLR
+
+        cp      SPRID_PLAYER_WL
+        jr      Z, .animateWalkLR
+
+        cp      SPRID_PLAYER_WD
+        jr      Z, .animateWalkUD
+
+        cp      SPRID_PLAYER_WU
+        jr      Z, .animateWalkUD
+
+        jr      .done
+
+.animateWalkLR:
+        ld      hl, var_player_animation
+        ld      c, 6
+        ld      d, 5
+        call    AnimationAdvance
+        or      a
+        jr      NZ, .frameChangedLR
+        jr      .done
+
+.animateWalkUD:
+        ld      hl, var_player_animation
+        ld      c, 6
+        ld      d, 10
+
+        call    AnimationAdvance
+        or      a
+        jr      NZ, .frameChangedUD
+.done:
+        ret
+
+.frameChangedLR:
+        ld      a, 1 | SPRITE_SHAPE_T
+        ld      [var_player_display_flag], a
+        jr      .frameChanged
+
+.frameChangedUD:
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_display_flag], a
+
+.frameChanged:
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r3_PlayerJoypadResponse:
+;;; a - btn 1 pressed
+;;; c - btn 3 or button 4 pressed
+;;; e - desired frame
+;;; hl - position ptr
+;;; b - add/sub position
+;;; trashes a
+        or      a
+        jr      Z, .done
+
+        ld      a, c
+        or      a
+        jr      Z, .n2
+        jr      .setSpeed
+
+.n2:
+        ld      a, [var_player_fb]
+        cp      e
+        jr      Z, .setSpeed    ; the base frame is unchanged
+
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+
+        ld      a, e
+        ld      [var_player_fb], a
+
+        ld      a, [var_player_kf]
+        ld      e, a
+        ld      a, 4
+        cp      e
+        jr      C, .maybeFixFrames
+        jr      .setSpeed
+
+;;; The l/r walk cycle is five frames long, the U/D walk cycle is ten frames.
+.maybeFixFrames:
+        ld      a, [var_player_fb]
+        ld      e, SPRID_PLAYER_WL
+        cp      e
+        jr      Z, .subtrFrames
+        ld      e, SPRID_PLAYER_WR
+        cp      e
+        jr      Z, .subtrFrames
+        jr      .setSpeed
+
+.subtrFrames:
+        ld      a, [var_player_kf]
+        sub     5
+        ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+
+.setSpeed:
+        ld      a, [var_player_spill2]
+        or      a
+        jr      NZ, .noMove
+
+        push    bc
+        ld      a, b
+        or      a
+        jr      Z, .subPosition
+
+        ld      a, c
+        or      a
+
+;;; We want to add less to each axis-aligned movement vector when moving
+;;; diagonally, otherwise, we will move faster in the diagonal direction.
+        jr      NZ, .moveDiagonalFwd
+        ld      b, 1
+        ld      c, 40
+        jr      .moveFwd
+.moveDiagonalFwd:
+        ld      b, 0
+        ld      c, 206
+.moveFwd:
+
+        call    FixnumAdd
+        pop     bc
+        jr      .done
+.subPosition:
+
+        ld      a, c
+        or      a
+
+        jr      NZ, .moveDiagonalRev
+        ld      b, 1
+        ld      c, 40
+        jr      .moveRev
+.moveDiagonalRev:
+        ld      b, 0
+        ld      c, 206
+.moveRev:
+
+        ld      b, 1
+        ld      c, 40
+        call    FixnumSub
+        pop     bc
+	jr      .done
+
+.noMove:
+
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r3_PlayerUpdateImpl:
+        call    r3_PlayerUpdateMovement
+
+        ldh     a, [var_joypad_released]
+        and     PADF_DOWN
+        jr      Z, .checkUpReleased
+
+        ldh     a, [var_joypad_raw]
+        and     PADF_LEFT | PADF_RIGHT | PADF_UP
+        jr      NZ, .checkUpReleased
+
+        ld      a, SPRID_PLAYER_SD
+        ld      [var_player_fb], a
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_display_flag], a
+        ld      a, 0
+        ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+
+.checkUpReleased:
+        ldh     a, [var_joypad_released]
+        and     PADF_UP
+        jr      Z, .checkLeftReleased
+
+        ldh     a, [var_joypad_raw]
+        and     PADF_LEFT | PADF_RIGHT | PADF_DOWN
+        jr      NZ, .checkLeftReleased
+
+        ld      a, SPRID_PLAYER_SU
+        ld      [var_player_fb], a
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_display_flag], a
+        ld      a, 0
+        ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+
+.checkLeftReleased:
+        ldh     a, [var_joypad_released]
+        and     PADF_LEFT
+        jr      Z, .checkRightReleased
+
+        ldh     a, [var_joypad_raw]
+        and     PADF_UP | PADF_DOWN | PADF_RIGHT
+        jr      NZ, .checkRightReleased
+
+        ld      a, SPRID_PLAYER_SL
+        ld      [var_player_fb], a
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_display_flag], a
+        ld      a, 0
+        ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+
+.checkRightReleased:
+        ldh     a, [var_joypad_released]
+        and     PADF_RIGHT
+        jr      Z, .animate
+
+        ldh     a, [var_joypad_raw]
+        and     PADF_UP | PADF_DOWN | PADF_RIGHT
+        jr      NZ, .animate
+
+        ld      a, SPRID_PLAYER_SR
+        ld      [var_player_fb], a
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_display_flag], a
+        ld      a, 0
+        ld      [var_player_kf], a
+        ld      a, 1
+        ld      [var_player_swap_spr], a
+
+.animate:
+        ld      a, [var_joypad_raw]
+        or      a
+        jr      Z, .done
+
+        ld      hl, var_player_stamina
+        ld      b, 0
+        ld      c, 8
+        call    FixnumSub
+
+	call    r3_PlayerAnimate
+        jr      .done
+
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 
 ;;; SECTION ROM3_CODE
