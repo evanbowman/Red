@@ -206,6 +206,14 @@ Main:
         ld	a, IEF_VBLANK	        ; vblank interrupt
 	ld	[rIE], a	        ; setup
 
+        SET_BANK 10
+        ld      a, 1
+        ld      [rSVBK], a
+        ld      hl, r10_DefaultMap1
+        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
+        ld      de, wram1_var_world_map_info
+        call    Memcpy
+
         LONG_CALL r1_CopyDMARoutine, 1
 	LONG_CALL r1_SetRoomVisited, 1
 
@@ -364,6 +372,7 @@ MapSpriteBlock:
         INCLUDE "rom2_data.asm"
         INCLUDE "rom7_data.asm"
         INCLUDE "rom9_code.asm"
+        INCLUDE "rom10_map_data.asm"
 
 
 ;;; SECTION START

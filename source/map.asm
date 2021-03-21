@@ -152,7 +152,15 @@ MapLoad0:
 
 ;;; ----------------------------------------------------------------------------
 
-MapLoad2:
+;;; Does a bunch of bank swapping, may only be called from rom0.
+MapLoad2__rom0_only:
+        ld      a, [var_room_x]
+        ld      b, a
+        ld      a, [var_room_y]
+        ld      c, a
+        LONG_CALL r1_LoadRoom, 1
+;;; TODO: Look at the connection mask and room variant from the room header,
+;;; load appropriate room data.
         SET_BANK 7
         ld      hl, r7_TEST_MAP_2
         ld      bc, r7_TEST_MAP_2_END - r7_TEST_MAP_2

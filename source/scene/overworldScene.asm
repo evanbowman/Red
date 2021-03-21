@@ -401,7 +401,7 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneDownVBlank
         call    SceneSetVBlankFn
 
-        call    MapLoad2
+        call    MapLoad2__rom0_only
 
         ld      a, 0
         ld      [var_room_load_counter], a
@@ -430,7 +430,7 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneUpVBlank
         call    SceneSetVBlankFn
 
-        call    MapLoad2
+        call    MapLoad2__rom0_only
 
         ld      a, 31
         ld      [var_room_load_counter], a
@@ -456,7 +456,7 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneRightVBlank
         call    SceneSetVBlankFn
 
-        call    MapLoad2
+        call    MapLoad2__rom0_only
 
         ld      a, 0
         ld      [var_room_load_counter], a
@@ -484,7 +484,7 @@ OverworldSceneTryRoomTransition:
         ld      de, RoomTransitionSceneLeftVBlank
         call    SceneSetVBlankFn
 
-        call    MapLoad2
+        call    MapLoad2__rom0_only
 
         ld      a, 31
         ld      [var_room_load_counter], a

@@ -1,0 +1,39 @@
+
+[
+    {
+        "x": 0,
+        "y": 0,
+        "connections": {
+            "right": false,
+            "left": false,
+            "down": true,
+            "up": false
+        },
+        "variant": 0,
+        "entities": [
+            {
+                "type": 1,
+                "x": 5,
+                "y": 5
+            }
+        ]
+    },
+    {
+        "x": 4,
+        "y": 4,
+        "connections": {
+            "right": false,
+            "left": false,
+            "down": false,
+            "up": true
+        },
+        "variant": 0,
+        "entities": [
+            {
+                "type": 1,
+                "x": 5,
+                "y": 5
+            }
+        ]
+    }
+]
