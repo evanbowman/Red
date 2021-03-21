@@ -77,8 +77,6 @@ InventorySceneUpdate:
         ld      hl, r7_BackgroundPaletteFadeToBlack.blend_0
         call    LoadBackgroundColors
 
-        call    OverworldSceneInitOverlayVRam
-
 	ld      de, InventorySceneFadeOutVBlank
         call    SceneSetVBlankFn
 
@@ -118,6 +116,8 @@ InventorySceneFadeinVBlank:
         ld      b, 64
         ld      hl, r7_SpritePaletteFadeToBlack.blend_31
         call    LoadObjectColors
+
+        LONG_CALL r1_InventoryShow, 1
 
         ret
 
