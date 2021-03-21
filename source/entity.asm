@@ -40,6 +40,24 @@
 ;;;  Entity
 ;;;
 ;;;
+;;; struct Entity {
+;;;     char texture_swap_flag_;
+;;;     Fixnum coord_y_; // (three bytes)
+;;;     Fixnum coord_x_; // (three bytes)
+;;;     Animation anim_; // (two bytes)
+;;;     char base_frame_;
+;;;     char vram_index_;
+;;;     char attributes_;
+;;;     char flags_; {
+;;;         char sprite_shape_ : 4;
+;;;         char reserved_ : 3;
+;;;         char has_shadow_ : 1;
+;;;     }
+;;;     Pointer update_fn_;
+;;;     char type_;
+;;; };
+;;;
+;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 

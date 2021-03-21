@@ -211,7 +211,8 @@ OverworldSceneUpdate:
         bit     PADB_START, a
         jr      Z, .updateEntities
 
-        ;; TODO: map inventory or options to the start button
+        ld      de, InventorySceneEnter
+        call    SceneSetUpdateFn
 
 .updateEntities:
 
@@ -236,7 +237,7 @@ EntityUpdateLoop:
         push    hl              ; store hl, we will move it to bc later
 
         ld      e, 13           ; \
-        ld      d, 0            ; | jump to position of update routine in entity
+        ld      d, 0            ; | jump to position of flags in entity
         add     hl, de          ; /
 
         ld      d, [hl]         ; \

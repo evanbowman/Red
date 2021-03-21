@@ -36,22 +36,6 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-;;;
-;;; Various parts of the code refer to an entity. This is the approximate layout
-;;; of a game entity:
-;;;
-;;; struct Entity {
-;;;     char texture_swap_flag_;
-;;;     Fixnum coord_y_; // (three bytes)
-;;;     Fixnum coord_x_; // (three bytes)
-;;;     Animation anim_; // (two bytes)
-;;;     char base_frame_;
-;;;     char vram_index_;
-;;;     char display_flags_;
-;;;     Pointer update_fn_;
-;;;     char type_;
-;;; };
-;;;
 
 SPRITE_SHAPE_SQUARE_32 EQU $f0
 SPRITE_SHAPE_T EQU $e0
@@ -367,6 +351,7 @@ MapSpriteBlock:
         INCLUDE "player.asm"
         INCLUDE "scene.asm"
         INCLUDE "overworldScene.asm"
+        INCLUDE "inventoryScene.asm"
         INCLUDE "introCreditsScene.asm"
         INCLUDE "roomTransitionScene.asm"
         INCLUDE "worldmapScene.asm"
@@ -377,6 +362,7 @@ MapSpriteBlock:
         INCLUDE "data.asm"
         INCLUDE "rom1_code.asm"
         INCLUDE "rom2_data.asm"
+        INCLUDE "rom3_code.asm"
         INCLUDE "rom7_data.asm"
 
 
