@@ -36,14 +36,14 @@
 ;;; ############################################################################
 
 
-SECTION "ROM3_CODE", ROMX, BANK[3]
+SECTION "ROM9_CODE", ROMX, BANK[9]
 
 ;;;
-;;; Rom3 contains code related to entity state changes.
+;;; Rom9 contains code related to entity state changes.
 ;;;
 
 
-r3_PlayerCheckWallCollisionLeft:
+r9_PlayerCheckWallCollisionLeft:
 ;;; a - wall tile x
 ;;; b - wall tile y
 ;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
@@ -100,7 +100,7 @@ r3_PlayerCheckWallCollisionLeft:
 
 
 
-r3_PlayerCheckWallCollisionUp:
+r9_PlayerCheckWallCollisionUp:
 ;;; a - wall tile x
 ;;; b - wall tile y
 ;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
@@ -156,7 +156,7 @@ r3_PlayerCheckWallCollisionUp:
         ret
 
 
-r3_PlayerCheckWallCollisionDown:
+r9_PlayerCheckWallCollisionDown:
 ;;; a - wall tile x
 ;;; b - wall tile y
 ;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
@@ -213,7 +213,7 @@ r3_PlayerCheckWallCollisionDown:
 
 
 
-r3_PlayerCheckWallCollisionRight:
+r9_PlayerCheckWallCollisionRight:
 ;;; a - wall tile x
 ;;; b - wall tile y
 ;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
@@ -269,7 +269,7 @@ r3_PlayerCheckWallCollisionRight:
         ret
 
 
-r3_PlayerTileCoord:
+r9_PlayerTileCoord:
 ;;; return b - y
 ;;; return a - x
         ld      a, [var_player_coord_y]
@@ -283,14 +283,14 @@ r3_PlayerTileCoord:
         ret
 
 
-r3_PlayerCheckWallCollisions:
+r9_PlayerCheckWallCollisions:
 ;;; This is manually unrolled, but what we're doing here, is checking a 3x3
 ;;; square of 16x16 tiles for collisions.
 
         ld      a, 0
         ld      [var_player_spill1], a
 
-	call    r3_PlayerTileCoord
+	call    r9_PlayerTileCoord
 
 ;;; ...... x - 1, y - 1
         push    af
@@ -309,15 +309,15 @@ r3_PlayerCheckWallCollisions:
         jr      .skip_xm1_ym1
 
 .test_xm1_ym1:
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         dec     a
         dec     b
-        call    r3_PlayerCheckWallCollisionLeft
+        call    r9_PlayerCheckWallCollisionLeft
 
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         dec     a
         dec     b
-        call    r3_PlayerCheckWallCollisionUp
+        call    r9_PlayerCheckWallCollisionUp
 
 
 .skip_xm1_ym1:
@@ -341,9 +341,9 @@ r3_PlayerCheckWallCollisions:
         jr      .skip_xm1_y
 
 .test_xm1_y:
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         dec     a
-        call    r3_PlayerCheckWallCollisionLeft
+        call    r9_PlayerCheckWallCollisionLeft
 
 
 .skip_xm1_y:
@@ -369,15 +369,15 @@ r3_PlayerCheckWallCollisions:
         jr      .skip_xm1_yp1
 
 .test_xm1_yp1:
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         dec     a
         inc     b
-        call    r3_PlayerCheckWallCollisionLeft
+        call    r9_PlayerCheckWallCollisionLeft
 
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         dec     a
         inc     b
-        call    r3_PlayerCheckWallCollisionDown
+        call    r9_PlayerCheckWallCollisionDown
 
 
 .skip_xm1_yp1:
@@ -403,9 +403,9 @@ r3_PlayerCheckWallCollisions:
         jr      .skip_x_ym1
 
 .test_x_ym1:
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         dec     b
-        call    r3_PlayerCheckWallCollisionUp
+        call    r9_PlayerCheckWallCollisionUp
 
 
 .skip_x_ym1:
@@ -431,9 +431,9 @@ r3_PlayerCheckWallCollisions:
         jr      .skip_x_yp1
 
 .test_x_yp1:
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         inc     b
-        call    r3_PlayerCheckWallCollisionDown
+        call    r9_PlayerCheckWallCollisionDown
 
 .skip_x_yp1:
 
@@ -459,15 +459,15 @@ r3_PlayerCheckWallCollisions:
         jr      .skip_xp1_ym1
 
 .test_xp1_ym1:
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         inc     a
         dec     b
-        call    r3_PlayerCheckWallCollisionRight
+        call    r9_PlayerCheckWallCollisionRight
 
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         inc     a
         dec     b
-        call    r3_PlayerCheckWallCollisionUp
+        call    r9_PlayerCheckWallCollisionUp
 
 .skip_xp1_ym1:
 
@@ -492,9 +492,9 @@ r3_PlayerCheckWallCollisions:
         jr      .skip_xp1_y
 
 .test_xp1_y:
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         inc     a
-        call    r3_PlayerCheckWallCollisionRight
+        call    r9_PlayerCheckWallCollisionRight
 
 
 .skip_xp1_y:
@@ -521,15 +521,15 @@ r3_PlayerCheckWallCollisions:
         jr      .skip_xp1_yp1
 
 .test_xp1_yp1:
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         inc     a
         inc     b
-        call    r3_PlayerCheckWallCollisionRight
+        call    r9_PlayerCheckWallCollisionRight
 
-        call    r3_PlayerTileCoord
+        call    r9_PlayerTileCoord
         inc     a
         inc     b
-        call    r3_PlayerCheckWallCollisionDown
+        call    r9_PlayerCheckWallCollisionDown
 
 
 .skip_xp1_yp1:
@@ -543,8 +543,8 @@ r3_PlayerCheckWallCollisions:
         ret
 
 
-r3_PlayerUpdateMovement:
-        call    r3_PlayerCheckWallCollisions
+r9_PlayerUpdateMovement:
+        call    r9_PlayerCheckWallCollisions
 
 
 ;;; try walk left
@@ -562,7 +562,7 @@ r3_PlayerUpdateMovement:
         ldh     a, [var_joypad_raw]
         and     PADF_LEFT
         ld      e, SPRID_PLAYER_WL
-        call    r3_PlayerJoypadResponse
+        call    r9_PlayerJoypadResponse
 
 
 
@@ -578,7 +578,7 @@ r3_PlayerUpdateMovement:
         ldh     a, [var_joypad_raw]
         and     PADF_RIGHT
         ld      e, SPRID_PLAYER_WR
-        call    r3_PlayerJoypadResponse
+        call    r9_PlayerJoypadResponse
 
 
 
@@ -597,7 +597,7 @@ r3_PlayerUpdateMovement:
         ldh     a, [var_joypad_raw]
 	and     PADF_DOWN
         ld      e, SPRID_PLAYER_WD
-        call    r3_PlayerJoypadResponse
+        call    r9_PlayerJoypadResponse
 
 
 
@@ -612,7 +612,7 @@ r3_PlayerUpdateMovement:
         ldh     a, [var_joypad_raw]
 	and     PADF_UP
         ld      e, SPRID_PLAYER_WU
-        call    r3_PlayerJoypadResponse
+        call    r9_PlayerJoypadResponse
 
         ret
 
@@ -620,7 +620,7 @@ r3_PlayerUpdateMovement:
 ;;; ----------------------------------------------------------------------------
 
 
-r3_PlayerAnimate:
+r9_PlayerAnimate:
         ld      a, [var_player_fb]
 
         cp      SPRID_PLAYER_WR
@@ -675,7 +675,7 @@ r3_PlayerAnimate:
 ;;; ----------------------------------------------------------------------------
 
 
-r3_PlayerJoypadResponse:
+r9_PlayerJoypadResponse:
 ;;; a - btn 1 pressed
 ;;; c - btn 3 or button 4 pressed
 ;;; e - desired frame
@@ -781,8 +781,8 @@ r3_PlayerJoypadResponse:
 
 ;;; ----------------------------------------------------------------------------
 
-r3_PlayerUpdateImpl:
-        call    r3_PlayerUpdateMovement
+r9_PlayerUpdateImpl:
+        call    r9_PlayerUpdateMovement
 
         ldh     a, [var_joypad_released]
         and     PADF_DOWN
@@ -865,7 +865,7 @@ r3_PlayerUpdateImpl:
         ld      c, 8
         call    FixnumSub
 
-	call    r3_PlayerAnimate
+	call    r9_PlayerAnimate
         jr      .done
 
 .done:

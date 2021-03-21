@@ -362,8 +362,8 @@ MapSpriteBlock:
         INCLUDE "data.asm"
         INCLUDE "rom1_code.asm"
         INCLUDE "rom2_data.asm"
-        INCLUDE "rom3_code.asm"
         INCLUDE "rom7_data.asm"
+        INCLUDE "rom9_code.asm"
 
 
 ;;; SECTION START

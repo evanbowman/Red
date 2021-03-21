@@ -49,8 +49,8 @@
 
 
 PlayerUpdate:
-        ;; Moved to rom bank 3 to save space.
-        LONG_CALL r3_PlayerUpdateImpl, 3
+        ;; Moved to rom bank 9 to save space.
+        LONG_CALL r9_PlayerUpdateImpl, 9
         jp      EntityUpdateLoopResume
 
 
