@@ -242,14 +242,16 @@ Main:
         call    MapInit
         call    MapLoad
 
-        call    DebugInit
-
         ld      hl, test_string
         ld      b, 0
         ld      c, 0
         call    PutText
 
         call    LcdOn
+
+        ld      b, 96
+        ld      c, 96
+        call    BonfireNew
 
         ei
 
@@ -361,6 +363,7 @@ MapSpriteBlock:
 ;;; my source code into different sections.
         INCLUDE "animation.asm"
         INCLUDE "entity.asm"
+        INCLUDE "bonfire.asm"
         INCLUDE "player.asm"
         INCLUDE "scene.asm"
         INCLUDE "overworldScene.asm"

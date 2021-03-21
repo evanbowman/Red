@@ -233,6 +233,7 @@ EntityUpdateLoop:
         inc     de              ; /
 
 	push    de              ; save entity buffer pointer on stack
+        push    hl              ; store hl, we will move it to bc later
 
         ld      e, 13           ; \
         ld      d, 0            ; | jump to position of update routine in entity
@@ -242,6 +243,7 @@ EntityUpdateLoop:
         inc     hl              ; | load entity update function ptr
         ld      e, [hl]         ; /
 
+        pop     bc              ; load preious hl into bc
         ld      h, d            ; \
         ld      l, e            ; | Jump to entity update address
         jp      hl              ; /

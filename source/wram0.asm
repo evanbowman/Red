@@ -141,26 +141,27 @@ var_player_spill2:      DS      1
 
 	SECTION "DEBUG_TEST_ENTITY", WRAM0
 
-;;; We don't have entity allocation code written yet, so we just have one hard-
-;;; coded entity for testing purposes.
+;;; Sometimes I uncomment this, and allocate an entity from the static debug
+;;; mem, so that I can see descriptive labels for the entity's variables in a
+;;; debugger.
 
-var_debug_struct:
-var_debug_swap_spr:     DS      1
-var_debug_coord_y:      DS      FIXNUM_SIZE
-var_debug_coord_x:      DS      FIXNUM_SIZE
+;; var_debug_struct:
+;; var_debug_swap_spr:     DS      1
+;; var_debug_coord_y:      DS      FIXNUM_SIZE
+;; var_debug_coord_x:      DS      FIXNUM_SIZE
 
-var_debug_animation:
-var_debug_timer:        DS      1
-var_debug_kf:           DS      1
-var_debug_fb:           DS      1
+;; var_debug_animation:
+;; var_debug_timer:        DS      1
+;; var_debug_kf:           DS      1
+;; var_debug_fb:           DS      1
 
-var_debug_texture:      DS      1
-var_debug_palette:     DS   1
-var_debug_display_flag:   DS      1
+;; var_debug_texture:      DS      1
+;; var_debug_palette:     DS   1
+;; var_debug_display_flag:   DS      1
 
-var_debug_update_fn:    DS      2
-var_debug_type:         DS      1
-var_debug_struct_end:
+;; var_debug_update_fn:    DS      2
+;; var_debug_type:         DS      1
+;; var_debug_struct_end:
 
 
 ;;; ############################################################################
@@ -176,6 +177,19 @@ var_entity_mem_used_end::
 
 ;;; SECTION ENTITY_RAM
 
+
+;;; ############################################################################
+
+	SECTION "TEXTURE_SLOTS", WRAM0
+
+TEXTURE_SLOT_COUNT EQU 7
+
+var_texture_slots::
+DS      TEXTURE_SLOT_COUNT
+var_texture_slots_end::
+
+
+;;; SECTION TEXTURE_SLOTS
 
 ;;; ############################################################################
 

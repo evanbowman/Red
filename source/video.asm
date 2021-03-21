@@ -938,3 +938,56 @@ LcdOn:
 
 
 ;;; ----------------------------------------------------------------------------
+
+AllocateTexture:
+;;; return a (0 on failure)
+;;; trashes hl, c
+        ld      a, 0
+
+        ld      c, 0
+
+        ld      hl, var_texture_slots
+.loop:
+        ld      a, c
+        cp      TEXTURE_SLOT_COUNT
+        jr      Z, .failed
+
+        ld      a, [hl]
+        or      a
+        jr      Z, .found
+        jr      .next
+
+.found:
+        ld      a, 1
+        ld      [hl], a         ; set slot used
+
+        ld      a, c
+        inc     a               ; Texture slots count from one.
+        ret
+
+.next:
+        inc     hl
+        inc     c
+        jr      .loop
+
+.failed:
+        ld      a, 0
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+FreeTexture:
+;;; a - texture
+        cp      0
+        ret     Z
+
+        dec     a               ; Texture slots count from one.
+
+;;; TODO...
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------

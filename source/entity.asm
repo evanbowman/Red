@@ -54,6 +54,12 @@ EntityBufferReset:
         ld      a, 0
         call    Memset
 
+;;; Same here, we just cleared all entities, let's free the associated textures.
+        ld      hl, var_texture_slots
+        ld      bc, var_texture_slots_end - var_texture_slots
+        ld      a, 0
+        call    Memset
+
         ret
 
 
@@ -81,6 +87,85 @@ EntitySetType:
         push    hl
         ld      bc, var_player_type - var_player_struct
         add     hl, bc
+        ld      [hl], a
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+EntitySetFrameBase:
+;;; hl - entity
+;;; a - frame base
+;;; trashes bc
+        push    hl
+        ld      bc, 9
+        add     hl, bc
+        ld      [hl], a
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+EntitySetTexture:
+;;; hl - entity
+;;; a - texture
+;;; trashes bc
+        push    hl
+        ld      bc, 10
+        add     hl, bc
+        ld      [hl], a
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+EntitySetPalette:
+;;; hl - entity
+;;; a - palette
+;;; trashes bc
+        push    hl
+        ld      bc, 11
+        add     hl, bc
+        ld      [hl], a
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+EntitySetDisplayFlags:
+;;; hl - entity
+;;; a - display flags
+;;; trashes bc
+        push    hl
+        ld      bc, 12
+        add     hl, bc
+        ld      [hl], a
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+EntitySetPos:
+;;; hl - entity
+;;; b - x
+;;; c - y
+        push    hl
+        inc     hl
+        ld      a, 0
+
+        ld      [hl], c
+        inc     hl
+        ld      [hl+], a
+        ld      [hl+], a
+
+        ld      [hl], b
+        inc     hl
+        ld      [hl+], a
         ld      [hl], a
         pop     hl
         ret
@@ -130,6 +215,7 @@ EntityBufferEnqueue:
 EntitySetUpdateFn:
 ;;; hl - entity
 ;;; de - update fn address
+        push    hl
         push    de
         ld      d, 0
         ld      e, 13
@@ -139,7 +225,7 @@ EntitySetUpdateFn:
         ld      [hl], d
         inc     hl
         ld      [hl], e
-
+        pop     hl
         ret
 
 
@@ -436,6 +522,14 @@ AllocateEntity:
 
         ld      hl, var_entity_mem
         add     hl, bc
+
+        push    hl
+
+        ld      bc, 32
+        ld      a, 0
+        call    Memset
+
+        pop     hl
 
         ret
 

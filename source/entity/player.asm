@@ -43,66 +43,6 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-DebugUpdate:
-        ld      hl, var_debug_animation
-        ld      c, 6
-        ld      d, 5
-        call    AnimationAdvance
-        or      a
-        jr      Z, .done
-        ld      a, 1
-        ld      [var_debug_swap_spr], a
-
-.done:
-        jp      EntityUpdateLoopResume
-
-
-
-DebugInit:
-        ld      hl, var_debug_struct
-        ld      de, DebugUpdate
-        call    EntitySetUpdateFn
-
-        ld      hl, var_debug_struct
-        ld      a, ENTITY_TYPE_BONFIRE
-        call    EntitySetType
-
-        ld      de, var_debug_struct
-        call    EntityBufferEnqueue
-
-        ld      a, 1
-        ld      [var_debug_texture], a
-        ld      [var_debug_swap_spr], a
-        ld      [var_debug_timer], a
-        ld      a, 0
-        ld      [var_debug_display_flag], a
-	ld      [var_debug_kf], a
-
-        ld      hl, var_debug_coord_x
-        ld      bc, 96
-        call    FixnumInit
-
-        ld      hl, var_debug_coord_y
-        ld      bc, 95
-        call    FixnumInit
-
-        ld      a, SPRID_BONFIRE
-        ld      [var_debug_fb], a
-
-        ld      a, 1
-        ld      [var_debug_palette], a
-
-;;; note: requires vsync
-        ld      a, 10
-        ld      d, 10
-        ld      e, $80
-        ld      c, 1
-        call    SetBackgroundTile32x32
-
-        ret
-
-
-
 PlayerInit:
         ld      hl, var_player_struct
         ld      bc, var_player_struct_end - var_player_struct

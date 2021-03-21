@@ -864,18 +864,26 @@ r1_LoadRoomEntities:
         jr      NZ, .test
         jr      .here
 .test:
+        inc     hl
+
         push    hl
 	push    bc
-	;; call    VBlankIntrWait
-        ;; call    LcdOff
-        ;; call    DebugInit
-        ;; call    LcdOn
+	call    VBlankIntrWait
+        call    LcdOff
+
+        ld      a, [hl]
+        and     $f0
+        ld      c, a
+        ld      a, [hl]
+        and     $0f
+        swap    a
+        ld      b, a
+        call    BonfireNew
+
+        call    LcdOn
         pop     bc
         pop     hl
-
-        ;; TODO: spawn entity if type nonzero.
 .here:
-        inc     hl
         inc     hl
         inc     b
         jr      .loop
