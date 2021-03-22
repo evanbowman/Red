@@ -237,8 +237,8 @@ Main:
         call    MapLoad
 
         ld      hl, test_string
-        ld      b, 0
-        ld      c, 0
+        ld      b, $88
+        ld      de, _SCRN1
         call    PutText
 
         call    LcdOn

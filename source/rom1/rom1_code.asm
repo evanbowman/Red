@@ -88,9 +88,9 @@ r1_GameboyColorNotDetected:
         ld      bc, $FE9F - $FE00
         call    Memset
 
-        ld      b, 1
-        ld      c, 1
         ld      hl, r1_GameboyColorNotDetectedText
+        ld      b, $88
+        ld      de, _SCRN1
         call    r1_DMGPutText
         call    LcdOn
 

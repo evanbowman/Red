@@ -65,28 +65,33 @@ r1_InventoryLowerBoxMiddleRowEnd::
 
 
 r1_InventoryImageBoxTopRow::
-DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $30, $34, $34, $34
+DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $30, $34, $34,
 DB $34, $34, $34, $34, $31
 r1_InventoryImageBoxTopRowEnd::
 
 r1_InventoryImageBoxBottomRow::
-DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $33, $34, $34, $34
+DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $33, $34, $34
 DB $34, $34, $34, $34, $32
 r1_InventoryImageBoxBottomRowEnd::
 
 r1_InventoryImageBoxMiddleRow::
-DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $35, $00, $00, $00
+DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $35, $00, $00
 DB $00, $00, $00, $00, $35
 r1_InventoryImageBoxMiddleRowEnd::
 
 
+r1_InventoryEmptyText:
+        DB      "- empty -", 0
 
 
 r1_InventoryPalettes::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
 DB $37,$73, $49,$35, $49,$35, $00,$04,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
 r1_InventoryPalettesEnd::
 
+
+;;; ----------------------------------------------------------------------------
 
 r1_InventoryLowerBoxInitRow:
 ;;; de - address
@@ -96,6 +101,8 @@ r1_InventoryLowerBoxInitRow:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
 r1_InventoryImageBoxInitRow:
 ;;; de - address
         ld      hl, r1_InventoryImageBoxMiddleRow
@@ -104,7 +111,273 @@ r1_InventoryImageBoxInitRow:
         ret
 
 
-r1_InventoryShow:
+;;; ----------------------------------------------------------------------------
+
+r1_SimulatedDelay:
+;;; We will actually be loading text from a table, just use a canned delay for now
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InventoryTextRowAddress:
+;;; a - row
+;;; return address in hl
+;;; trashes bc
+
+;;; We only have seven rows onscreen, so we can multiply by 32 without
+;;; much trouble
+        swap    a
+        and     $f0
+        sla     a
+        ld      c, a
+        ld      b, 0
+
+        ld      hl, $9d21
+        add     hl, bc
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_SmallStrlen:
+;;; hl - text
+;;; return c - len
+        ld      c, 0
+.loop:
+        ld      a, [hl]
+        cp      0
+        ret     Z
+
+        inc     c
+        inc     hl
+        jr      .loop
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InventoryPutTextRow:
+;;; a - row
+;;; b - attributes
+;;; hl - text
+
+        push    hl
+        push    hl
+        push    bc
+
+        call    r1_InventoryTextRowAddress
+
+        ld      d, h
+        ld      e, l
+
+        pop     bc
+        pop     hl
+
+        call    PutText
+
+        ;; Now, fill the rest of the row with spaces. PutText should leave
+        ;; de in the correct position to keep on going...
+        pop     hl
+
+        call    r1_SmallStrlen
+
+        ld      a, 18
+        sub     c
+        ld      c, a
+
+.loop:
+        ld      a, 0
+        cp      c
+        jr      Z, .done
+
+        ld      a, $32
+	ld      [de], a
+
+        ld      a, 1
+        ld      [rVBK], a
+        ld      a, b
+        ld      [de], a
+        ld      a, 0
+	ld      [rVBK], a
+
+        dec     c
+        inc     de
+        jr      .loop
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InventoryInitText:
+        call    VBlankIntrWait
+        call    VBlankIntrWait
+
+        call    VBlankIntrWait
+        ld      a, 0
+        ld      b, $8A
+        ld      hl, r1_InventoryEmptyText
+        call    r1_InventoryPutTextRow
+
+        call    VBlankIntrWait
+        ld      b, $88
+	ld      a, 1
+        ld      hl, r1_InventoryEmptyText
+        call    r1_InventoryPutTextRow
+
+        call    VBlankIntrWait
+        ld      b, $88
+	ld      a, 2
+        ld      hl, r1_InventoryEmptyText
+        call    r1_InventoryPutTextRow
+
+        call    VBlankIntrWait
+        ld      b, $88
+	ld      a, 3
+        ld      hl, r1_InventoryEmptyText
+        call    r1_InventoryPutTextRow
+
+        call    VBlankIntrWait
+        ld      b, $88
+	ld      a, 4
+        ld      hl, r1_InventoryEmptyText
+        call    r1_InventoryPutTextRow
+
+        call    VBlankIntrWait
+        ld      b, $88
+	ld      a, 5
+        ld      hl, r1_InventoryEmptyText
+        call    r1_InventoryPutTextRow
+
+        call    VBlankIntrWait
+        ld      b, $88
+	ld      a, 6
+        ld      hl, r1_InventoryEmptyText
+        call    r1_InventoryPutTextRow
+
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InventoryTextRowSetAttr:
+;;; a - row num
+;;; b - attribute
+        push    bc
+        call    r1_InventoryTextRowAddress
+        pop     bc
+
+        ld      d, 0
+.loop:
+        ld      [hl], b
+
+        inc     hl
+        inc     d
+        ld      a, 18
+        cp      d
+        jr      NZ, .loop
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InventoryMoveCursorDown:
+        ld      a, [var_scene_counter]
+
+        cp      6
+        jr      Z, .skip
+
+        call    VBlankIntrWait
+
+        ld      a, 1
+        ld	[rVBK], a
+
+        ld      a, [var_scene_counter]
+        ld      b, $88
+        call    r1_InventoryTextRowSetAttr
+
+	ld      a, [var_scene_counter]
+        inc     a
+        ld      [var_scene_counter], a
+
+        ld      b, $8A
+        call    r1_InventoryTextRowSetAttr
+
+        ld      a, 0
+        ld	[rVBK], a
+
+.skip:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InventoryMoveCursorUp:
+        ld      a, [var_scene_counter]
+
+        cp      0
+        jr      Z, .skip
+
+        call    VBlankIntrWait
+
+        ld      a, 1
+        ld	[rVBK], a
+
+        ld      a, [var_scene_counter]
+        ld      b, $88
+        call    r1_InventoryTextRowSetAttr
+
+	ld      a, [var_scene_counter]
+        dec     a
+        ld      [var_scene_counter], a
+
+        ld      b, $8A
+        call    r1_InventoryTextRowSetAttr
+
+        ld      a, 0
+        ld	[rVBK], a
+
+.skip:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InventoryUpdate:
+        ldh     a, [var_joypad_current]
+        bit     PADB_UP, a
+        jr      Z, .checkDown
+
+        call    r1_InventoryMoveCursorUp
+
+.checkDown:
+        ldh     a, [var_joypad_current]
+        bit     PADB_DOWN, a
+        jr      Z, .done
+
+        call    r1_InventoryMoveCursorDown
+
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InventoryOpen:
         ld      hl, r1_InventoryTiles
         ld      bc, r1_InventoryTilesEnd - r1_InventoryTiles
         ld      de, $9300
@@ -219,6 +492,11 @@ r1_InventoryShow:
         cp      b
         jr      NZ, .loop
 .done:
+
+        ;; TODO: use unions for scene-specific variables
+        ld      a, 0
+        ld      [var_scene_counter], a
+
         ret
 
 

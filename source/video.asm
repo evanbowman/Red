@@ -890,6 +890,8 @@ AsciiToGlyph:
         jr      Z, .period
         cp      44
         jr      Z, .comma
+        cp      45
+        jr      Z, .dash
         cp      58
         jr      C, .numeral
 	cp      91
@@ -899,6 +901,9 @@ AsciiToGlyph:
 
         ret
 
+.dash:
+        ld      a, $7D
+        ret
 .space:
         ld      a, $32
         ret
@@ -922,9 +927,9 @@ AsciiToGlyph:
 
 PutText:
 ;;; hl - text
-;;; b - x
-;;; c - y
-        ld      de, _SCRN1
+;;; de - screen ptr
+;;; b - attribute
+;;; return de - updated screen ptr
 .loop:
         ld      a, [hl]
         cp      0
@@ -935,7 +940,7 @@ PutText:
 
         ld      a, 1
         ld      [rVBK], a
-        ld      a, $88
+        ld      a, b
         ld      [de], a
         ld      a, 0
 	ld      [rVBK], a

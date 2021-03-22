@@ -86,7 +86,11 @@ InventorySceneUpdate:
         ld      de, VoidUpdateFn
         call    SceneSetUpdateFn
 
+        ret
+
 .idle:
+        LONG_CALL r1_InventoryUpdate, 1
+
         ret
 
 
@@ -111,8 +115,8 @@ InventorySceneFadeinVBlank:
         ld      c, 255
         call    BlackScreenExcludeOverlay
 
-        LONG_CALL r1_InventoryShow, 1
-
+        LONG_CALL r1_InventoryOpen, 1
+        LONG_CALL r1_InventoryInitText, 1
         ret
 
 .continue:
