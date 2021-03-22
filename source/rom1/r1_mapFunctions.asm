@@ -433,6 +433,35 @@ r1_WorldMapShowRooms:
 	ret
 
 
+r1_WorldMapInitBorder:
+        ld      d, 0
+
+        ld      a, 1
+        ld	[rVBK], a
+
+
+        ld      hl, $9c20
+.loop:
+        ld      [hl], $80
+
+        ld      bc, ($33 - $20)
+        add     hl, bc
+
+        ld      [hl], $80
+        ld      bc, ($40 - $33)
+        add     hl, bc
+
+        inc     d
+        ld      a, 16
+        cp      d
+        jr      NZ, .loop
+
+        ld      a, 0
+        ld      [rVBK], a
+
+        ret
+
+
 r1_WorldMapShow:
         ld      hl, r1_WorldMapTiles
         ld      bc, r1_WorldMapTilesEnd - r1_WorldMapTiles
@@ -443,6 +472,8 @@ r1_WorldMapShow:
         ld      bc, r1_WorldMapTemplateTopEnd - r1_WorldMapTemplateTop
         ld      de, $9C00
         call    VramSafeMemcpy
+
+        call    r1_WorldMapInitBorder
 
         ld      de, $9C20
         ld      hl, $9C40

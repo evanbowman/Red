@@ -206,8 +206,8 @@ OverworldSceneUpdate:
         bit     PADB_START, a
         jr      Z, .updateEntities
 
-        ;; ld      de, InventorySceneEnter
-        ;; call    SceneSetUpdateFn
+        ld      de, InventorySceneEnter
+        call    SceneSetUpdateFn
 
 .updateEntities:
 

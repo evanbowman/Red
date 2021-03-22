@@ -66,7 +66,7 @@ r1_InventoryLowerBoxMiddleRowEnd::
 
 r1_InventoryPalettes::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $49,$35, $00,$04,
 r1_InventoryPalettesEnd::
 
 
@@ -138,26 +138,24 @@ r1_InventoryShow:
         ld      de, $9300
         call    VramSafeMemcpy
 
-        call    VBlankIntrWait
-        ld      a, 0            ; \
-        ld      [rWY], a        ; | Now, the window fills the whole screen.
-        ld      hl, _SCRN1      ; | Clear the old overlay, and redraw at a
-        ld      bc, 20          ; | higher address.
-        ld      a, 0            ; |
-        call    Memset          ; /
-
-        ld      a, 1
-        ld      [var_overlay_alternate_pos], a
-
-        call    ShowOverlay
-
         ld      hl, var_oam_back_buffer
         ld      a, 0
         ld      bc, OAM_SIZE * OAM_COUNT
         call    Memset
 
+        call    VBlankIntrWait
+        ld      a, HIGH(var_oam_back_buffer)
+        call    hOAMDMA
 
-        call    r1_InventoryInitMem
+        ld      a, 1
+        ld	[rVBK], a
+
+        ld      hl, (_SCRN1 + 32)
+        ld      bc, $9e14 - (_SCRN1  + 32)
+        ld      d, $81
+        call    r1_VramSafeMemset
+        ld      a, 0
+        ld      [rVBK], a
 
         ld      hl, r1_InventoryLowerBoxTopRow
         ld      bc, r1_InventoryLowerBoxTopRowEnd - r1_InventoryLowerBoxTopRow
@@ -194,6 +192,20 @@ r1_InventoryShow:
         ld      b, r1_InventoryPalettesEnd - r1_InventoryPalettes
         ld      hl, r1_InventoryPalettes
         call    LoadBackgroundColors
+
+        ld      a, 0
+        ld      [rWY], a
+
+        ld      hl, _SCRN1      ; | Clear the old overlay, and redraw at a
+        ld      bc, 20          ; | higher address.
+        ld      a, 0            ; |
+        call    Memset          ; /
+
+        ld      a, 1
+        ld      [var_overlay_alternate_pos], a
+
+        call    ShowOverlay
+
 
         ret
 
