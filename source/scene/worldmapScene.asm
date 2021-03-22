@@ -85,8 +85,6 @@ WorldmapSceneUpdate:
 ;;; ----------------------------------------------------------------------------
 
 WorldmapSceneFadeinVBlank:
-        SET_BANK 7
-
         ld      a, [var_scene_counter]
 	ld      c, a
         add     16
@@ -102,12 +100,6 @@ WorldmapSceneFadeinVBlank:
 
         call    TanScreen
 
-        SET_BANK 7
-        ld      hl, r7_WorldMapTiles
-        ld      bc, r7_WorldMapTilesEnd - r7_WorldMapTiles
-        ld      de, $9000
-        call    VramSafeMemcpy
-
         LONG_CALL r1_WorldMapShow, 1
 
         ret
@@ -121,8 +113,6 @@ WorldmapSceneFadeinVBlank:
 ;;; ----------------------------------------------------------------------------
 
 WorldmapSceneFadeOutVBlank:
-        SET_BANK 7
-
         ld      a, [var_scene_counter]
 	ld      c, a
         sub     24

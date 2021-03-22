@@ -75,11 +75,11 @@ OverworldSceneInitOverlayVRam:
         ld      a, 136
         ld      [rWY], a
 
-        call    VBlankIntrWait
         call    TestOverlay
+	call    UpdateStaminaBar
 
-	call    VBlankIntrWait
-        call    UpdateStaminaBar
+        call    VBlankIntrWait
+        call    ShowOverlay
 
         ret
 
@@ -182,6 +182,7 @@ OverworldSceneUpdateView:
         ld      [var_view_y], a
 
 .done:
+        call    UpdateStaminaBar
         ret
 
 
@@ -205,8 +206,8 @@ OverworldSceneUpdate:
         bit     PADB_START, a
         jr      Z, .updateEntities
 
-        ld      de, InventorySceneEnter
-        call    SceneSetUpdateFn
+        ;; ld      de, InventorySceneEnter
+        ;; call    SceneSetUpdateFn
 
 .updateEntities:
 
@@ -354,7 +355,17 @@ VBlankCopySpriteTextures:
 ;;; ----------------------------------------------------------------------------
 
 OverworldSceneOnVBlank:
-        call    UpdateStaminaBar
+        ld      a, [var_stamina_last_val]
+        ld      b, a
+        ld      a, [var_player_stamina]
+        srl     b
+        srl     a
+        cp      b
+        jr      Z, .skip
+        call    ShowOverlay
+.skip:
+        ld      a, [var_player_stamina]
+        ld      [var_stamina_last_val], a
 
 	call    VBlankCopySpriteTextures
         ret

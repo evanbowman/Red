@@ -731,18 +731,45 @@ SetBackgroundTile:
 
 
 SetOverlayTile:
-;;; NOTE: This writes to vram, careful!
 ;;; c - screen overlay x index
 ;;; a - tile number (overlay tiles start at $80)
 ;;; trashes b
-        ld      hl, _SCRN1
+        ld      hl, var_overlay_back_buffer
         ld      b, 0
         add     hl, bc
         ld      [hl], a
-        ld      a, 1
+        ret
+
+
+ShowOverlay:
+        ld      de, _SCRN1
+        ld      a, [var_overlay_alternate_pos]
+        or      a
+        jr      Z, .skip
+        ld      de, $9e20
+.skip:
+        ld      hl, var_overlay_back_buffer
+        ld      bc, 20
+        call    Memcpy
+
+	ld      a, 1
         ld      [rVBK], a
+
+        ld      hl, _SCRN1
+        ld      b, 0
+.loop:
+        ld      a, 20
+        cp      b
+        jr      Z, .loopDone
+
         ld      a, $80
         ld      [hl], a
+
+        inc     hl
+        inc     b
+        jr      .loop
+
+.loopDone:
         ld      a, 0
         ld      [rVBK], a
         ret
@@ -778,7 +805,7 @@ UpdateStaminaBar:
 
 .partial:
         ld      a, $2
-        SRL     e
+        srl     e
         add     a, e
         call    SetOverlayTile
 

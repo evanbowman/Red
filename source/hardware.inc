@@ -414,7 +414,7 @@ rLCDC EQU $FF40
 LCDCF_OFF     EQU %00000000 ; LCD Control Operation
 LCDCF_ON      EQU %10000000 ; LCD Control Operation
 LCDCF_WIN9800 EQU %00000000 ; Window Tile Map Display Select
-LCDCF_WIN9C00 EQU %01000000 ; Window Tile Map Display Select
+LCDCF_WIN9C00  EQU %01000000 ; Window Tile Map Display Select
 LCDCF_WINOFF  EQU %00000000 ; Window Display
 LCDCF_WINON   EQU %00100000 ; Window Display
 LCDCF_BG8800  EQU %00000000 ; BG & Window Tile Data Select

@@ -208,6 +208,11 @@ var_room_load_slab:           DS      32
 var_room_load_colors:         DS      32
 
 
+var_overlay_alternate_pos:    DS      1
+var_stamina_last_val:         DS      1
+var_overlay_back_buffer:      DS      20
+
+
 ;;; ############################################################################
 
         SECTION "SCENE", WRAM0

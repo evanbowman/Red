@@ -67,7 +67,18 @@ InventorySceneUpdate:
         ld      [var_scene_counter], a
 
         call    VBlankIntrWait
+        ld      a, 136
+        ld      [rWY], a
+
+        ld      a, 0
+        ld      [var_overlay_alternate_pos], a
+
+        call    VBlankIntrWait
         call    BlackScreenExcludeOverlay
+
+        call    ShowOverlay
+
+        call    DrawEntities
 
 	ld      de, InventorySceneFadeOutVBlank
         call    SceneSetVBlankFn
