@@ -64,6 +64,24 @@ DB $00, $00, $00, $00, $35
 r1_InventoryLowerBoxMiddleRowEnd::
 
 
+r1_InventoryImageBoxTopRow::
+DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $30, $34, $34, $34
+DB $34, $34, $34, $34, $31
+r1_InventoryImageBoxTopRowEnd::
+
+r1_InventoryImageBoxBottomRow::
+DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $33, $34, $34, $34
+DB $34, $34, $34, $34, $32
+r1_InventoryImageBoxBottomRowEnd::
+
+r1_InventoryImageBoxMiddleRow::
+DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $35, $00, $00, $00
+DB $00, $00, $00, $00, $35
+r1_InventoryImageBoxMiddleRowEnd::
+
+
+
+
 r1_InventoryPalettes::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
 DB $37,$73, $49,$35, $49,$35, $00,$04,
@@ -78,58 +96,12 @@ r1_InventoryLowerBoxInitRow:
         ret
 
 
-
-r1_InventoryInitMem:
-        call    VBlankIntrWait
-
-        ld      a, 1
-        ld      [rSVBK], a
-
-        ld      hl, wram1_var_world_map_info
-        ld      de, $9C00
-
-
-        ld      c, 0            ; y counter
-.outer_loop:
-        ld      b, 0            ; x counter
-
-.inner_loop:
-        ld      a, 32
-        cp      b
-        jr      Z, .outer_loop_step
-
-
-        ld      a, [rLY]
-        cp      152
-        jr      Z, .vsync
-        jr      .write
-.vsync:
-        call    VBlankIntrWait
-.write:
-        ld      a, 1
-        ld	[rVBK], a
-        ld      a, $81                  ; palette 1, show over objects
-        ld      [de],  a
-        ld      a, 0
-        ld      [rVBK], a
-
-
-.skip:
-        inc     de                      ; Increment pointer to vram scrn1 tile
-
-        inc     b
-        jr      .inner_loop
-
-.outer_loop_step:
-        inc     c
-        ld      a, 17
-        cp      c
-
-        jr      NZ, .outer_loop
-
-	ret
-
-
+r1_InventoryImageBoxInitRow:
+;;; de - address
+        ld      hl, r1_InventoryImageBoxMiddleRow
+        ld      bc, r1_InventoryImageBoxMiddleRowEnd - r1_InventoryImageBoxMiddleRow
+        call    VramSafeMemcpy
+        ret
 
 
 r1_InventoryShow:
@@ -138,6 +110,7 @@ r1_InventoryShow:
         ld      de, $9300
         call    VramSafeMemcpy
 
+        ;; It's just simpler if objects are reset
         ld      hl, var_oam_back_buffer
         ld      a, 0
         ld      bc, OAM_SIZE * OAM_COUNT
@@ -161,6 +134,29 @@ r1_InventoryShow:
         ld      bc, r1_InventoryLowerBoxTopRowEnd - r1_InventoryLowerBoxTopRow
         ld      de, $9D00
         call    VramSafeMemcpy
+
+        ld      de, $9C20
+        call    r1_InventoryImageBoxInitRow
+
+        ld      de, $9C40
+        call    r1_InventoryImageBoxInitRow
+
+        ld      de, $9C60
+        call    r1_InventoryImageBoxInitRow
+
+        ld      de, $9C80
+        call    r1_InventoryImageBoxInitRow
+
+	ld      de, $9CA0
+        call    r1_InventoryImageBoxInitRow
+
+	ld      de, $9CC0
+        call    r1_InventoryImageBoxInitRow
+
+        ld      hl, r1_InventoryImageBoxBottomRow
+        ld      bc, r1_InventoryImageBoxBottomRowEnd - r1_InventoryImageBoxBottomRow
+        ld      de, $9CE0
+	call    VramSafeMemcpy
 
         ld      de, $9D20
         call    r1_InventoryLowerBoxInitRow
@@ -188,25 +184,41 @@ r1_InventoryShow:
         ld      de, $9E00
         call    VramSafeMemcpy
 
-        call    VBlankIntrWait
-        ld      b, r1_InventoryPalettesEnd - r1_InventoryPalettes
-        ld      hl, r1_InventoryPalettes
-        call    LoadBackgroundColors
-
-        ld      a, 0
-        ld      [rWY], a
-
-        ld      hl, _SCRN1      ; | Clear the old overlay, and redraw at a
-        ld      bc, 20          ; | higher address.
-        ld      a, 0            ; |
-        call    Memset          ; /
-
         ld      a, 1
         ld      [var_overlay_alternate_pos], a
 
         call    ShowOverlay
 
+        call    VBlankIntrWait
+        ld      b, r1_InventoryPalettesEnd - r1_InventoryPalettes
+        ld      hl, r1_InventoryPalettes
+        call    LoadBackgroundColors
 
+;;; Now, we can draw the very top row! Jump the window up, and draw the top row
+;;; in place of where the overlay bar used to be.
+        ld      a, 0
+        ld      [rWY], a
+
+        ld      b, 0
+        ld      hl, r1_InventoryImageBoxTopRow
+        ld      de, _SCRN1
+.loop:
+        ld      a, [hl+]
+        ld      [de], a
+
+        ld      a, 1
+        ld      [rVBK], a
+        ld      a,  $81
+        ld      [de], a
+        ld      a, 0
+        ld      [rVBK], a
+
+        inc     de
+        inc     b
+        ld      a, 20
+        cp      b
+        jr      NZ, .loop
+.done:
         ret
 
 
