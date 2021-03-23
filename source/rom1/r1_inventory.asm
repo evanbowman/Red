@@ -46,6 +46,8 @@ DB $FF,$FF,$FF,$FF,$FF,$FF,$81,$81
 DB $81,$81,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$E7,$E7,$E7,$E7,$E7,$E7
 DB $E7,$E7,$E7,$E7,$E7,$E7,$FF,$FF
+DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
 r1_InventoryTilesEnd::
 
 r1_InventoryLowerBoxTopRow::
@@ -84,11 +86,31 @@ r1_InventoryEmptyText:
         DB      "- empty -", 0
 
 
+r1_InventoryWolfPeltText:
+        DB      "wolf pelt", 0
+
+
 r1_InventoryPalettes::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $49,$35, $00,$04,
-DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $37,$73, $49,$35, $1b,$4b, $00,$04,
+DB $00,$00, $00,$00, $00,$00, $00,$00
+DB $00,$00, $00,$00, $00,$00, $00,$00
+DB $00,$00, $00,$00, $00,$00, $00,$00
+DB $00,$00, $00,$00, $00,$00, $00,$00
+DB $00,$00, $00,$00, $00,$00, $00,$00
+DB $00,$00, $00,$00, $00,$00, $00,$00
 r1_InventoryPalettesEnd::
+
+
+r1_InventoryImgRow1::
+DB $40, $41, $42, $43
+r1_InventoryImgRow2::
+DB $44, $45, $46, $47
+r1_InventoryImgRow3::
+DB $48, $49, $4a, $4b
+r1_InventoryImgRow4::
+DB $4c, $4d, $4e, $4f
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -108,24 +130,6 @@ r1_InventoryImageBoxInitRow:
         ld      hl, r1_InventoryImageBoxMiddleRow
         ld      bc, r1_InventoryImageBoxMiddleRowEnd - r1_InventoryImageBoxMiddleRow
         call    VramSafeMemcpy
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-r1_SimulatedDelay:
-;;; We will actually be loading text from a table, just use a canned delay for now
-        nop
-        nop
-        nop
-        nop
-        nop
-        nop
-        nop
-        nop
-        nop
-        nop
-        nop
         ret
 
 
@@ -221,52 +225,69 @@ r1_InventoryPutTextRow:
 
 ;;; ----------------------------------------------------------------------------
 
+r1_InventoryItemText:
+;;; a - row
+        ld      b, a
+        call    InventoryGetItem
+	ld      b, [hl]
+
+        ld      a, 0
+        cp      b
+        jr      Z, .empty
+
+        ld      a, 1
+        cp      b
+        jr      Z, .wolfPelt
+
+        jr      .empty
+
+.empty:
+        ld      hl, r1_InventoryEmptyText
+        ret
+.wolfPelt:
+        ld      hl, r1_InventoryWolfPeltText
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r1_InventoryInitText:
         call    VBlankIntrWait
         call    VBlankIntrWait
 
-        call    VBlankIntrWait
         ld      a, 0
+.loop:
+        cp      7
+        jr      Z, .loopDone
+	push    af
+
+        push    af
+        call    VBlankIntrWait
+        pop     af
+	push    af
+        ld      b, a
+        ld      a, [var_scene_counter]
+        cp      b
+        ld      b, $88
+        jr      NZ, .skipHighlight
         ld      b, $8A
-        ld      hl, r1_InventoryEmptyText
+.skipHighlight:
+        pop     af
+
+	push    af
+        push    bc
+        call    r1_InventoryItemText
+        pop     bc
+        pop     af
+
         call    r1_InventoryPutTextRow
 
-        call    VBlankIntrWait
-        ld      b, $88
-	ld      a, 1
-        ld      hl, r1_InventoryEmptyText
-        call    r1_InventoryPutTextRow
+	pop     af
+        inc     a
+        jr      .loop
 
-        call    VBlankIntrWait
-        ld      b, $88
-	ld      a, 2
-        ld      hl, r1_InventoryEmptyText
-        call    r1_InventoryPutTextRow
-
-        call    VBlankIntrWait
-        ld      b, $88
-	ld      a, 3
-        ld      hl, r1_InventoryEmptyText
-        call    r1_InventoryPutTextRow
-
-        call    VBlankIntrWait
-        ld      b, $88
-	ld      a, 4
-        ld      hl, r1_InventoryEmptyText
-        call    r1_InventoryPutTextRow
-
-        call    VBlankIntrWait
-        ld      b, $88
-	ld      a, 5
-        ld      hl, r1_InventoryEmptyText
-        call    r1_InventoryPutTextRow
-
-        call    VBlankIntrWait
-        ld      b, $88
-	ld      a, 6
-        ld      hl, r1_InventoryEmptyText
-        call    r1_InventoryPutTextRow
-
+.loopDone:
 
         ret
 
@@ -295,6 +316,163 @@ r1_InventoryTextRowSetAttr:
 
 ;;; ----------------------------------------------------------------------------
 
+r1_InventoryUpdateImageCopyAttributeRow:
+;;; de - current attribute pointer
+;;; hl - attributes pointer
+
+        ld      bc, 4
+        push    hl
+        push    de
+        call    VramSafeMemcpy
+        pop     de
+        pop     hl
+
+        ld      bc, 4
+        add     hl, bc
+
+        push    hl
+        ld      h, d
+        ld      l, e
+
+        ld      bc, 32
+        add     hl, bc          ; jump a row in screen ram
+
+        ld      d, h
+        ld      e, l
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_Mul16:
+;;; bc - number
+;;; trashes d
+;;; result in bc
+        ld      a, c
+        and     $f0
+        swap    a
+        ld      d, a
+
+        ld      a, b
+        swap    a
+        and     $f0
+        or      d
+        ld      a, b
+
+        ld      a, c
+        swap    a
+        and     $f0
+        ld      c, a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InventoryUpdateImage:
+        call    VBlankIntrWait
+
+        ld      a, [var_scene_counter]
+        ld      b, a
+        call    InventoryGetItem
+	ld      c, [hl]
+	ld      b, 0
+
+        ;; Dma copy the image to vram.
+        push    bc
+
+        ld      hl, r1_InventoryItemIcons
+
+        ld      b, c            ; Swap byte order, fast mul x 256 (32x32p image)
+        ld      c, 0
+        add     hl, bc
+
+        ld      de, $9400
+        ld      b, 15
+        call    GDMABlockCopy
+
+        pop     bc
+        push    bc
+
+	ld      hl, r1_InventoryItemAttributes
+
+        call    r1_Mul16                ; 16 bytes per attribute block
+
+        add     hl, bc
+
+        ;; Now, copy over the attributes
+        ld      a, 1
+        ld	[rVBK], a
+
+        ld      de, $9c4e
+
+        call    r1_InventoryUpdateImageCopyAttributeRow
+        call    r1_InventoryUpdateImageCopyAttributeRow
+        call    r1_InventoryUpdateImageCopyAttributeRow
+        call    r1_InventoryUpdateImageCopyAttributeRow
+
+        ld      a, 0
+        ld	[rVBK], a
+
+        pop     bc
+
+        ld      hl, r1_InventoryItemPalettes
+        call    r1_Mul64                ; 64 bytes per palette
+        add     hl, bc
+
+        ld      a, [rLY]
+        cp      145
+        jr      C, .vsync
+        jr      .copyColors
+.vsync:
+;;; We should never reach here, the code is fast enough to run within the blank
+;;; window. But just in case...
+        call    VBlankIntrWait
+.copyColors:
+        ld      b, 64
+        call    LoadBackgroundColors
+
+        ret
+
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r1_Mul64:
+;;; bc - number to shift by six
+        ld      d, c
+        ;; Right-shift contents of c by two, so upper six bits are now lsb
+        srl     d
+        srl     d
+
+        ;; swap upper and lower nibbles in b, then shift left, and mask off upper two
+        swap    b
+        sla     b
+        sla     b
+        ld      a, b
+        and     $c0
+
+        ;; combine with the six bits from lower byte
+        or      d
+        ld      b, a
+
+        ld      a, c
+        swap    a
+        sla     a
+        sla     a
+        and     $c0
+        ld      c, a
+
+        ret
+
+
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r1_InventoryMoveCursorDown:
         ld      a, [var_scene_counter]
 
@@ -320,6 +498,7 @@ r1_InventoryMoveCursorDown:
         ld      a, 0
         ld	[rVBK], a
 
+        call    r1_InventoryUpdateImage
 .skip:
         ret
 
@@ -351,6 +530,7 @@ r1_InventoryMoveCursorUp:
         ld      a, 0
         ld	[rVBK], a
 
+        call    r1_InventoryUpdateImage
 .skip:
         ret
 
@@ -377,6 +557,42 @@ r1_InventoryUpdate:
 
 ;;; ----------------------------------------------------------------------------
 
+r1_InventoryInitImageMargin:
+        ld      hl, $9c2d
+	ld      bc, 6
+        ld      d, $36
+        call    r1_VramSafeMemset
+
+        ld      hl, $9c4d
+	ld      bc, 6
+        ld      d, $36
+        call    r1_VramSafeMemset
+
+        ld      hl, $9c6d
+	ld      bc, 6
+        ld      d, $36
+        call    r1_VramSafeMemset
+
+        ld      hl, $9c8d
+	ld      bc, 6
+        ld      d, $36
+        call    r1_VramSafeMemset
+
+        ld      hl, $9cad
+	ld      bc, 6
+        ld      d, $36
+        call    r1_VramSafeMemset
+
+        ld      hl, $9ccd
+	ld      bc, 6
+        ld      d, $36
+        call    r1_VramSafeMemset
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r1_InventoryOpen:
         ld      hl, r1_InventoryTiles
         ld      bc, r1_InventoryTilesEnd - r1_InventoryTiles
@@ -392,6 +608,11 @@ r1_InventoryOpen:
         call    VBlankIntrWait
         ld      a, HIGH(var_oam_back_buffer)
         call    hOAMDMA
+
+	ld      hl, r1_InventoryItemIcons
+        ld      de, $9400
+        ld      b, 15
+        call    GDMABlockCopy
 
         ld      a, 1
         ld	[rVBK], a
@@ -462,6 +683,8 @@ r1_InventoryOpen:
 
         call    ShowOverlay
 
+        call    r1_InventoryInitImageMargin
+
         call    VBlankIntrWait
         ld      b, r1_InventoryPalettesEnd - r1_InventoryPalettes
         ld      hl, r1_InventoryPalettes
@@ -497,6 +720,31 @@ r1_InventoryOpen:
         ld      a, 0
         ld      [var_scene_counter], a
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_SetupImageTiles:
+        ld      de, $9c4e
+        ld      hl, r1_InventoryImgRow1
+        ld      bc, 4
+        call    VramSafeMemcpy
+
+        ld      de, $9c6e
+        ld      hl, r1_InventoryImgRow2
+        ld      bc, 4
+        call    VramSafeMemcpy
+
+        ld      de, $9c8e
+        ld      hl, r1_InventoryImgRow3
+        ld      bc, 4
+        call    VramSafeMemcpy
+
+        ld      de, $9cae
+        ld      hl, r1_InventoryImgRow4
+        ld      bc, 4
+        call    VramSafeMemcpy
         ret
 
 
@@ -539,3 +787,119 @@ r1_VramSafeMemset:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+
+align 8                         ; Required alignment for dma copies
+r1_InventoryItemIcons::
+.empty::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+.emptyEnd::
+.wolfPelt::
+DB $FE,$00,$CE,$F0,$67,$78,$33,$3C
+DB $99,$1E,$CC,$0F,$E7,$04,$E3,$00
+DB $0E,$00,$0E,$00,$0E,$00,$7E,$00
+DB $FE,$00,$FF,$00,$FF,$00,$FF,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $FF,$00,$F1,$0E,$F3,$8C,$F8,$FF
+DB $0E,$0D,$03,$03,$01,$01,$00,$00
+DB $FF,$00,$FF,$00,$FF,$00,$7F,$80
+DB $3F,$C0,$0F,$F0,$87,$F8,$C3,$FC
+DB $80,$00,$80,$00,$C0,$00,$E0,$00
+DB $F0,$00,$FC,$03,$FE,$01,$FF,$01
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $01,$1C,$00,$FE,$01,$FE,$FF,$FF
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $61,$7E,$30,$3F,$18,$1F,$0C,$0B
+DB $07,$00,$07,$01,$0F,$09,$0E,$08
+DB $FF,$00,$FE,$01,$FE,$01,$7E,$81
+DB $3E,$C1,$0F,$F0,$87,$F8,$80,$FF
+DB $00,$00,$80,$00,$60,$80,$70,$80
+DB $70,$80,$F8,$00,$F0,$10,$F8,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $0C,$0E,$04,$07,$04,$07,$04,$07
+DB $04,$07,$04,$07,$04,$07,$02,$00
+DB $C0,$FF,$61,$7F,$30,$3F,$1E,$1F
+DB $03,$03,$00,$00,$00,$00,$00,$00
+DB $F0,$0C,$F0,$0C,$18,$E4,$0C,$F0
+DB $FC,$E0,$3C,$3C,$00,$00,$00,$00
+.wolfPeltEnd::
+r1_InventoryItemIconsEnd::
+
+
+
+r1_InventoryItemAttributes::
+.empty::
+DB $83, $83, $83, $83
+DB $83, $83, $84, $84
+DB $83, $83, $83, $83
+DB $83, $84, $83, $84
+.emptyEnd::
+.wolfPelt::
+DB $83, $83, $83, $83
+DB $83, $83, $84, $84
+DB $83, $83, $83, $83
+DB $83, $84, $83, $84
+.wolfPeltEnd::
+r1_InventoryItemAttributesEnd::
+
+
+
+r1_InventoryItemPalettes::
+.empty::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $1b,$4b, $00,$04,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
+DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
+DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
+DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
+DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
+.emptyEnd::
+.wolfPelt::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $1b,$4b, $00,$04,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $1b,$4b, $ad,$4d, $29,$31, $81,$20,
+DB $1b,$4b, $ad,$4d, $7b,$73, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.wolfPeltEnd::
+r1_InventoryItemPalettesEnd::

@@ -117,6 +117,8 @@ InventorySceneFadeinVBlank:
 
         LONG_CALL r1_InventoryOpen, 1
         LONG_CALL r1_InventoryInitText, 1
+        LONG_CALL r1_SetupImageTiles, 1
+        LONG_CALL r1_InventoryUpdateImage, 1
         ret
 
 .continue:

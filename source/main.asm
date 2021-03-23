@@ -46,6 +46,7 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
         INCLUDE "defs.inc"
         INCLUDE "sprid.inc"
         INCLUDE "entityType.inc"
+        INCLUDE "item.inc"
 
 
 
@@ -208,6 +209,9 @@ Main:
 
         LONG_CALL r1_SetCgbColorProfile, 1
 
+        ld      b, 1
+        call    InventoryAddItem
+
         SET_BANK 10
         ld      a, 1
         ld      [rSVBK], a
@@ -360,6 +364,7 @@ MapSpriteBlock:
         INCLUDE "bonfire.asm"
         INCLUDE "player.asm"
         INCLUDE "scene.asm"
+        INCLUDE "inventory.asm"
         INCLUDE "overworldScene.asm"
         INCLUDE "inventoryScene.asm"
         INCLUDE "introCreditsScene.asm"
