@@ -37,5 +37,6 @@
 
 
 ;;; Spritesheet constants (needs to match the ordering of data in bank 2)
-ENTITY_TYPE_PLAYER  EQU  0
-ENTITY_TYPE_BONFIRE EQU  1
+ENTITY_TYPE_PLAYER   EQU  0
+ENTITY_TYPE_BONFIRE  EQU  1
+ENTITY_TYPE_GREYWOLF EQU  2

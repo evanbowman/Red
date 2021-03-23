@@ -204,10 +204,18 @@ OverworldSceneUpdate:
 
 .checkStart:
         bit     PADB_START, a
-        jr      Z, .updateEntities
+        jr      Z, .checkA
 
         ld      de, InventorySceneEnter
         call    SceneSetUpdateFn
+        jr      .updateEntities
+
+.checkA:
+        bit     PADB_A, a
+        jr      Z, .updateEntities
+
+;;; TODO...
+
 
 .updateEntities:
 

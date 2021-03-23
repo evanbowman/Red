@@ -34,24 +34,26 @@
 
 
 r1_InventoryTiles::
-DB $FF,$FF,$FF,$FF,$FF,$FF,$F0,$E0
-DB $E0,$E0,$E0,$E7,$E0,$E7,$E0,$E7
-DB $FF,$FF,$FF,$FF,$FF,$FF,$0F,$07
-DB $07,$07,$07,$E7,$07,$E7,$07,$E7
-DB $07,$E7,$07,$E7,$07,$E7,$07,$07
-DB $0F,$07,$FF,$FF,$FF,$FF,$FF,$FF
-DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E0
-DB $F0,$E0,$FF,$FF,$FF,$FF,$FF,$FF
+DB $00,$FF,$00,$FF,$00,$FF,$10,$E0
+DB $00,$E0,$00,$E7,$07,$E7,$07,$E7
+DB $00,$FF,$00,$FF,$00,$FF,$08,$07
+DB $00,$07,$00,$E7,$E0,$E7,$E0,$E7
+DB $E0,$E7,$E0,$E7,$E0,$E7,$00,$07
+DB $08,$07,$00,$FF,$00,$FF,$00,$FF
+DB $07,$E7,$07,$E7,$07,$E7,$00,$E0
+DB $10,$E0,$00,$FF,$00,$FF,$00,$FF
 DB $00,$FF,$00,$FF,$00,$FF,$00,$00
-DB $00,$00,$FF,$FF,$FF,$FF,$FF,$FF
-DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E7
-DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E7
-DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
-DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $00,$00,$00,$FF,$FF,$FF,$FF,$FF
 DB $07,$E7,$07,$E7,$07,$E7,$07,$E7
 DB $07,$E7,$07,$E7,$07,$E7,$07,$E7
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E7
+DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E7
 DB $FF,$FF,$FF,$FF,$FF,$FF,$00,$00
 DB $00,$00,$00,$FF,$00,$FF,$00,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 r1_InventoryTilesEnd::
 
 r1_InventoryLowerBoxTopRow::
@@ -60,45 +62,35 @@ DB $34, $34, $34, $34, $31
 r1_InventoryLowerBoxTopRowEnd::
 
 r1_InventoryLowerBoxBottomRow::
-DB $33, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34
-DB $34, $34, $34, $34, $32
+DB $33, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38
+DB $38, $38, $38, $38, $32
 r1_InventoryLowerBoxBottomRowEnd::
 
 r1_InventoryLowerBoxMiddleRow::
 DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-DB $00, $00, $00, $00, $35
+DB $00, $00, $00, $00, $37
 r1_InventoryLowerBoxMiddleRowEnd::
 
 
 r1_InventoryImageBoxTopRow::
-DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $30, $34, $34,
+DB $30, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $31, $30, $34, $34,
 DB $34, $34, $34, $34, $31
 r1_InventoryImageBoxTopRowEnd::
 
 r1_InventoryImageBoxBottomRow::
-DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $33, $34, $34
-DB $34, $34, $34, $34, $32
+DB $33, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $32, $33, $38, $38
+DB $38, $38, $38, $38, $32
 r1_InventoryImageBoxBottomRowEnd::
 
 r1_InventoryImageBoxMiddleRow::
-DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $35, $00, $00
-DB $00, $00, $00, $00, $35
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $37, $35, $00, $00
+DB $00, $00, $00, $00, $37
 r1_InventoryImageBoxMiddleRowEnd::
-
-
-r1_InventoryEmptyText:
-        DB      "- empty -", 0
-
-r1_InventoryWolfPeltText:
-        DB      "wolf pelt", 0
-
-r1_InventoryDaggerText:
-        DB      "dagger", 0
 
 
 r1_InventoryPalettes::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $83,$1c, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
 DB $00,$00, $00,$00, $00,$00, $00,$00
 DB $00,$00, $00,$00, $00,$00, $00,$00
 DB $00,$00, $00,$00, $00,$00, $00,$00
@@ -236,39 +228,40 @@ r1_InventoryItemText:
         ld      b, a
         call    InventoryGetItem
 
-        ld      a, 0
-        cp      b
-        jr      Z, .empty
+        ld      c, b
+        ld      b, 0
+        call    r1_Mul16
 
-        ld      a, ITEM_WOLF_PELT
-        cp      b
-        jr      Z, .wolfPelt
+        ld      hl, r1_InventoryItemTextTable
+        add     hl, bc
 
-        ld      a, ITEM_DAGGER
-        cp      b
-        jr      Z, .dagger
-
-
-        jr      .empty
-
-.empty:
-        ld      hl, r1_InventoryEmptyText
-        ret
-.wolfPelt:
-        ld      hl, r1_InventoryWolfPeltText
-        ret
-.dagger:
-        ld      hl, r1_InventoryDaggerText
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 
-r1_InventoryInitText:
-        call    VBlankIntrWait
-        call    VBlankIntrWait
+r1_InventoryAdjustOffset:
+;;; a - input
+        push    af
+	ld      a, [var_inventory_page]
+        or      a
+        jr      NZ, .secondPage
+        pop     af
+        ret
+.secondPage:
+        pop     af
+        add     7
+        ret
 
+
+r1_InventoryGetSelectedIndex:
+        ld      a, [var_scene_counter]
+        call    r1_InventoryAdjustOffset
+        ret
+
+
+r1_InventoryInitText:
         ld      a, 0
 .loop:
         cp      7
@@ -282,7 +275,7 @@ r1_InventoryInitText:
         ld      b, a
         ld      a, [var_scene_counter]
         cp      b
-        ld      b, $88
+        ld      b, $89
         jr      NZ, .skipHighlight
         ld      b, $8A
 .skipHighlight:
@@ -290,6 +283,7 @@ r1_InventoryInitText:
 
 	push    af
         push    bc
+        call    r1_InventoryAdjustOffset
         call    r1_InventoryItemText
         pop     bc
         pop     af
@@ -386,7 +380,7 @@ r1_Mul16:
 r1_InventoryUpdateImage:
         call    VBlankIntrWait
 
-        ld      a, [var_scene_counter]
+        call    r1_InventoryGetSelectedIndex
         ld      b, a
         call    InventoryGetItem
 	ld      c, b
@@ -490,7 +484,7 @@ r1_InventoryMoveCursorDown:
         ld      a, [var_scene_counter]
 
         cp      6
-        jr      Z, .skip
+        jr      Z, .nextPage
 
         call    VBlankIntrWait
 
@@ -498,7 +492,7 @@ r1_InventoryMoveCursorDown:
         ld	[rVBK], a
 
         ld      a, [var_scene_counter]
-        ld      b, $88
+        ld      b, $89
         call    r1_InventoryTextRowSetAttr
 
 	ld      a, [var_scene_counter]
@@ -512,6 +506,31 @@ r1_InventoryMoveCursorDown:
         ld	[rVBK], a
 
         call    r1_InventoryUpdateImage
+        ret
+.nextPage:
+        ld      a, [var_inventory_page]
+        cp      1
+        jr      Z, .skip
+
+        inc     a
+        ld      [var_inventory_page], a
+
+        ld      a, 1
+        ld	[rVBK], a
+
+        ld      a, [var_scene_counter]
+        ld      b, $89
+        call    r1_InventoryTextRowSetAttr
+
+        ld      a, 0
+        ld	[rVBK], a
+
+	ld      a, 0
+        ld      [var_scene_counter], a
+
+	call    r1_InventoryInitText
+
+        call    r1_InventoryUpdateImage
 .skip:
         ret
 
@@ -522,7 +541,7 @@ r1_InventoryMoveCursorUp:
         ld      a, [var_scene_counter]
 
         cp      0
-        jr      Z, .skip
+        jr      Z, .prevPage
 
         call    VBlankIntrWait
 
@@ -530,7 +549,7 @@ r1_InventoryMoveCursorUp:
         ld	[rVBK], a
 
         ld      a, [var_scene_counter]
-        ld      b, $88
+        ld      b, $89
         call    r1_InventoryTextRowSetAttr
 
 	ld      a, [var_scene_counter]
@@ -542,6 +561,35 @@ r1_InventoryMoveCursorUp:
 
         ld      a, 0
         ld	[rVBK], a
+
+        call    r1_InventoryUpdateImage
+        ret
+.prevPage:
+        ld      a, [var_inventory_page]
+        cp      0
+        jr      Z, .skip
+
+        dec     a
+        ld      [var_inventory_page], a
+
+
+        ld      a, 1
+        ld	[rVBK], a
+
+        ld      a, [var_scene_counter]
+        ld      b, $89
+        call    r1_InventoryTextRowSetAttr
+
+        ld      a, 6
+        ld      [var_scene_counter], a
+
+        ld      b, $8A
+        call    r1_InventoryTextRowSetAttr
+
+        ld      a, 0
+        ld	[rVBK], a
+
+        call    r1_InventoryInitText
 
         call    r1_InventoryUpdateImage
 .skip:
@@ -600,6 +648,43 @@ r1_InventoryInitImageMargin:
 	ld      bc, 6
         ld      d, $36
         call    r1_VramSafeMemset
+
+
+        ld      a, 1
+        ld	[rVBK], a
+
+        ld      hl, $9c2d
+	ld      bc, 6
+        ld      d, $83
+        call    r1_VramSafeMemset
+
+        ld      hl, $9c4d
+	ld      bc, 6
+        ld      d, $83
+        call    r1_VramSafeMemset
+
+        ld      hl, $9c6d
+	ld      bc, 6
+        ld      d, $83
+        call    r1_VramSafeMemset
+
+        ld      hl, $9c8d
+	ld      bc, 6
+        ld      d, $83
+        call    r1_VramSafeMemset
+
+        ld      hl, $9cad
+	ld      bc, 6
+        ld      d, $83
+        call    r1_VramSafeMemset
+
+        ld      hl, $9ccd
+	ld      bc, 6
+        ld      d, $83
+        call    r1_VramSafeMemset
+
+        ld      a, 0
+        ld	[rVBK], a
 
         ret
 
@@ -732,6 +817,7 @@ r1_InventoryOpen:
         ;; TODO: use unions for scene-specific variables
         ld      a, 0
         ld      [var_scene_counter], a
+        ld      [var_inventory_page], a
 
         ret
 
@@ -758,6 +844,7 @@ r1_SetupImageTiles:
         ld      hl, r1_InventoryImgRow4
         ld      bc, 4
         call    VramSafeMemcpy
+
         ret
 
 
@@ -910,6 +997,12 @@ DB $C0,$28,$80,$F8,$80,$F8,$F0,$F0
 r1_InventoryItemIconsEnd::
 
 
+r1_InventoryItemTextTable::
+DB      "- empty -      ", 0
+DB      "wolf pelt      ", 0
+DB      "dagger         ", 0
+r1_InventoryItemTextTableEnd::
+
 
 r1_InventoryItemAttributes::
 .empty::
@@ -937,7 +1030,7 @@ r1_InventoryItemAttributesEnd::
 r1_InventoryItemPalettes::
 .empty::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $83,$1c, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
 DB $03,$00, $69,$72, $00,$00, $1A,$20,
 DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
 DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
@@ -947,7 +1040,7 @@ DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
 .emptyEnd::
 .wolfPelt::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $83,$1c, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
 DB $03,$00, $69,$72, $00,$00, $1A,$20,
 DB $1b,$4b, $ad,$4d, $08,$2d, $81,$20,
 DB $1b,$4b, $ad,$4d, $ff,$7f, $81,$20,
@@ -957,7 +1050,7 @@ DB $00,$00, $00,$00, $00,$00, $00,$00,
 .wolfPeltEnd::
 .dagger::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $83,$1c, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c   ,
 DB $03,$00, $69,$72, $00,$00, $1A,$20,
 DB $1b,$4b, $ad,$4d, $ff,$7f, $81,$20,
 DB $1b,$4b, $ad,$4d, $d1,$21, $81,$20,

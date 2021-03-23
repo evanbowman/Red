@@ -116,7 +116,11 @@ InventorySceneFadeinVBlank:
         call    BlackScreenExcludeOverlay
 
         LONG_CALL r1_InventoryOpen, 1
+
+        call    VBlankIntrWait  ; \ Pause for a couple of frames.
+        call    VBlankIntrWait  ; /
         LONG_CALL r1_InventoryInitText, 1
+
         LONG_CALL r1_SetupImageTiles, 1
         LONG_CALL r1_InventoryUpdateImage, 1
         ret
