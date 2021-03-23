@@ -85,9 +85,11 @@ r1_InventoryImageBoxMiddleRowEnd::
 r1_InventoryEmptyText:
         DB      "- empty -", 0
 
-
 r1_InventoryWolfPeltText:
         DB      "wolf pelt", 0
+
+r1_InventoryDaggerText:
+        DB      "dagger", 0
 
 
 r1_InventoryPalettes::
@@ -229,15 +231,19 @@ r1_InventoryItemText:
 ;;; a - row
         ld      b, a
         call    InventoryGetItem
-	ld      b, [hl]
 
         ld      a, 0
         cp      b
         jr      Z, .empty
 
-        ld      a, 1
+        ld      a, ITEM_WOLF_PELT
         cp      b
         jr      Z, .wolfPelt
+
+        ld      a, ITEM_DAGGER
+        cp      b
+        jr      Z, .dagger
+
 
         jr      .empty
 
@@ -246,6 +252,9 @@ r1_InventoryItemText:
         ret
 .wolfPelt:
         ld      hl, r1_InventoryWolfPeltText
+        ret
+.dagger:
+        ld      hl, r1_InventoryDaggerText
         ret
 
 
@@ -376,7 +385,7 @@ r1_InventoryUpdateImage:
         ld      a, [var_scene_counter]
         ld      b, a
         call    InventoryGetItem
-	ld      c, [hl]
+	ld      c, b
 	ld      b, 0
 
         ;; Dma copy the image to vram.
@@ -860,6 +869,40 @@ DB $03,$03,$00,$00,$00,$00,$00,$00
 DB $F0,$0C,$F0,$0C,$18,$E4,$0C,$F0
 DB $FC,$E0,$3C,$3C,$00,$00,$00,$00
 .wolfPeltEnd::
+.dagger::
+DB $38,$00,$3C,$00,$16,$08,$3B,$24
+DB $3F,$30,$1F,$18,$0F,$08,$0F,$0C
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $80,$00,$C0,$00,$E0,$00,$70,$80
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $07,$06,$03,$02,$03,$03,$01,$01
+DB $01,$01,$00,$00,$00,$00,$00,$00
+DB $B8,$40,$FC,$00,$EE,$10,$FD,$02
+DB $F4,$8B,$F8,$C7,$7C,$43,$7E,$61
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $80,$00,$40,$00,$E0,$03,$E1,$17
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$C0,$00,$E0,$00,$E0
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $3F,$30,$1E,$11,$1E,$19,$0E,$0D
+DB $06,$07,$00,$33,$01,$7F,$C0,$F8
+DB $03,$FF,$14,$FC,$00,$F8,$80,$F4
+DB $00,$FC,$0C,$F0,$9E,$E0,$FF,$F0
+DB $80,$C0,$40,$40,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $70,$70,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $1F,$18,$0F,$0C,$07,$06,$03,$02
+DB $01,$01,$00,$00,$00,$00,$00,$00
+DB $00,$00,$80,$00,$C0,$00,$C0,$30
+DB $C0,$28,$80,$F8,$80,$F8,$F0,$F0
+.daggerEnd::
 r1_InventoryItemIconsEnd::
 
 
@@ -877,6 +920,12 @@ DB $83, $83, $84, $84
 DB $83, $83, $83, $83
 DB $83, $84, $83, $84
 .wolfPeltEnd::
+.dagger::
+DB $83, $83, $83, $83
+DB $83, $83, $84, $84
+DB $84, $84, $85, $84
+DB $85, $85, $85, $85
+.daggerEnd::
 r1_InventoryItemAttributesEnd::
 
 
@@ -897,9 +946,19 @@ DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
 DB $37,$73, $49,$35, $1b,$4b, $00,$04,
 DB $03,$00, $69,$72, $00,$00, $1A,$20,
 DB $1b,$4b, $ad,$4d, $08,$2d, $81,$20,
-DB $1b,$4b, $ad,$4d, $7b,$73, $81,$20,
+DB $1b,$4b, $ad,$4d, $ff,$7f, $81,$20,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 .wolfPeltEnd::
+.dagger::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $1b,$4b, $00,$04,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $1b,$4b, $ad,$4d, $ff,$7f, $81,$20,
+DB $1b,$4b, $ad,$4d, $d1,$21, $81,$20,
+DB $1b,$4b, $ad,$24, $d1,$21, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.daggerEnd::
 r1_InventoryItemPalettesEnd::

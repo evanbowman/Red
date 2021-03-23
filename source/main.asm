@@ -209,7 +209,10 @@ Main:
 
         LONG_CALL r1_SetCgbColorProfile, 1
 
-        ld      b, 1
+        ld      b, ITEM_DAGGER
+        call    InventoryAddItem
+
+        ld      b, ITEM_WOLF_PELT
         call    InventoryAddItem
 
         SET_BANK 10
