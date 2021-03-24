@@ -49,6 +49,24 @@ InventoryGetItem:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+InventoryRemoveItem:
+;;; b - slot
+;;; trashes hl
+        ld      hl, var_inventory
+        ld      c, b
+        sla     c
+        ld      b, 0
+        add     hl, bc
+        ld      [hl], b
+        inc     hl
+        ld      [hl], b
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 InventoryAddItem:
 ;;; b - item
 ;;; trashes hl, c

@@ -212,7 +212,7 @@ Main:
         ld      b, ITEM_DAGGER
         call    InventoryAddItem
 
-        ld      b, ITEM_WOLF_PELT
+        ld      b, ITEM_RAW_MEAT
         call    InventoryAddItem
 
         ld      b, ITEM_RAW_MEAT
