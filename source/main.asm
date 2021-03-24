@@ -215,6 +215,9 @@ Main:
         ld      b, ITEM_WOLF_PELT
         call    InventoryAddItem
 
+        ld      b, ITEM_RAW_MEAT
+        call    InventoryAddItem
+
         SET_BANK 10
         ld      a, 1
         ld      [rSVBK], a
