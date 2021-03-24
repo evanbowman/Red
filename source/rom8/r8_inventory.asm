@@ -555,7 +555,7 @@ r8_Mul64:
 r8_CraftableItemCheckDependencies:
         push    hl
 
-
+        ;; TODO...
 
         pop     hl
 
@@ -576,7 +576,8 @@ r8_InventoryLoadCraftableItems:
         cp      ITEM_NONE
         jr      Z, .endLoop
 
-
+        call    r8_CraftableItemCheckDependencies
+        ;; TODO...
 
         inc     hl
         inc     hl
