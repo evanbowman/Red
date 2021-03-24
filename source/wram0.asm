@@ -67,7 +67,6 @@ var_player_stamina:     DS      FIXNUM_SIZE
 ITEM_SIZE EQU 2
 INVENTORY_COUNT EQU 14
 var_inventory:  DS      ITEM_SIZE * 14
-var_inventory_page:     DS      1
 
 PERSISTENT_STATE_DATA_END:
 
@@ -201,14 +200,6 @@ var_texture_slots_end::
 var_view_x:    DS      1
 var_view_y:    DS      1
 
-var_room_load_counter:        DS      1
-var_room_load_parity:         DS      1
-var_room_load_orientation:    DS      1
-var_room_load_joypad_cache:   DS      1
-var_room_load_slab:           DS      32
-var_room_load_colors:         DS      32
-
-
 var_overlay_alternate_pos:    DS      1
 var_stamina_last_val:         DS      1
 var_overlay_back_buffer:      DS      20
@@ -220,7 +211,31 @@ var_overlay_back_buffer:      DS      20
 
 var_scene_update_fn:    DS      2
 var_scene_vblank_fn:    DS      2
+
+
+var_scene_union:
+        UNION
 var_scene_counter:      DS      1
+        NEXTU
+;;; Room loading vars
+var_room_load_counter:        DS      1
+var_room_load_parity:         DS      1
+var_room_load_orientation:    DS      1
+var_room_load_joypad_cache:   DS      1
+var_room_load_slab:           DS      32
+var_room_load_colors:         DS      32
+        NEXTU
+;;; Inventory vars
+var_inventory_scene_selected_row:       DS      1
+var_inventory_scene_page:               DS      1
+var_inventory_scene_tab:                DS      1
+
+CRAFTABLE_ITEMS_COUNT   EQU     32
+
+var_inventory_scene_craftable_items_list:   DS  CRAFTABLE_ITEMS_COUNT
+        NEXTU
+        ENDU
+var_scene_union_end:
 
 
 ;;; ############################################################################

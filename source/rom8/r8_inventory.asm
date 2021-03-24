@@ -35,7 +35,7 @@
 
 r8_InventoryTiles::
 DB $00,$FF,$00,$FF,$00,$FF,$10,$E0
-DB $00,$E0,$00,$E7,$07,$E7,$07,$E7
+DB $00,$E0,$80,$E7,$07,$E7,$07,$E7
 DB $00,$FF,$00,$FF,$00,$FF,$08,$07
 DB $00,$07,$00,$E7,$E0,$E7,$E0,$E7
 DB $E0,$E7,$E0,$E7,$E0,$E7,$00,$07
@@ -53,6 +53,12 @@ DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E7
 DB $FF,$FF,$FF,$FF,$FF,$FF,$00,$00
 DB $00,$00,$00,$FF,$00,$FF,$00,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$DF,$DF,$9F,$9F
+DB $1F,$1F,$9F,$9F,$DF,$DF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FB,$FB,$F9,$F9
+DB $F8,$F8,$F9,$F9,$FB,$FB,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 r8_InventoryTilesEnd::
 
@@ -109,6 +115,68 @@ DB $48, $49, $4a, $4b
 r8_InventoryImgRow4::
 DB $4c, $4d, $4e, $4f
 
+
+;;; ----------------------------------------------------------------------------
+
+INVENTORY_TAB_ITEMS     EQU     0
+INVENTORY_TAB_CRAFT     EQU     1
+INVENTORY_TAB_COUNT     EQU     2
+
+
+r8_InventoryGetTabText:
+        ld      a, [var_inventory_scene_tab]
+        cp      INVENTORY_TAB_ITEMS
+        jr      Z, .items
+        cp      INVENTORY_TAB_CRAFT
+        jr      Z, .craft
+.items:
+	ld      hl, r8_InventoryTabItemsText
+        ret
+.craft:
+	ld      hl, r8_InventoryTabCraftText
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventoryShowTabHeading:
+        call    r8_InventoryGetTabText
+
+        ld      de, $9c22
+        ld      b, $89
+        call    PutText
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventoryGetCraftableItem:
+        ld      hl, var_inventory_scene_craftable_items_list
+        ld      c, b
+        ld      b, 0
+        add     hl, bc
+        ld      b, [hl]
+        ld      c, 0
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventoryTabLoadItem:
+;;; b - row
+        ld      a, [var_inventory_scene_tab]
+        cp      a, INVENTORY_TAB_ITEMS
+        jr      Z, .items
+        cp      a, INVENTORY_TAB_CRAFT
+        jr      Z, .craft
+
+.items:
+        call    InventoryGetItem
+        ret
+
+.craft:
+        call    r8_InventoryGetCraftableItem
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -226,7 +294,7 @@ r8_InventoryPutTextRow:
 r8_InventoryItemText:
 ;;; a - row
         ld      b, a
-        call    InventoryGetItem
+        call    r8_InventoryTabLoadItem
 
         ld      c, b
         ld      b, 0
@@ -244,7 +312,7 @@ r8_InventoryItemText:
 r8_InventoryAdjustOffset:
 ;;; a - input
         push    af
-	ld      a, [var_inventory_page]
+	ld      a, [var_inventory_scene_page]
         or      a
         jr      NZ, .secondPage
         pop     af
@@ -256,7 +324,7 @@ r8_InventoryAdjustOffset:
 
 
 r8_InventoryGetSelectedIndex:
-        ld      a, [var_scene_counter]
+        ld      a, [var_inventory_scene_selected_row]
         call    r8_InventoryAdjustOffset
         ret
 
@@ -273,7 +341,7 @@ r8_InventoryInitText:
         pop     af
 	push    af
         ld      b, a
-        ld      a, [var_scene_counter]
+        ld      a, [var_inventory_scene_selected_row]
         cp      b
         ld      b, $89
         jr      NZ, .skipHighlight
@@ -382,7 +450,7 @@ r8_InventoryUpdateImage:
 
         call    r8_InventoryGetSelectedIndex
         ld      b, a
-        call    InventoryGetItem
+        call    r8_InventoryTabLoadItem
 	ld      c, b
 	ld      b, 0
 
@@ -475,13 +543,84 @@ r8_Mul64:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+r8_InventoryLoadCraftableItems:
+        ld      hl, var_inventory_scene_craftable_items_list
+        ld      bc, CRAFTABLE_ITEMS_COUNT
+        ld      a, 0
+        call    Memset
+
+        ;; TODO...
+
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
 
+r8_InventorySetTab:
+        call    VBlankIntrWait
+
+        call    r8_InventoryShowTabHeading
+
+        ld      a, 0
+        ld      [var_inventory_scene_selected_row], a
+        ld      [var_inventory_scene_page], a
+
+        ld      a, [var_inventory_scene_tab]
+        cp      INVENTORY_TAB_ITEMS
+        jr      .loadItemsTab
+        cp      INVENTORY_TAB_CRAFT
+        jr      .loadCraftTab
+
+.loadItemsTab:
+	call    r8_InventoryInitText
+        call    r8_InventoryUpdateImage
+        ret
+
+.loadCraftTab:
+        call    r8_InventoryLoadCraftableItems
+	call    r8_InventoryInitText
+        call    r8_InventoryUpdateImage
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventoryTabRight:
+        ld      a, [var_inventory_scene_tab]
+        inc     a
+        cp      INVENTORY_TAB_COUNT
+        jr      NZ, .skip
+        ld      a, INVENTORY_TAB_ITEMS
+.skip:
+        ld      [var_inventory_scene_tab], a
+
+        call    r8_InventorySetTab
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventoryTabLeft:
+        ld      a, [var_inventory_scene_tab]
+        cp      INVENTORY_TAB_ITEMS
+        jr      NZ, .skip
+        ld      a, INVENTORY_TAB_COUNT
+.skip:
+        dec     a
+        ld      [var_inventory_scene_tab], a
+
+        call    r8_InventorySetTab
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 r8_InventoryMoveCursorDown:
-        ld      a, [var_scene_counter]
+        ld      a, [var_inventory_scene_selected_row]
 
         cp      6
         jr      Z, .nextPage
@@ -491,13 +630,13 @@ r8_InventoryMoveCursorDown:
         ld      a, 1
         ld	[rVBK], a
 
-        ld      a, [var_scene_counter]
+        ld      a, [var_inventory_scene_selected_row]
         ld      b, $89
         call    r8_InventoryTextRowSetAttr
 
-	ld      a, [var_scene_counter]
+	ld      a, [var_inventory_scene_selected_row]
         inc     a
-        ld      [var_scene_counter], a
+        ld      [var_inventory_scene_selected_row], a
 
         ld      b, $8A
         call    r8_InventoryTextRowSetAttr
@@ -508,17 +647,17 @@ r8_InventoryMoveCursorDown:
         call    r8_InventoryUpdateImage
         ret
 .nextPage:
-        ld      a, [var_inventory_page]
+        ld      a, [var_inventory_scene_page]
         cp      1
         jr      Z, .skip
 
         inc     a
-        ld      [var_inventory_page], a
+        ld      [var_inventory_scene_page], a
 
         ld      a, 1
         ld	[rVBK], a
 
-        ld      a, [var_scene_counter]
+        ld      a, [var_inventory_scene_selected_row]
         ld      b, $89
         call    r8_InventoryTextRowSetAttr
 
@@ -526,7 +665,7 @@ r8_InventoryMoveCursorDown:
         ld	[rVBK], a
 
 	ld      a, 0
-        ld      [var_scene_counter], a
+        ld      [var_inventory_scene_selected_row], a
 
 	call    r8_InventoryInitText
 
@@ -538,7 +677,7 @@ r8_InventoryMoveCursorDown:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryMoveCursorUp:
-        ld      a, [var_scene_counter]
+        ld      a, [var_inventory_scene_selected_row]
 
         cp      0
         jr      Z, .prevPage
@@ -548,13 +687,13 @@ r8_InventoryMoveCursorUp:
         ld      a, 1
         ld	[rVBK], a
 
-        ld      a, [var_scene_counter]
+        ld      a, [var_inventory_scene_selected_row]
         ld      b, $89
         call    r8_InventoryTextRowSetAttr
 
-	ld      a, [var_scene_counter]
+	ld      a, [var_inventory_scene_selected_row]
         dec     a
-        ld      [var_scene_counter], a
+        ld      [var_inventory_scene_selected_row], a
 
         ld      b, $8A
         call    r8_InventoryTextRowSetAttr
@@ -565,23 +704,23 @@ r8_InventoryMoveCursorUp:
         call    r8_InventoryUpdateImage
         ret
 .prevPage:
-        ld      a, [var_inventory_page]
+        ld      a, [var_inventory_scene_page]
         cp      0
         jr      Z, .skip
 
         dec     a
-        ld      [var_inventory_page], a
+        ld      [var_inventory_scene_page], a
 
 
         ld      a, 1
         ld	[rVBK], a
 
-        ld      a, [var_scene_counter]
+        ld      a, [var_inventory_scene_selected_row]
         ld      b, $89
         call    r8_InventoryTextRowSetAttr
 
         ld      a, 6
-        ld      [var_scene_counter], a
+        ld      [var_inventory_scene_selected_row], a
 
         ld      b, $8A
         call    r8_InventoryTextRowSetAttr
@@ -608,9 +747,23 @@ r8_InventoryUpdate:
 .checkDown:
         ldh     a, [var_joypad_current]
         bit     PADB_DOWN, a
-        jr      Z, .done
+        jr      Z, .checkLeft
 
         call    r8_InventoryMoveCursorDown
+
+.checkLeft:
+        ldh     a, [var_joypad_current]
+        bit     PADB_LEFT, a
+        jr      Z, .checkRight
+
+        call    r8_InventoryTabLeft
+
+.checkRight:
+        ldh     a, [var_joypad_current]
+        bit     PADB_RIGHT, a
+        jr      Z, .done
+
+        call    r8_InventoryTabRight
 
 .done:
         ret
@@ -816,8 +969,26 @@ r8_InventoryOpen:
 
         ;; TODO: use unions for scene-specific variables
         ld      a, 0
-        ld      [var_scene_counter], a
-        ld      [var_inventory_page], a
+        ld      [var_inventory_scene_selected_row], a
+        ld      [var_inventory_scene_page], a
+        ld      [var_inventory_scene_tab], a
+
+        call    VBlankIntrWait
+
+        ld      hl, $9c21       ; \
+        ld      a, $3a          ; | Show left arrow
+        ld      [hl], a         ; /
+
+        ld      hl, $9c2a       ; \
+        ld      a, $3b          ; | Show right arrow
+        ld      [hl], a         ; /
+
+        ld      hl, $9c41       ; \
+        ld      bc, 10          ; | Show divider
+        ld      a, $3c          ; /
+        call    Memset
+
+        call    r8_InventoryShowTabHeading
 
         ret
 
@@ -1072,6 +1243,15 @@ DB      "dagger         ", 0
 DB      "raw meat       ", 0
 DB      "stick          ", 0
 r8_InventoryItemTextTableEnd::
+
+r8_InventoryTabItemsText::
+DB      " items  ", 0
+r8_InventoryTabItemsTextEnd::
+
+r8_InventoryTabCraftText::
+DB      " craft  ", 0
+r8_InventoryTabCraftTextEnd::
+
 
 
 r8_InventoryItemAttributes::
