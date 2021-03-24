@@ -384,6 +384,7 @@ MapSpriteBlock:
         INCLUDE "rom1_code.asm"
         INCLUDE "rom2_data.asm"
         INCLUDE "rom7_data.asm"
+        INCLUDE "rom8_code.asm"
         INCLUDE "rom9_code.asm"
         INCLUDE "rom10_map_data.asm"
         INCLUDE "rom11_data.asm"

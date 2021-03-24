@@ -121,8 +121,9 @@ MapGetTile:
 ;;; ----------------------------------------------------------------------------
 
 MapPutSampleData:
-        ld      hl, r7_TEST_MAP
-        ld      bc, r7_TEST_MAP_END - r7_TEST_MAP
+        SET_BANK 10
+        ld      hl, r10_TEST_MAP
+        ld      bc, r10_TEST_MAP_END - r10_TEST_MAP
         ld      de, var_map_info
 	call    Memcpy
 
@@ -141,9 +142,9 @@ MapLoad:
 ;;; ----------------------------------------------------------------------------
 
 MapLoad0:
-        SET_BANK 7
-        ld      hl, r7_TEST_MAP
-        ld      bc, r7_TEST_MAP_END - r7_TEST_MAP
+        SET_BANK 10
+        ld      hl, r10_TEST_MAP
+        ld      bc, r10_TEST_MAP_END - r10_TEST_MAP
         ld      de, var_map_info
 	call    Memcpy
         SET_BANK 1
@@ -161,21 +162,9 @@ MapLoad2__rom0_only:
         LONG_CALL r1_LoadRoom, 1
 ;;; TODO: Look at the connection mask and room variant from the room header,
 ;;; load appropriate room data.
-        SET_BANK 7
-        ld      hl, r7_TEST_MAP_2
-        ld      bc, r7_TEST_MAP_2_END - r7_TEST_MAP_2
-        ld      de, var_map_info
-	call    Memcpy
-        SET_BANK 1
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-MapLoad3:
-        SET_BANK 7
-        ld      hl, r7_TEST_MAP_3
-        ld      bc, r7_TEST_MAP_3_END - r7_TEST_MAP_3
+        SET_BANK 10
+        ld      hl, r10_TEST_MAP_2
+        ld      bc, r10_TEST_MAP_2_END - r10_TEST_MAP_2
         ld      de, var_map_info
 	call    Memcpy
         SET_BANK 1

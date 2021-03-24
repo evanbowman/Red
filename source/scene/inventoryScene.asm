@@ -89,7 +89,7 @@ InventorySceneUpdate:
         ret
 
 .idle:
-        LONG_CALL r1_InventoryUpdate, 1
+        LONG_CALL r8_InventoryUpdate, 8
 
         ret
 
@@ -115,14 +115,14 @@ InventorySceneFadeinVBlank:
         ld      c, 255
         call    BlackScreenExcludeOverlay
 
-        LONG_CALL r1_InventoryOpen, 1
+        LONG_CALL r8_InventoryOpen, 8
 
         call    VBlankIntrWait  ; \ Pause for a couple of frames.
         call    VBlankIntrWait  ; /
-        LONG_CALL r1_InventoryInitText, 1
+        LONG_CALL r8_InventoryInitText, 8
 
-        LONG_CALL r1_SetupImageTiles, 1
-        LONG_CALL r1_InventoryUpdateImage, 1
+        LONG_CALL r8_SetupImageTiles, 8
+        LONG_CALL r8_InventoryUpdateImage, 8
         ret
 
 .continue:
