@@ -218,6 +218,9 @@ Main:
         ld      b, ITEM_RAW_MEAT
         call    InventoryAddItem
 
+        ld      b, ITEM_STICK
+        call    InventoryAddItem
+
         SET_BANK 10
         ld      a, 1
         ld      [rSVBK], a
