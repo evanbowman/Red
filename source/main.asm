@@ -221,6 +221,7 @@ Main:
         ld      b, ITEM_STICK
         call    InventoryAddItem
 
+
         SET_BANK 10
         ld      a, 1
         ld      [rSVBK], a
