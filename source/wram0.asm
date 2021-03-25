@@ -233,6 +233,11 @@ var_inventory_scene_tab:                DS      1
 CRAFTABLE_ITEMS_COUNT   EQU     32
 
 var_inventory_scene_craftable_items_list:   DS  CRAFTABLE_ITEMS_COUNT
+
+var_crafting_dependency_set:  DS      ITEM_SIZE * 3
+var_crafting_dependency_set_end:
+
+
         NEXTU
         ENDU
 var_scene_union_end:

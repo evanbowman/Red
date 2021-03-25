@@ -67,6 +67,8 @@ DB $FF,$FF,$FF,$FF,$FB,$FB,$F9,$F9
 DB $F8,$F8,$F9,$F9,$FB,$FB,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$83,$83
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 r8_InventoryTilesEnd::
 
 r8_InventoryLowerBoxTopRow::
@@ -158,6 +160,8 @@ r8_InventoryShowTabHeading:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryGetCraftableItem:
+;;; b - row
+;;; return b - item typeinfo
         ld      hl, var_inventory_scene_craftable_items_list
         ld      c, b
         ld      b, 0
@@ -299,10 +303,7 @@ r8_InventoryPutTextRow:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryItemText:
-;;; a - row
-        ld      b, a
-        call    r8_InventoryTabLoadItem
-
+;;; b - item typeinfo
         ld      c, b
         ld      b, 0
         call    r8_Mul16
@@ -310,6 +311,17 @@ r8_InventoryItemText:
         ld      hl, r8_InventoryItemTextTable
         add     hl, bc
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventoryItemRowText:
+;;; a - row
+        ld      b, a
+        call    r8_InventoryTabLoadItem
+
+        call    r8_InventoryItemText
         ret
 
 
@@ -359,7 +371,7 @@ r8_InventoryInitText:
 	push    af
         push    bc
         call    r8_InventoryAdjustOffset
-        call    r8_InventoryItemText
+        call    r8_InventoryItemRowText
         pop     bc
         pop     af
 
@@ -552,17 +564,201 @@ r8_Mul64:
 
 ;;; ----------------------------------------------------------------------------
 
-r8_CraftableItemCheckDependencies:
-        push    hl
+r8_CraftableItemGetRecipe:
+;;; b - item
+;;; return hl - pointer to recipe (three trailing bytes in recipe table row)
+        ld      hl, r8_InventoryCraftingRecipes
+.loop:
+        ld      a, [hl+]
+        cp      ITEM_NONE
+        jr      Z, .endLoop
 
-        ;; TODO...
+	cp      b
+        jr      Z, .endLoop
 
-        pop     hl
+        inc     hl
+        inc     hl
+        inc     hl
 
+        jr      .loop
+.endLoop:
         ret
 
 
 ;;; ----------------------------------------------------------------------------
+
+r8_CraftingDependencyInsert:
+;;; b - dependency
+;;; trashes de, c
+        ld      de, var_crafting_dependency_set
+
+        ;; Collapse with one item if it already exists
+        ld      a, [de]
+        cp      b
+        jr      Z, .collapse
+
+	inc     de
+        inc     de
+
+        ld      a, [de]
+        cp      b
+        jr      Z, .collapse
+
+        inc     de
+        inc     de
+
+        ld      a, [de]
+        cp      b
+        jr      Z, .collapse
+
+
+        ld      de, var_crafting_dependency_set
+
+        ld      a, [de]
+	or      a
+        jr      Z, .set
+
+        inc     de
+        inc     de
+
+        ld      a, [de]
+        or      a
+        jr      Z, .set
+
+        inc     de
+        inc     de
+
+        ld      a, [de]
+        or      a
+        jr      Z, .set
+
+        ret
+
+.collapse:
+        inc     de
+        ld      a, [de]
+        inc     a
+        ld      [de], a
+        ret
+
+.set:
+        ld      a, b
+        ld      [de], a
+        inc     de
+        ld      a, 1
+        ld      [de], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_CraftableItemDependencyCheckAvailable:
+;;; hl - current dependency
+;;; return a - true if sufficient quantity in inventory meets dependency
+;;; return hl - next dependency in the dependency set
+;;; trashes b, c, d
+        ld      a, [hl+]
+
+        ld      b, ITEM_NONE    ; \ The dependency set will have empty slots, if
+        cp      b               ; | two or three of the dependencies are
+        jr      Z, .true        ; / identical.
+
+        ld      b, a                    ; Pass item type parameter in b
+        push    hl
+        call    InventoryCountOccurrences
+        pop     hl
+
+        ld      a, [hl+]
+        ld      b, a
+        ld      a, d
+        cp      b                       ; Result from InventoryCountOccurrences
+        jr      C, .false               ; required (a) < available (b)
+.true:
+        ld      a, 1
+        ret
+.false:
+        ld      a, 0
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_CraftableItemCheckDependencies:
+;;; hl - craftable item (see table above)
+;;; a - true if inventory meets dependencies
+        push    hl
+        ld      hl, var_crafting_dependency_set
+        ld      bc, var_crafting_dependency_set_end - var_crafting_dependency_set
+        ld      a, 0
+        call    Memset
+        pop     hl
+
+        push    hl
+        inc     hl
+
+        ld      a, [hl+]
+        ld      b, a
+        call    r8_CraftingDependencyInsert
+
+        ld      a, [hl+]
+        ld      b, a
+        call    r8_CraftingDependencyInsert
+
+        ld      a, [hl]
+        ld      b, a
+        call    r8_CraftingDependencyInsert
+
+        ld      hl, var_crafting_dependency_set
+
+        call    r8_CraftableItemDependencyCheckAvailable
+        or      a
+        jr      Z, .noMatch
+
+        call    r8_CraftableItemDependencyCheckAvailable
+        or      a
+        jr      Z, .noMatch
+
+        call    r8_CraftableItemDependencyCheckAvailable
+        or      a
+        jr      Z, .noMatch
+
+        pop     hl
+	ld      a, 1
+        ret
+.noMatch:
+        pop     hl
+        ld      a, 0
+        ret
+
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_CraftableItemsListInsert:
+;;; b - item
+;;; trashes hl, c
+        ld      hl, var_inventory_scene_craftable_items_list
+        ld      c, 0
+.loop:
+        ld      a, CRAFTABLE_ITEMS_COUNT
+        cp      c
+        jr      Z, .done
+
+        ld      a, [hl]
+        or      a
+        jr      NZ, .next
+
+        ld      [hl], b
+        jr      .done
+
+.next:
+        inc     c
+        inc     hl
+        jr      .loop
+
+.done:
+        ret
+
 
 r8_InventoryLoadCraftableItems:
         ld      hl, var_inventory_scene_craftable_items_list
@@ -570,15 +766,24 @@ r8_InventoryLoadCraftableItems:
         ld      a, 0
         call    Memset
 
-.loop:
         ld      hl, r8_InventoryCraftingRecipes
+.loop:
         ld      a, [hl]
         cp      ITEM_NONE
         jr      Z, .endLoop
 
         call    r8_CraftableItemCheckDependencies
-        ;; TODO...
+	or      a
+        jr      Z, .skip
 
+        ld      a, [hl]
+
+        push    hl
+	ld      b, a
+        call    r8_CraftableItemsListInsert
+        pop     hl
+
+.skip:
         inc     hl
         inc     hl
         inc     hl
@@ -593,10 +798,149 @@ r8_InventoryLoadCraftableItems:
 
 ;;; ----------------------------------------------------------------------------
 
+r8_PutTruncatedItemText:
+;;; hl - text
+;;; de - screen ptr
+;;; b - attribute
+;;; c - max length to show
+.loop:
+        ld      a, 0
+        cp      c
+        jr      Z, .done
+
+        ld      a, [hl]
+        cp      0
+	jr      Z, .done
+
+        call    AsciiToGlyph
+        ld      [de], a
+
+        ld      a, 1
+        ld      [rVBK], a
+        ld      a, b
+        ld      [de], a
+        ld      a, 0
+	ld      [rVBK], a
+
+        dec     c
+        inc     hl
+        inc     de
+
+        jr      .loop
+.done:
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_ShowRecipeText:
+;;; de - screen pointer
+;;; hl - item pointer
+;;; return hl - pointer to next item
+        ld      a, [hl+]
+        ld      b, a
+        push    hl
+        push    de
+        call    r8_InventoryItemText    ; text ptr now in hl
+        pop     de
+        ld      b, $89
+        ld      c, 9                    ; Max chars to print
+        call    r8_PutTruncatedItemText
+        pop     hl
+        ret
+
+
+r8_InventoryDescribeItem:
+        ld      a, [var_inventory_scene_tab]
+        cp      INVENTORY_TAB_ITEMS
+        jr      Z, .describeItem
+        cp      INVENTORY_TAB_CRAFT
+        jr      Z, .showRecipeList
+
+.describeItem:
+        ret
+
+.showRecipeList:
+        call    r8_InventoryGetSelectedIndex
+        ld      b, a
+        call    r8_InventoryTabLoadItem
+
+        ld      a, ITEM_NONE
+        cp      b
+        jr      Z, .reset
+
+        call    r8_CraftableItemGetRecipe
+
+        call    VBlankIntrWait
+	ld      de, $9c62
+        call    r8_ShowRecipeText
+
+	ld      de, $9c82
+        call    r8_ShowRecipeText
+
+	ld      de, $9ca2
+        call    r8_ShowRecipeText
+
+        ld      a, $3D
+        ld      hl, $9c61
+        ld      [hl], a
+	ld      hl, $9c81
+        ld      [hl], a
+        ld      hl, $9ca1
+        ld      [hl], a
+
+	ret
+.reset:
+        call    r8_InventoryClearItemInfoBox
+        ret
+
+
+r8_InventoryClearItemInfoBox:
+        ld      hl, $9c61
+        ld      bc, 10
+        ld      d, 0
+        call    r8_VramSafeMemset
+
+        ld      hl, $9c81
+        ld      bc, 10
+        ld      d, 0
+        call    r8_VramSafeMemset
+
+        ld      hl, $9ca1
+        ld      bc, 10
+        ld      d, 0
+        call    r8_VramSafeMemset
+
+        ld      a, 1
+        ld      [rVBK], a
+
+        ld      hl, $9c61
+        ld      bc, 10
+        ld      d, $81
+        call    r8_VramSafeMemset
+
+        ld      hl, $9c81
+        ld      bc, 10
+        ld      d, $81
+        call    r8_VramSafeMemset
+
+        ld      hl, $9ca1
+        ld      bc, 10
+        ld      d, $81
+        call    r8_VramSafeMemset
+
+        ld      a, 0
+        ld      [rVBK], a
+
+        ret
+
+
+
+;;; ----------------------------------------------------------------------------
+
 r8_InventorySetTab:
         call    VBlankIntrWait
-
-        call    r8_InventoryShowTabHeading
 
         ld      a, 0
         ld      [var_inventory_scene_selected_row], a
@@ -604,25 +948,31 @@ r8_InventorySetTab:
 
         ld      a, [var_inventory_scene_tab]
         cp      INVENTORY_TAB_ITEMS
-        jr      .loadItemsTab
+        jr      Z, .loadItemsTab
         cp      INVENTORY_TAB_CRAFT
-        jr      .loadCraftTab
+        jr      Z, .loadCraftTab
 
 .loadItemsTab:
+        call    r8_InventoryShowTabHeading
 	call    r8_InventoryInitText
         call    r8_InventoryUpdateImage
+        call    r8_InventoryDescribeItem
         ret
 
 .loadCraftTab:
-        call    r8_InventoryLoadCraftableItems
+        call    r8_InventoryLoadCraftableItems ; FIXME: code is identical toexcept for this line
+        call    r8_InventoryShowTabHeading
 	call    r8_InventoryInitText
         call    r8_InventoryUpdateImage
+        call    r8_InventoryDescribeItem
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryTabRight:
+        call    r8_InventoryClearItemInfoBox
+
         ld      a, [var_inventory_scene_tab]
         inc     a
         cp      INVENTORY_TAB_COUNT
@@ -639,6 +989,8 @@ r8_InventoryTabRight:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryTabLeft:
+        call    r8_InventoryClearItemInfoBox
+
         ld      a, [var_inventory_scene_tab]
         cp      INVENTORY_TAB_ITEMS
         jr      NZ, .skip
@@ -680,6 +1032,7 @@ r8_InventoryMoveCursorDown:
         ld	[rVBK], a
 
         call    r8_InventoryUpdateImage
+        call    r8_InventoryDescribeItem
         ret
 .nextPage:
         ld      a, [var_inventory_scene_page]
@@ -705,6 +1058,7 @@ r8_InventoryMoveCursorDown:
 	call    r8_InventoryInitText
 
         call    r8_InventoryUpdateImage
+        call    r8_InventoryDescribeItem
 .skip:
         ret
 
@@ -737,6 +1091,7 @@ r8_InventoryMoveCursorUp:
         ld	[rVBK], a
 
         call    r8_InventoryUpdateImage
+        call    r8_InventoryDescribeItem
         ret
 .prevPage:
         ld      a, [var_inventory_scene_page]
@@ -766,6 +1121,7 @@ r8_InventoryMoveCursorUp:
         call    r8_InventoryInitText
 
         call    r8_InventoryUpdateImage
+        call    r8_InventoryDescribeItem
 .skip:
         ret
 
@@ -1306,7 +1662,7 @@ r8_InventoryItemIconsEnd::
 
 
 r8_InventoryItemTextTable::
-DB      "- empty -      ", 0
+DB      "empty          ", 0
 DB      "wolf pelt      ", 0
 DB      "dagger         ", 0
 DB      "raw meat       ", 0

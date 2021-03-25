@@ -71,7 +71,7 @@ InventoryAddItem:
 ;;; b - item
 ;;; trashes hl, c
 
-;;; TODO: coallesce identical items, using second "count" byte
+;;; TODO: coallesce identical items, using second "count" byte?
         ld      hl, var_inventory
         ld      c, 0
 .loop:
@@ -85,6 +85,36 @@ InventoryAddItem:
 
         ld      [hl], b
         jr      .done
+.next:
+        inc     hl
+        inc     hl
+        inc     c
+        jr      .loop
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+InventoryCountOccurrences:
+;;; b - item
+;;; trashes hl, c
+;;; d - result
+        ld      hl, var_inventory
+        ld      c, 0
+        ld      d, 0
+.loop:
+        ld      a, INVENTORY_COUNT
+        cp      c
+        jr      Z, .done
+
+        ld      a, [hl]
+        cp      b
+        jr      Z, .inc
+        jr      .next
+.inc:
+        inc     d
+
 .next:
         inc     hl
         inc     hl
