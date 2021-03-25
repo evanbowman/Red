@@ -36,6 +36,9 @@
 ;;; Column 0: item, columns 1-3: dependencies.
 r8_InventoryCraftingRecipes::
 DB      ITEM_KEBAB,     ITEM_STICK,     ITEM_RAW_MEAT,  ITEM_RAW_MEAT
+DB      ITEM_SOUP,      ITEM_TURNIP,    ITEM_RAW_MEAT,  ITEM_TURNIP
+DB      ITEM_SOUP,      ITEM_RADDISH,   ITEM_RAW_MEAT,  ITEM_TURNIP
+DB      ITEM_SOUP,      ITEM_RADDISH,   ITEM_RAW_MEAT,  ITEM_RADDISH
 DB      ITEM_NONE,      ITEM_NONE,      ITEM_NONE,      ITEM_NONE
 r8_InventoryCraftingRecipesEnd::
 
@@ -961,6 +964,7 @@ r8_InventorySetTab:
 
 .loadCraftTab:
         call    r8_InventoryLoadCraftableItems ; FIXME: code is identical toexcept for this line
+        call    VBlankIntrWait
         call    r8_InventoryShowTabHeading
 	call    r8_InventoryInitText
         call    r8_InventoryUpdateImage
@@ -1451,6 +1455,188 @@ r8_VramSafeMemset:
 ;;; ----------------------------------------------------------------------------
 
 
+;;; NOTE: Only the first nine bytes of the strings are guaranteed to be shown.
+;;; Using sixteen byte strings allows us to index into the string table faster,
+;;; and because we pad the strings, we don't need to worry about zero-ing out
+;;; stuff when writing different strings to a spot onscreen.
+r8_InventoryItemTextTable::
+DB      "empty          ", 0
+DB      "wolf pelt      ", 0
+DB      "dagger         ", 0
+DB      "raw meat       ", 0
+DB      "stick          ", 0
+DB      "kebab          ", 0
+DB      "turnip         ", 0
+DB      "raddish        ", 0
+DB      "soup           ", 0
+r8_InventoryItemTextTableEnd::
+
+
+r8_InventoryTabItemsText::
+DB      " items  ", 0
+r8_InventoryTabItemsTextEnd::
+
+r8_InventoryTabCraftText::
+DB      " craft  ", 0
+r8_InventoryTabCraftTextEnd::
+
+
+
+r8_InventoryItemAttributes::
+.empty::
+DB $83, $83, $83, $83
+DB $83, $83, $84, $84
+DB $83, $83, $83, $83
+DB $83, $84, $83, $84
+.emptyEnd::
+.wolfPelt::
+DB $83, $83, $83, $83
+DB $83, $83, $84, $84
+DB $83, $83, $83, $83
+DB $83, $84, $83, $84
+.wolfPeltEnd::
+.dagger::
+DB $83, $83, $83, $83
+DB $83, $83, $84, $84
+DB $84, $84, $85, $84
+DB $85, $85, $85, $85
+.daggerEnd::
+.rawMeat::
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $84, $85, $85, $83
+.rawMeatEnd::
+.stick::
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+.stickEnd::
+.kebab::
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+.kebabEnd::
+.turnip::
+DB $83, $83, $83, $83
+DB $85, $84, $83, $83
+DB $85, $83, $83, $83
+DB $85, $85, $86, $83
+.turnipEnd::
+.raddish::
+DB $83, $83, $83, $83
+DB $85, $84, $83, $83
+DB $85, $83, $83, $83
+DB $85, $85, $86, $83
+.raddishEnd::
+.soup::
+DB $83, $83, $83, $83
+DB $83, $84, $84, $83
+DB $83, $85, $84, $83
+DB $86, $86, $86, $86
+.soupEnd::
+r8_InventoryItemAttributesEnd::
+
+
+
+;;; FIXME: the first three palette rows are the same every time, because they're
+;;; used by the UI. And we only really use four palettes to display an icon. We
+;;; can cut down on rom usage by optimizing this stuff a bit.
+r8_InventoryItemPalettes::
+.empty::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $ce,$55, $29,$31, $c2,$30,
+DB $fa,$46, $ce,$55, $29,$31, $c2,$30,
+DB $fa,$46, $ce,$55, $29,$31, $c2,$30,
+DB $fa,$46, $ce,$55, $29,$31, $c2,$30,
+DB $fa,$46, $ce,$55, $29,$31, $c2,$30,
+.emptyEnd::
+.wolfPelt::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $ad,$4d, $08,$2d, $81,$20,
+DB $fa,$46, $ad,$4d, $ff,$7f, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.wolfPeltEnd::
+.dagger::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $ad,$4d, $ff,$7f, $81,$20,
+DB $fa,$46, $ad,$4d, $d1,$21, $81,$20,
+DB $fa,$46, $ad,$24, $d1,$21, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.daggerEnd::
+.rawMeat::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $1b,$4b, $ad,$24, $7d,$35, $9f,$63,
+DB $1b,$4b, $ad,$24, $7d,$35, $81,$20,
+DB $1b,$4b, $81,$20, $7d,$35, $9f,$63,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.rawMeatEnd::
+.stick::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $d1,$21, $ad,$24, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.stickEnd::
+.kebab::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $d1,$21, $ad,$24, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.kebabEnd::
+.turnip::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $a9,$1d, $7d,$35, $9f,$63,
+DB $fa,$46, $ff,$7f, $7d,$35, $9f,$63,
+DB $fa,$46, $81,$20, $ff,$7f, $9f,$63,
+DB $fa,$46, $81,$20, $d1,$21, $9f,$63,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.turnipEnd::
+.raddish::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $d1,$21, $ad,$24, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.raddishEnd::
+.soup::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $ad,$24, $7d,$35, $9f,$63,
+DB $ad,$24, $6e,$1e, $7d,$35, $9f,$63,
+DB $ad,$24, $ff,$7f, $7d,$35, $9f,$63,
+DB $fa,$46, $81,$20, $ad,$24, $9f,$63,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.soupEnd::
+r8_InventoryItemPalettesEnd::
+
 
 align 8                         ; Required alignment for dma copies
 r8_InventoryItemIcons::
@@ -1658,129 +1844,106 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 .kebabEnd::
+.turnip::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$1F
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$03,$C0
+DB $00,$00,$00,$00,$03,$00,$07,$00
+DB $1F,$00,$7E,$00,$FC,$00,$F0,$00
+DB $00,$00,$02,$01,$03,$03,$07,$03
+DB $0B,$07,$0F,$07,$17,$0F,$17,$0F
+DB $80,$7F,$E0,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$F3,$FF,$E7,$FF,$FF
+DB $07,$F0,$01,$FE,$00,$FE,$01,$FE
+DB $80,$FF,$E0,$FF,$E0,$FF,$E0,$FF
+DB $00,$00,$0F,$00,$7F,$00,$FF,$00
+DB $78,$80,$F0,$00,$7E,$80,$7F,$80
+DB $1F,$0F,$1E,$0F,$3F,$0F,$3F,$1F
+DB $3F,$1F,$3F,$1F,$3F,$1F,$3F,$0F
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $E0,$FF,$C0,$FF,$E0,$FF,$F0,$FF
+DB $F0,$FF,$FC,$FF,$FE,$FF,$FE,$FF
+DB $67,$80,$63,$80,$40,$80,$40,$80
+DB $00,$80,$00,$80,$00,$80,$00,$80
+DB $1C,$04,$0E,$02,$06,$00,$03,$00
+DB $01,$00,$00,$00,$00,$00,$00,$00
+DB $7F,$7F,$1F,$1F,$00,$00,$80,$80
+DB $C0,$40,$71,$01,$0F,$00,$00,$00
+DB $FE,$FF,$F0,$F1,$02,$03,$04,$06
+DB $38,$38,$B0,$80,$00,$00,$00,$00
+DB $00,$80,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+.turnipEnd::
+.raddish::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$1F
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$03,$C0
+DB $00,$00,$00,$00,$03,$00,$07,$00
+DB $1F,$00,$7E,$00,$FC,$00,$F0,$00
+DB $00,$00,$02,$01,$03,$03,$07,$03
+DB $0B,$07,$0F,$07,$17,$0F,$17,$0F
+DB $80,$7F,$E0,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$F3,$FF,$E7,$FF,$FF
+DB $07,$F0,$01,$FE,$00,$FE,$01,$FE
+DB $80,$FF,$E0,$FF,$E0,$FF,$E0,$FF
+DB $00,$00,$0F,$00,$7F,$00,$FF,$00
+DB $78,$80,$F0,$00,$7E,$80,$7F,$80
+DB $1F,$0F,$1E,$0F,$3F,$0F,$3F,$1F
+DB $3F,$1F,$3F,$1F,$3F,$1F,$3F,$0F
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $E0,$FF,$C0,$FF,$E0,$FF,$F0,$FF
+DB $F0,$FF,$FC,$FF,$FE,$FF,$FE,$FF
+DB $67,$80,$63,$80,$40,$80,$40,$80
+DB $00,$80,$00,$80,$00,$80,$00,$80
+DB $1C,$04,$0E,$02,$06,$00,$03,$00
+DB $01,$00,$00,$00,$00,$00,$00,$00
+DB $7F,$7F,$1F,$1F,$00,$00,$80,$80
+DB $C0,$40,$71,$01,$0F,$00,$00,$00
+DB $FE,$FF,$F0,$F1,$02,$03,$04,$06
+DB $38,$38,$B0,$80,$00,$00,$00,$00
+DB $00,$80,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+.raddishEnd::
+.soup::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$01
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$1F,$07,$F8
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$F8,$E0,$1F
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$80
+DB $00,$0F,$07,$18,$0F,$30,$0B,$73
+DB $1F,$EF,$3F,$DF,$3F,$DF,$3F,$FF
+DB $00,$00,$1F,$1F,$FF,$FF,$FF,$FF
+DB $FF,$9D,$FF,$0F,$FF,$07,$FF,$CF
+DB $00,$03,$F0,$F0,$FF,$FF,$FF,$FF
+DB $FF,$F1,$FF,$E0,$FF,$E0,$FF,$C1
+DB $00,$F0,$C0,$18,$F0,$0C,$D0,$CA
+DB $F8,$F5,$FC,$F9,$FC,$FB,$F8,$FB
+DB $3E,$FF,$1F,$FF,$8F,$7F,$C1,$3F
+DB $F0,$0F,$FC,$03,$7F,$00,$7F,$00
+DB $FF,$FF,$FF,$FD,$FF,$F7,$FF,$FF
+DB $1F,$FF,$00,$FF,$00,$3F,$00,$00
+DB $FF,$FF,$FF,$FF,$FF,$9F,$FF,$FF
+DB $F8,$FF,$00,$FF,$00,$DC,$00,$20
+DB $FC,$FF,$F8,$FF,$F1,$FE,$83,$FC
+DB $0F,$F0,$3F,$C0,$FE,$00,$FE,$00
+DB $40,$3F,$60,$1F,$30,$0F,$18,$07
+DB $0C,$03,$03,$00,$00,$00,$00,$00
+DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $00,$FF,$00,$FF,$70,$0F,$00,$00
+DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $00,$FF,$00,$FF,$00,$F0,$00,$00
+DB $00,$FC,$00,$F8,$00,$F0,$00,$E0
+DB $00,$C0,$00,$00,$00,$00,$00,$00
+.soupEnd::
 r8_InventoryItemIconsEnd::
-
-
-r8_InventoryItemTextTable::
-DB      "empty          ", 0
-DB      "wolf pelt      ", 0
-DB      "dagger         ", 0
-DB      "raw meat       ", 0
-DB      "stick          ", 0
-DB      "kebab          ", 0
-r8_InventoryItemTextTableEnd::
-
-
-r8_InventoryTabItemsText::
-DB      " items  ", 0
-r8_InventoryTabItemsTextEnd::
-
-r8_InventoryTabCraftText::
-DB      " craft  ", 0
-r8_InventoryTabCraftTextEnd::
-
-
-
-r8_InventoryItemAttributes::
-.empty::
-DB $83, $83, $83, $83
-DB $83, $83, $84, $84
-DB $83, $83, $83, $83
-DB $83, $84, $83, $84
-.emptyEnd::
-.wolfPelt::
-DB $83, $83, $83, $83
-DB $83, $83, $84, $84
-DB $83, $83, $83, $83
-DB $83, $84, $83, $84
-.wolfPeltEnd::
-.dagger::
-DB $83, $83, $83, $83
-DB $83, $83, $84, $84
-DB $84, $84, $85, $84
-DB $85, $85, $85, $85
-.daggerEnd::
-.rawMeat::
-DB $83, $83, $83, $83
-DB $83, $83, $83, $83
-DB $83, $83, $83, $83
-DB $84, $85, $85, $83
-.rawMeatEnd::
-.stick::
-DB $83, $83, $83, $83
-DB $83, $83, $83, $83
-DB $83, $83, $83, $83
-DB $83, $83, $83, $83
-.stickEnd::
-.kebab::
-DB $83, $83, $83, $83
-DB $83, $83, $83, $83
-DB $83, $83, $83, $83
-DB $83, $83, $83, $83
-.kebabEnd::
-r8_InventoryItemAttributesEnd::
-
-
-
-r8_InventoryItemPalettes::
-.empty::
-DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $00,$04, $62,$1c,
-DB $03,$00, $69,$72, $00,$00, $1A,$20,
-DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
-DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
-DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
-DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
-DB $1b,$4b, $ce,$55, $29,$31, $c2,$30,
-.emptyEnd::
-.wolfPelt::
-DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $00,$04, $62,$1c,
-DB $03,$00, $69,$72, $00,$00, $1A,$20,
-DB $1b,$4b, $ad,$4d, $08,$2d, $81,$20,
-DB $1b,$4b, $ad,$4d, $ff,$7f, $81,$20,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-.wolfPeltEnd::
-.dagger::
-DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $00,$04, $62,$1c,
-DB $03,$00, $69,$72, $00,$00, $1A,$20,
-DB $1b,$4b, $ad,$4d, $ff,$7f, $81,$20,
-DB $1b,$4b, $ad,$4d, $d1,$21, $81,$20,
-DB $1b,$4b, $ad,$24, $d1,$21, $81,$20,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-.daggerEnd::
-.rawMeat::
-DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $00,$04, $62,$1c,
-DB $03,$00, $69,$72, $00,$00, $1A,$20,
-DB $1b,$4b, $ad,$24, $7d,$35, $9f,$63,
-DB $1b,$4b, $ad,$24, $7d,$35, $81,$20,
-DB $1b,$4b, $81,$20, $7d,$35, $9f,$63,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-.rawMeatEnd::
-.stick::
-DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $00,$04, $62,$1c,
-DB $03,$00, $69,$72, $00,$00, $1A,$20,
-DB $1b,$4b, $d1,$21, $ad,$24, $81,$20,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-.stickEnd::
-.kebab::
-DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
-DB $37,$73, $49,$35, $00,$04, $62,$1c,
-DB $03,$00, $69,$72, $00,$00, $1A,$20,
-DB $1b,$4b, $d1,$21, $ad,$24, $81,$20,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-DB $00,$00, $00,$00, $00,$00, $00,$00,
-.kebabEnd::
-r8_InventoryItemPalettesEnd::
