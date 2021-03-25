@@ -191,7 +191,6 @@ MapLoad2__rom0_only:
         add     hl, bc
 
 .copy:
-        ld      hl, r10_TEST_MAP_2
         ld      bc, ROOM_DATA_SIZE
         ld      de, var_map_info
 	call    Memcpy
@@ -208,7 +207,7 @@ DW      r10_TEST_MAP_2
 DW      r10_TEST_MAP_2
 DW      r10_TEST_MAP_2
 DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_3
 DW      r10_TEST_MAP_2
 DW      r10_TEST_MAP_2
 DW      r10_TEST_MAP_2

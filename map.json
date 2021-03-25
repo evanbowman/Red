@@ -19,6 +19,18 @@
         ]
     },
     {
+        "x": 1,
+        "y": 1,
+        "connections": {
+            "right": false,
+            "left": true,
+            "down": false,
+            "up": false
+        },
+        "variant": 0,
+        "entities": []
+    },
+    {
         "x": 5,
         "y": 5,
         "connections": {

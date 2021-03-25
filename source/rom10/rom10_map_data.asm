@@ -43,6 +43,22 @@ r10_DefaultMap1::
         INCLUDE "default_map.asm"
 r10_DefaultMap1End::
 
+        INCLUDE "r10_maps_d.asm"
+        INCLUDE "r10_maps_u.asm"
+        INCLUDE "r10_maps_du.asm"
+        INCLUDE "r10_maps_r.asm"
+        INCLUDE "r10_maps_dr.asm"
+        INCLUDE "r10_maps_ur.asm"
+        INCLUDE "r10_maps_dur.asm"
+        INCLUDE "r10_maps_l.asm"
+        INCLUDE "r10_maps_dl.asm"
+        INCLUDE "r10_maps_ul.asm"
+        INCLUDE "r10_maps_dul.asm"
+        INCLUDE "r10_maps_rl.asm"
+        INCLUDE "r10_maps_drl.asm"
+        INCLUDE "r10_maps_url.asm"
+        INCLUDE "r10_maps_durl.asm"
+
 
 r10_TEST_MAP::
 DB $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e, $0e
