@@ -221,11 +221,21 @@ Main:
         ld      b, ITEM_STICK
         call    InventoryAddItem
 
-        ld      b, ITEM_TURNIP
+        ld      b, ITEM_POTATO
+        call    InventoryAddItem
+
+        ld      b, ITEM_POTATO
         call    InventoryAddItem
 
         ld      b, ITEM_TURNIP
         call    InventoryAddItem
+
+        ld      b, ITEM_POTATO
+        call    InventoryAddItem
+
+        ld      b, ITEM_TURNIP
+        call    InventoryAddItem
+
 
         SET_BANK 10
         ld      a, 1

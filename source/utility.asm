@@ -175,3 +175,26 @@ VramSafeMemcpy:
 
 
 ;;; ----------------------------------------------------------------------------
+
+;;; Copied from implementation of memcpy. Works fine, as long as your dest is
+;;; left (at a lower address) of the source.
+MemmoveLeft:
+;;; hl - source
+;;; de - dest
+;;; bc - size
+	inc	b
+	inc	c
+	jr	.skip
+.copy:
+	ld	a, [hl+]
+	ld	[de], a
+	inc	de
+.skip:
+	dec	c
+	jr	nz, .copy
+	dec	b
+	jr	nz, .copy
+	ret
+
+
+;;; ----------------------------------------------------------------------------

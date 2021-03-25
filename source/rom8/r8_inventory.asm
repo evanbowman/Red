@@ -33,12 +33,20 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-;;; Column 0: item, columns 1-3: dependencies.
+;;; Column 0: item, columns 1-3: dependency set.
 r8_InventoryCraftingRecipes::
 DB      ITEM_KEBAB,     ITEM_STICK,     ITEM_RAW_MEAT,  ITEM_RAW_MEAT
+DB      ITEM_STEW,      ITEM_RAW_MEAT,  ITEM_RAW_MEAT,  ITEM_RAW_MEAT
 DB      ITEM_SOUP,      ITEM_TURNIP,    ITEM_TURNIP,    ITEM_RAW_MEAT
-DB      ITEM_SOUP,      ITEM_RADDISH,   ITEM_TURNIP,    ITEM_RAW_MEAT
-DB      ITEM_SOUP,      ITEM_RADDISH,   ITEM_RADDISH,   ITEM_RAW_MEAT
+DB      ITEM_SOUP,      ITEM_POTATO,    ITEM_TURNIP,    ITEM_RAW_MEAT
+DB      ITEM_SOUP,      ITEM_POTATO,    ITEM_POTATO,    ITEM_RAW_MEAT
+DB      ITEM_BROTH,     ITEM_TURNIP,    ITEM_TURNIP,    ITEM_TURNIP
+DB      ITEM_BROTH,     ITEM_POTATO,    ITEM_POTATO,    ITEM_POTATO
+DB      ITEM_BROTH,     ITEM_TURNIP,    ITEM_TURNIP,    ITEM_POTATO
+DB      ITEM_BROTH,     ITEM_POTATO,    ITEM_POTATO,    ITEM_TURNIP
+DB      ITEM_BUNDLE,    ITEM_STICK,     ITEM_STICK,     ITEM_STICK
+DB      ITEM_FIREWOOD,  ITEM_BUNDLE,    ITEM_BUNDLE,    ITEM_BUNDLE
+;;; Last row must be empty:
 DB      ITEM_NONE,      ITEM_NONE,      ITEM_NONE,      ITEM_NONE
 r8_InventoryCraftingRecipesEnd::
 
@@ -581,6 +589,69 @@ r8_Mul64:
 
 ;;; ----------------------------------------------------------------------------
 
+r8_InventoryAPressed:
+        ld      a, [var_inventory_scene_tab]
+        cp      INVENTORY_TAB_ITEMS
+        jr      Z, .items
+        cp      INVENTORY_TAB_CRAFT
+        jr      Z, .craft
+.items:
+        ret
+.craft:
+        call    r8_InventoryCraftItem
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventoryCraftItem:
+        call    r8_InventoryGetSelectedIndex
+        ld      b, a
+
+        call    r8_GetCraftableItemRecipe
+
+        ld      a, h                    ; \
+        or      l                       ; | Null pointer check.
+        jr      Z, .skip                ; /
+
+        push    hl
+
+        inc     hl                      ; Skip result item for now
+
+        ;; Consume the three dependencies
+        ld      b, [hl]
+        push    hl
+        call    InventoryConsumeItem
+        pop     hl
+        inc     hl
+
+        ld      b, [hl]
+        push    hl
+        call    InventoryConsumeItem
+        pop     hl
+        inc     hl
+
+        ld      b, [hl]
+        call    InventoryConsumeItem
+
+        pop     hl
+
+        ld      b, [hl]                 ; Load result
+        call    InventoryAddItem        ; Store result
+
+        ;; Redisplay everything. We consumed items from the inventory, so the
+        ;; subset of things that we can craft may have changed.
+        call    r8_InventoryLoadCraftableItems
+        call    r8_InventoryInitText
+        call    r8_InventoryUpdateImage
+        call    r8_InventoryDescribeItem
+
+.skip:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r8_GetCraftableItemRecipe:
 ;;; b - row
 ;;; return hl - pointer to recipe
@@ -777,7 +848,7 @@ r8_CraftableItemsListInsert:
 
 r8_InventoryLoadCraftableItems:
         ld      hl, var_inventory_scene_craftable_items_list
-        ld      bc, CRAFTABLE_ITEMS_COUNT
+        ld      bc, CRAFTABLE_ITEMS_COUNT * 2
         ld      a, 0
         call    Memset
 
@@ -1155,9 +1226,17 @@ r8_InventoryMoveCursorUp:
 r8_InventoryUpdate:
         ldh     a, [var_joypad_current]
         bit     PADB_UP, a
-        jr      Z, .checkDown
+        jr      Z, .checkA
 
         call    r8_InventoryMoveCursorUp
+
+.checkA:
+	ldh     a, [var_joypad_current]
+        bit     PADB_A, a
+        jr      Z, .checkDown
+
+        call    r8_InventoryAPressed
+        ret
 
 .checkDown:
         ldh     a, [var_joypad_current]
@@ -1487,8 +1566,10 @@ DB      "raw meat       ", 0
 DB      "stick          ", 0
 DB      "kebab          ", 0
 DB      "turnip         ", 0
-DB      "raddish        ", 0
+DB      "potato         ", 0
+DB      "broth          ", 0
 DB      "soup           ", 0
+DB      "stew           ", 0
 r8_InventoryItemTextTableEnd::
 
 
@@ -1545,12 +1626,18 @@ DB $85, $84, $83, $83
 DB $85, $83, $83, $83
 DB $85, $85, $86, $83
 .turnipEnd::
-.raddish::
+.potato::
 DB $83, $83, $83, $83
-DB $85, $84, $83, $83
-DB $85, $83, $83, $83
-DB $85, $85, $86, $83
-.raddishEnd::
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+.potatoEnd::
+.broth::
+DB $83, $83, $83, $83
+DB $83, $84, $84, $83
+DB $83, $85, $84, $83
+DB $86, $86, $86, $86
+.brothEnd::
 .soup::
 DB $83, $83, $83, $83
 DB $83, $84, $84, $83
@@ -1635,7 +1722,7 @@ DB $fa,$46, $81,$20, $ff,$7f, $9f,$63,
 DB $fa,$46, $81,$20, $d1,$21, $9f,$63,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 .turnipEnd::
-.raddish::
+.potato::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
 DB $37,$73, $49,$35, $00,$04, $62,$1c,
 DB $03,$00, $69,$72, $00,$00, $1A,$20,
@@ -1644,7 +1731,17 @@ DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
-.raddishEnd::
+.potatoEnd::
+.broth::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $ad,$24, $7d,$35, $9f,$63,
+DB $ad,$24, $6e,$1e, $7d,$35, $9f,$63,
+DB $ad,$24, $ff,$7f, $7d,$35, $9f,$63,
+DB $fa,$46, $81,$20, $ad,$24, $9f,$63,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.brothEnd::
 .soup::
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
 DB $37,$73, $49,$35, $00,$04, $62,$1c,
@@ -1898,40 +1995,74 @@ DB $38,$38,$B0,$80,$00,$00,$00,$00
 DB $00,$80,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 .turnipEnd::
-.raddish::
+.potato::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$1F
 DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$03,$C0
-DB $00,$00,$00,$00,$03,$00,$07,$00
-DB $1F,$00,$7E,$00,$FC,$00,$F0,$00
-DB $00,$00,$02,$01,$03,$03,$07,$03
-DB $0B,$07,$0F,$07,$17,$0F,$17,$0F
-DB $80,$7F,$E0,$FF,$FF,$FF,$FF,$FF
-DB $FF,$FF,$FF,$F3,$FF,$E7,$FF,$FF
-DB $07,$F0,$01,$FE,$00,$FE,$01,$FE
-DB $80,$FF,$E0,$FF,$E0,$FF,$E0,$FF
-DB $00,$00,$0F,$00,$7F,$00,$FF,$00
-DB $78,$80,$F0,$00,$7E,$80,$7F,$80
-DB $1F,$0F,$1E,$0F,$3F,$0F,$3F,$1F
-DB $3F,$1F,$3F,$1F,$3F,$1F,$3F,$0F
-DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-DB $E0,$FF,$C0,$FF,$E0,$FF,$F0,$FF
-DB $F0,$FF,$FC,$FF,$FE,$FF,$FE,$FF
-DB $67,$80,$63,$80,$40,$80,$40,$80
-DB $00,$80,$00,$80,$00,$80,$00,$80
-DB $1C,$04,$0E,$02,$06,$00,$03,$00
-DB $01,$00,$00,$00,$00,$00,$00,$00
-DB $7F,$7F,$1F,$1F,$00,$00,$80,$80
-DB $C0,$40,$71,$01,$0F,$00,$00,$00
-DB $FE,$FF,$F0,$F1,$02,$03,$04,$06
-DB $38,$38,$B0,$80,$00,$00,$00,$00
-DB $00,$80,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
-.raddishEnd::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $01,$00,$01,$00,$03,$00,$07,$00
+DB $00,$00,$01,$00,$7F,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $00,$00,$FF,$00,$BF,$40,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $00,$00,$C0,$00,$C0,$00,$E0,$00
+DB $E0,$00,$F0,$00,$F0,$00,$F8,$00
+DB $0F,$00,$1F,$00,$3F,$00,$3F,$00
+DB $3F,$00,$7F,$40,$7F,$40,$7F,$40
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$DF,$20,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $F8,$00,$F8,$00,$F8,$00,$F8,$00
+DB $F8,$00,$F8,$00,$F8,$00,$F0,$00
+DB $7F,$40,$7F,$60,$7F,$60,$3F,$30
+DB $1F,$18,$0F,$0E,$03,$03,$00,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$FB,$FB,$00,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$20,$20,$00,$00
+DB $F0,$00,$F0,$00,$E0,$00,$E0,$00
+DB $C0,$00,$00,$00,$00,$00,$00,$00
+.potatoEnd::
+.broth::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$01
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$1F,$07,$F8
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$F8,$E0,$1F
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$80
+DB $00,$0F,$07,$18,$0F,$30,$0B,$73
+DB $1F,$EF,$3F,$DF,$3F,$DF,$3F,$FF
+DB $00,$00,$1F,$1F,$FF,$FF,$FF,$FF
+DB $FF,$9D,$FF,$0F,$FF,$07,$FF,$CF
+DB $00,$03,$F0,$F0,$FF,$FF,$FF,$FF
+DB $FF,$F1,$FF,$E0,$FF,$E0,$FF,$C1
+DB $00,$F0,$C0,$18,$F0,$0C,$D0,$CA
+DB $F8,$F5,$FC,$F9,$FC,$FB,$F8,$FB
+DB $3E,$FF,$1F,$FF,$8F,$7F,$C1,$3F
+DB $F0,$0F,$FC,$03,$7F,$00,$7F,$00
+DB $FF,$FF,$FF,$FD,$FF,$F7,$FF,$FF
+DB $1F,$FF,$00,$FF,$00,$3F,$00,$00
+DB $FF,$FF,$FF,$FF,$FF,$9F,$FF,$FF
+DB $F8,$FF,$00,$FF,$00,$DC,$00,$20
+DB $FC,$FF,$F8,$FF,$F1,$FE,$83,$FC
+DB $0F,$F0,$3F,$C0,$FE,$00,$FE,$00
+DB $40,$3F,$60,$1F,$30,$0F,$18,$07
+DB $0C,$03,$03,$00,$00,$00,$00,$00
+DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $00,$FF,$00,$FF,$70,$0F,$00,$00
+DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $00,$FF,$00,$FF,$00,$F0,$00,$00
+DB $00,$FC,$00,$F8,$00,$F0,$00,$E0
+DB $00,$C0,$00,$00,$00,$00,$00,$00
+.brothEnd::
 .soup::
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$01

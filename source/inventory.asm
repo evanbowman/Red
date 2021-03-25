@@ -122,3 +122,65 @@ InventoryCountOccurrences:
         jr      .loop
 .done:
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+InventoryConsumeItem:
+;;; b - item
+;;; trashes hl, c
+        ld      hl, var_inventory
+        ld      c, 0
+.loop:
+        ld      a, INVENTORY_COUNT
+        cp      c
+        jr      Z, .done
+
+        ld      a, [hl]
+        cp      b
+        jr      NZ, .next
+
+	push    hl
+        pop     de              ; copy old hl to de
+
+        ld      b, 0
+        sla     c               ; two bytes per item
+
+        ld      a, (INVENTORY_COUNT - 1) * ITEM_SIZE
+        sub     c
+
+        ld      c, a
+        or      a
+        jr      Z, .removeLastEntry
+
+
+        inc     hl              ; memmove source at next item index
+        inc     hl
+
+        call    MemmoveLeft
+
+.removeLastEntry:
+        ld      hl, var_inventory_last_item
+        ld      a, 0
+        ld      [hl], a
+
+        jr      .done
+
+.next:
+        inc     hl
+        inc     hl
+        inc     c
+        jr      .loop
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+InventoryCompact:
+;;; TODO: we erase items from the inventory by replacing them with a null
+;;; sentinel value. Now, we want to shift everything over to fill the gaps.
+        ret
+
+
+;;; ----------------------------------------------------------------------------
