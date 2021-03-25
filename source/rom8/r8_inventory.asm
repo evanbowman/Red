@@ -36,9 +36,9 @@
 ;;; Column 0: item, columns 1-3: dependencies.
 r8_InventoryCraftingRecipes::
 DB      ITEM_KEBAB,     ITEM_STICK,     ITEM_RAW_MEAT,  ITEM_RAW_MEAT
-DB      ITEM_SOUP,      ITEM_TURNIP,    ITEM_RAW_MEAT,  ITEM_TURNIP
-DB      ITEM_SOUP,      ITEM_RADDISH,   ITEM_RAW_MEAT,  ITEM_TURNIP
-DB      ITEM_SOUP,      ITEM_RADDISH,   ITEM_RAW_MEAT,  ITEM_RADDISH
+DB      ITEM_SOUP,      ITEM_TURNIP,    ITEM_TURNIP,    ITEM_RAW_MEAT
+DB      ITEM_SOUP,      ITEM_RADDISH,   ITEM_TURNIP,    ITEM_RAW_MEAT
+DB      ITEM_SOUP,      ITEM_RADDISH,   ITEM_RADDISH,   ITEM_RAW_MEAT
 DB      ITEM_NONE,      ITEM_NONE,      ITEM_NONE,      ITEM_NONE
 r8_InventoryCraftingRecipesEnd::
 
@@ -167,10 +167,24 @@ r8_InventoryGetCraftableItem:
 ;;; return b - item typeinfo
         ld      hl, var_inventory_scene_craftable_items_list
         ld      c, b
+        sla     c
         ld      b, 0
         add     hl, bc
-        ld      b, [hl]
-        ld      c, 0
+
+        ld      b, [hl]         ; \
+        inc     hl              ; | Load recipe pointer from array
+        ld      c, [hl]         ; /
+
+        ld      a, b
+        or      c
+        jr      Z, .null
+
+        ld      a, [bc]         ; \
+        ld      b, a            ; | Load item typeinfo from first byte in recipe
+        ld      c, 0            ; /
+        ret
+.null:
+        ld      b, ITEM_NONE
         ret
 
 
@@ -567,24 +581,19 @@ r8_Mul64:
 
 ;;; ----------------------------------------------------------------------------
 
-r8_CraftableItemGetRecipe:
-;;; b - item
-;;; return hl - pointer to recipe (three trailing bytes in recipe table row)
-        ld      hl, r8_InventoryCraftingRecipes
-.loop:
-        ld      a, [hl+]
-        cp      ITEM_NONE
-        jr      Z, .endLoop
-
-	cp      b
-        jr      Z, .endLoop
-
+r8_GetCraftableItemRecipe:
+;;; b - row
+;;; return hl - pointer to recipe
+        ld      hl, var_inventory_scene_craftable_items_list
+        ld      c, b
+        sla     c
+        ld      b, 0
+        add     hl, bc
+        ld      b, [hl]
         inc     hl
-        inc     hl
-        inc     hl
-
-        jr      .loop
-.endLoop:
+        ld      c, [hl]
+        ld      h, b
+        ld      l, c
         ret
 
 
@@ -738,7 +747,7 @@ r8_CraftableItemCheckDependencies:
 ;;; ----------------------------------------------------------------------------
 
 r8_CraftableItemsListInsert:
-;;; b - item
+;;; de - pointer into recipe table
 ;;; trashes hl, c
         ld      hl, var_inventory_scene_craftable_items_list
         ld      c, 0
@@ -751,11 +760,14 @@ r8_CraftableItemsListInsert:
         or      a
         jr      NZ, .next
 
-        ld      [hl], b
+        ld      [hl], d
+        inc     hl
+        ld      [hl], e
         jr      .done
 
 .next:
         inc     c
+        inc     hl
         inc     hl
         jr      .loop
 
@@ -782,7 +794,10 @@ r8_InventoryLoadCraftableItems:
         ld      a, [hl]
 
         push    hl
-	ld      b, a
+
+        push    hl              ; \ Copy hl to de (I'm feeling lazy)
+        pop     de              ; /
+
         call    r8_CraftableItemsListInsert
         pop     hl
 
@@ -867,13 +882,18 @@ r8_InventoryDescribeItem:
 .showRecipeList:
         call    r8_InventoryGetSelectedIndex
         ld      b, a
-        call    r8_InventoryTabLoadItem
 
-        ld      a, ITEM_NONE
-        cp      b
-        jr      Z, .reset
+        call    r8_GetCraftableItemRecipe
+.here:
+        ld      a, h                    ; \
+        or      l                       ; | Null pointer check.
+        jr      Z, .reset               ; /
 
-        call    r8_CraftableItemGetRecipe
+        ld      a, [hl+]                ; \
+        ld      b, a                    ; | Make sure item itself isn't the
+        ld      a, ITEM_NONE            ; | null item (shouldn't happen...).
+        cp      b                       ; |
+        jr      Z, .reset               ; /
 
         call    VBlankIntrWait
 	ld      de, $9c62

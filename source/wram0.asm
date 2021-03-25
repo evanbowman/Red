@@ -235,7 +235,7 @@ CRAFTABLE_ITEMS_COUNT   EQU     32
 ;;; FIXME: This currently just stores item ids, but it needs to instead store
 ;;; pointers into the recipe table, for items that can be crafted in different
 ;;; ways (different sets of dependencies).
-var_inventory_scene_craftable_items_list:   DS  CRAFTABLE_ITEMS_COUNT
+var_inventory_scene_craftable_items_list:   DS  2 * CRAFTABLE_ITEMS_COUNT
 
 var_crafting_dependency_set:  DS      ITEM_SIZE * 3
 var_crafting_dependency_set_end:
