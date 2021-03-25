@@ -111,8 +111,7 @@ r1_GameboyAdvanceDetected:
 
 
 r1_SaveGame:
-        ld      a, 1
-        ld      [rSVBK], a
+	RAM_BANK 1
 
         ld      a, $0a                  ; \ Enable SRAM writes
         ld      [rRAMG], a              ; /
@@ -132,8 +131,7 @@ r1_SaveGame:
 
 
 r1_LoadGame:
-        ld      a, 1
-        ld      [rSVBK], a
+	RAM_BANK 1
 
         ld      a, $0a                  ; \ Enable SRAM writes
         ld      [rRAMG], a              ; /

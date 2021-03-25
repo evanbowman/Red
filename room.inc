@@ -30,23 +30,63 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 ;;;
-;;; tl;dr: Do whatever you want with the code, just don't blame me if something
-;;; goes wrong.
-;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-ITEM_NONE      EQU 0
-ITEM_WOLF_PELT EQU 1
-ITEM_DAGGER    EQU 2
-ITEM_RAW_MEAT  EQU 3
-ITEM_STICK     EQU 4
-ITEM_KEBAB     EQU 5
-ITEM_TURNIP    EQU 6
-ITEM_POTATO    EQU 7
-ITEM_BROTH     EQU 8
-ITEM_SOUP      EQU 9
-ITEM_STEW      EQU 10
-ITEM_BUNDLE    EQU 11
-ITEM_FIREWOOD  EQU 12
-ITEM_MORSEL    EQU 13
+;;; For reference:
+;;;
+;;; struct Room {
+;;;     char visited_ : 1;        \
+;;;     char reserved_ : 3;       |  First byte.
+;;;     char connections_ : 4:    /
+;;;
+;;;     char room_variant_;       Second byte.
+;;;
+;;;     char reserved_;           Third byte.
+;;;
+;;;     EntityDesc entities_[5];  Ten bytes.
+;;; }; (13 bytes)
+;;;
+;;; struct EntityDesc {
+;;;     char type_;
+;;;     char x_ : 4;
+;;;     char y_ : 4;
+;;; }; (2 bytes)
+;;;
+
+
+;;; D - down, U - up, R - right, L - left
+ROOM_CONNECTED_D        EQU $01
+ROOM_CONNECTED_U        EQU $02
+ROOM_CONNECTED_DU       EQU $03
+ROOM_CONNECTED_R        EQU $04
+ROOM_CONNECTED_DR       EQU $05
+ROOM_CONNECTED_UR       EQU $06
+ROOM_CONNECTED_DUR      EQU $07
+ROOM_CONNECTED_L        EQU $08
+ROOM_CONNECTED_DL       EQU $09
+ROOM_CONNECTED_UL       EQU $0a
+ROOM_CONNECTED_DUL      EQU $0b
+ROOM_CONNECTED_RL       EQU $0c
+ROOM_CONNECTED_DRL      EQU $0d
+ROOM_CONNECTED_URL      EQU $0e
+ROOM_CONNECTED_DURL     EQU $0f
+
+
+ROOM_VISITED            EQU $80
+
+
+WORLD_MAP_WIDTH         EQU 18
+WORLD_MAP_HEIGHT        EQU 16
+WORLD_ROOM_COUNT        EQU WORLD_MAP_WIDTH * WORLD_MAP_HEIGHT
+
+
+ROOM_HEADER_SIZE        EQU 3
+ROOM_ENTITYDESC_ARRAY_SIZE EQU 10
+ROOM_DESC_SIZE          EQU ROOM_HEADER_SIZE + ROOM_ENTITYDESC_ARRAY_SIZE
+
+
+ROOM_META_WIDTH         EQU 16
+ROOM_META_HEIGHT        EQU 16
+
+ROOM_DATA_SIZE          EQU ROOM_META_WIDTH * ROOM_META_HEIGHT

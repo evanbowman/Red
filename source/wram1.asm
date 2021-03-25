@@ -37,36 +37,6 @@
 
         SECTION "WORLD_MAP", WRAMX, BANK[1]
 
-WORLD_MAP_WIDTH EQU 18
-WORLD_MAP_HEIGHT EQU 16
-WORLD_ROOM_COUNT EQU WORLD_MAP_WIDTH * WORLD_MAP_HEIGHT
-
-
-ROOM_HEADER_SIZE EQU 3
-ROOM_ENTITYDESC_ARRAY_SIZE EQU 10
-ROOM_DESC_SIZE EQU ROOM_HEADER_SIZE + ROOM_ENTITYDESC_ARRAY_SIZE
-
-;;; For reference:
-;;;
-;;; struct Room {
-;;;     char visited_ : 1;        \
-;;;     char reserved_ : 3;       |  First byte.
-;;;     char connections_ : 4:    /
-;;;
-;;;     char room_variant_;       Second byte.
-;;;
-;;;     char reserved_;           Third byte.
-;;;
-;;;     EntityDesc entities_[5];  Ten bytes.
-;;; }; (13 bytes)
-;;;
-;;; struct EntityDesc {
-;;;     char type_;
-;;;     char x_ : 4;
-;;;     char y_ : 4;
-;;; }; (2 bytes)
-;;;
-
 wram1_var_world_map_info::
 DS      WORLD_ROOM_COUNT * ROOM_DESC_SIZE
 wram1_var_world_map_info_end::

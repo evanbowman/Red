@@ -47,7 +47,7 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
         INCLUDE "sprid.inc"
         INCLUDE "entityType.inc"
         INCLUDE "item.inc"
-
+        INCLUDE "room.inc"
 
 
 ;;; NOTE: LONG_CALL does not restore the current rom bank
@@ -67,6 +67,13 @@ SET_BANK: MACRO
         ld      a, \1
         ld      [rROMB0], a
 ENDM
+
+
+RAM_BANK: MACRO
+        ld      a, \1
+        ld      [rSVBK], a
+ENDM
+
 
 
         INCLUDE "hram.asm"
@@ -238,8 +245,7 @@ Main:
 
 
         SET_BANK 10
-        ld      a, 1
-        ld      [rSVBK], a
+	RAM_BANK 1
         ld      hl, r10_DefaultMap1
         ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
         ld      de, wram1_var_world_map_info
@@ -252,7 +258,7 @@ Main:
         ld      c, 6
         LONG_CALL r1_LoadRoom, 1
 
-        ld      de, IntroCreditsSceneEnter
+        ld      de, OverworldSceneEnter
         call    SceneSetUpdateFn
 
         ld      de, VoidVBlankFn

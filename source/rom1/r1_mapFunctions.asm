@@ -347,8 +347,7 @@ r1_WorldMapShowRowPair:
 r1_WorldMapShowRooms:
         call    VBlankIntrWait
 
-        ld      a, 1
-        ld      [rSVBK], a
+        RAM_BANK 1
 
         ld      hl, wram1_var_world_map_info
         ld      de, $9C21       ; Pointer to data in scrn1
@@ -372,7 +371,7 @@ r1_WorldMapShowRooms:
         call    VBlankIntrWait
 .write:
         ld      a, [hl]
-        and     $80                     ; Check for room visited flag
+        and     ROOM_VISITED            ; Check for room visited flag
         jr      Z, .skip                ; The tile is empty by default
 
         ld      a, [hl]
@@ -635,8 +634,7 @@ r1_IsRoomVisited:
 ;;; NOTE: Sets ram bank to bank 1!
 r1_SetRoomVisited:
 ;;; trashes a, hl, bc
-        ld      a, 1
-        ld      [rSVBK], a
+	RAM_BANK 1
 
         ld      a, [var_room_x]
         ld      b, a
@@ -648,7 +646,7 @@ r1_SetRoomVisited:
         call    r1_LoadRoom
         ld      a, [hl]
 
-        or      $80
+        or      ROOM_VISITED
         ld      [hl], a
 
         ret
@@ -657,8 +655,7 @@ r1_SetRoomVisited:
 ;;; ----------------------------------------------------------------------------
 
 r1_LoadRoomEntities:
-        ld      a, 1
-        ld      [rSVBK], a
+	RAM_BANK 1
 
         ld      a, [var_room_x]
         ld      b, a
@@ -785,8 +782,7 @@ r1_CurrentRoomAppendEntityDesc:
 
 ;;; Called when switching to a different room. Store entities info in memory.
 r1_StoreRoomEntities:
-        ld      a, 1
-        ld      [rSVBK], a
+	RAM_BANK 1
 
         call    r1_CurrentRoomClearEntities
 

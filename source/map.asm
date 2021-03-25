@@ -155,20 +155,89 @@ MapLoad0:
 
 ;;; Does a bunch of bank swapping, may only be called from rom0.
 MapLoad2__rom0_only:
+        RAM_BANK 1
+
         ld      a, [var_room_x]
         ld      b, a
         ld      a, [var_room_y]
         ld      c, a
         LONG_CALL r1_LoadRoom, 1
-;;; TODO: Look at the connection mask and room variant from the room header,
-;;; load appropriate room data.
-        SET_BANK 10
+
+        ld      a, [hl+]                ; \ Load adjacency mask from room data
+        and     $0f                     ; /
+
+        ld      b, [hl]                 ; Load room variant
+
+        ld      e, a
+        ld      d, 0
+
+        ld      hl, .roomDataBankTab    ; \
+        add     de                      ; | Set bank where we'll look for the
+        ld      a, [hl]                 ; | map data.
+        ld      [rROMB0], a             ; /
+
+        sla     e                       ; Two bytes per pointer in roomdata lut
+
+        ld      hl, .roomDataLookupTab  ; \ Load pointer to room data array
+        add     hl, de                  ; /
+        ld      e, [hl]
+        inc     hl
+        ld      d, [hl]
+        ld      h, d
+        ld      l, e
+
+        ld      c, 0                    ; Jump to variant in room table
+                                        ; b is the higher byte, so implicit x256
+        add     hl, bc
+
+.copy:
         ld      hl, r10_TEST_MAP_2
-        ld      bc, r10_TEST_MAP_2_END - r10_TEST_MAP_2
+        ld      bc, ROOM_DATA_SIZE
         ld      de, var_map_info
 	call    Memcpy
+
         SET_BANK 1
         ret
+
+.roomDataLookupTab::
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+DW      r10_TEST_MAP_2
+.roomDataLookupTabEnd::
+
+.roomDataBankTab::
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+DB      10
+.roomDataBankTabEnd::
+
+
 
 
 ;;; ----------------------------------------------------------------------------

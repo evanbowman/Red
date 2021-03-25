@@ -35,6 +35,15 @@
 
 ;;; Column 0: item, columns 1-3: dependency set.
 r8_InventoryCraftingRecipes::
+DB      ITEM_BUNDLE,    ITEM_STICK,     ITEM_STICK,     ITEM_STICK
+DB      ITEM_FIREWOOD,  ITEM_BUNDLE,    ITEM_BUNDLE,    ITEM_BUNDLE
+DB      ITEM_RAW_MEAT,  ITEM_MORSEL,    ITEM_MORSEL,    ITEM_MORSEL
+;;; Last row must be empty:
+DB      ITEM_NONE,      ITEM_NONE,      ITEM_NONE,      ITEM_NONE
+r8_InventoryCraftingRecipesEnd::
+
+
+r8_InventoryCookingRecipes::
 DB      ITEM_KEBAB,     ITEM_STICK,     ITEM_RAW_MEAT,  ITEM_RAW_MEAT
 DB      ITEM_STEW,      ITEM_RAW_MEAT,  ITEM_RAW_MEAT,  ITEM_RAW_MEAT
 DB      ITEM_SOUP,      ITEM_TURNIP,    ITEM_TURNIP,    ITEM_RAW_MEAT
@@ -44,11 +53,9 @@ DB      ITEM_BROTH,     ITEM_TURNIP,    ITEM_TURNIP,    ITEM_TURNIP
 DB      ITEM_BROTH,     ITEM_POTATO,    ITEM_POTATO,    ITEM_POTATO
 DB      ITEM_BROTH,     ITEM_TURNIP,    ITEM_TURNIP,    ITEM_POTATO
 DB      ITEM_BROTH,     ITEM_POTATO,    ITEM_POTATO,    ITEM_TURNIP
-DB      ITEM_BUNDLE,    ITEM_STICK,     ITEM_STICK,     ITEM_STICK
-DB      ITEM_FIREWOOD,  ITEM_BUNDLE,    ITEM_BUNDLE,    ITEM_BUNDLE
 ;;; Last row must be empty:
 DB      ITEM_NONE,      ITEM_NONE,      ITEM_NONE,      ITEM_NONE
-r8_InventoryCraftingRecipesEnd::
+r8_InventoryCookingRecipesEnd::
 
 
 r8_InventoryTiles::
@@ -140,7 +147,8 @@ DB $4c, $4d, $4e, $4f
 
 INVENTORY_TAB_ITEMS     EQU     0
 INVENTORY_TAB_CRAFT     EQU     1
-INVENTORY_TAB_COUNT     EQU     2
+INVENTORY_TAB_COOK      EQU     2
+INVENTORY_TAB_COUNT     EQU     3
 
 
 r8_InventoryGetTabText:
@@ -149,11 +157,16 @@ r8_InventoryGetTabText:
         jr      Z, .items
         cp      INVENTORY_TAB_CRAFT
         jr      Z, .craft
+        cp      INVENTORY_TAB_COOK
+        jr      Z, .cook
 .items:
 	ld      hl, r8_InventoryTabItemsText
         ret
 .craft:
 	ld      hl, r8_InventoryTabCraftText
+        ret
+.cook:
+        ld      hl, r8_InventoryTabCookText
         ret
 
 
@@ -204,6 +217,8 @@ r8_InventoryTabLoadItem:
         cp      a, INVENTORY_TAB_ITEMS
         jr      Z, .items
         cp      a, INVENTORY_TAB_CRAFT
+        jr      Z, .craft
+        cp      a, INVENTORY_TAB_COOK
         jr      Z, .craft
 
 .items:
@@ -595,6 +610,8 @@ r8_InventoryAPressed:
         jr      Z, .items
         cp      INVENTORY_TAB_CRAFT
         jr      Z, .craft
+        cp      INVENTORY_TAB_COOK
+        jr      Z, .craft
 .items:
         ret
 .craft:
@@ -814,7 +831,6 @@ r8_CraftableItemCheckDependencies:
         ret
 
 
-
 ;;; ----------------------------------------------------------------------------
 
 r8_CraftableItemsListInsert:
@@ -846,13 +862,29 @@ r8_CraftableItemsListInsert:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+r8_InventoryGetRecipeList:
+        ld      a, [var_inventory_scene_tab]
+        cp      INVENTORY_TAB_COOK
+        jr      Z, .cook
+
+        ld      hl, r8_InventoryCraftingRecipes
+        ret
+.cook:
+        ld      hl, r8_InventoryCookingRecipes
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r8_InventoryLoadCraftableItems:
         ld      hl, var_inventory_scene_craftable_items_list
         ld      bc, CRAFTABLE_ITEMS_COUNT * 2
         ld      a, 0
         call    Memset
 
-        ld      hl, r8_InventoryCraftingRecipes
+        call    r8_InventoryGetRecipeList
 .loop:
         ld      a, [hl]
         cp      ITEM_NONE
@@ -945,6 +977,8 @@ r8_InventoryDescribeItem:
         cp      INVENTORY_TAB_ITEMS
         jr      Z, .describeItem
         cp      INVENTORY_TAB_CRAFT
+        jr      Z, .showRecipeList
+        cp      INVENTORY_TAB_COOK
         jr      Z, .showRecipeList
 
 .describeItem:
@@ -1044,6 +1078,8 @@ r8_InventorySetTab:
         cp      INVENTORY_TAB_ITEMS
         jr      Z, .loadItemsTab
         cp      INVENTORY_TAB_CRAFT
+        jr      Z, .loadCraftTab
+        cp      INVENTORY_TAB_COOK
         jr      Z, .loadCraftTab
 
 .loadItemsTab:
@@ -1581,6 +1617,9 @@ r8_InventoryTabCraftText::
 DB      " craft  ", 0
 r8_InventoryTabCraftTextEnd::
 
+r8_InventoryTabCookText::
+DB      "  cook  ", 0
+r8_InventoryTabCookTextEnd::
 
 
 r8_InventoryItemAttributes::
@@ -1634,9 +1673,9 @@ DB $83, $83, $83, $83
 .potatoEnd::
 .broth::
 DB $83, $83, $83, $83
+DB $83, $83, $83, $83
 DB $83, $84, $84, $83
-DB $83, $85, $84, $83
-DB $86, $86, $86, $86
+DB $85, $85, $85, $85
 .brothEnd::
 .soup::
 DB $83, $83, $83, $83
@@ -1736,10 +1775,10 @@ DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
 DB $37,$73, $49,$35, $00,$04, $62,$1c,
 DB $03,$00, $69,$72, $00,$00, $1A,$20,
-DB $fa,$46, $ad,$24, $7d,$35, $9f,$63,
-DB $ad,$24, $6e,$1e, $7d,$35, $9f,$63,
-DB $ad,$24, $ff,$7f, $7d,$35, $9f,$63,
-DB $fa,$46, $81,$20, $ad,$24, $9f,$63,
+DB $fa,$46, $c7,$40, $2d,$52, $f4,$19,
+DB $86,$11, $c7,$40, $2d,$52, $f4,$19,
+DB $fa,$46, $c7,$40, $2d,$52, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 .brothEnd::
 .soup::
@@ -2038,30 +2077,30 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$F8,$E0,$1F
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$80
-DB $00,$0F,$07,$18,$0F,$30,$0B,$73
+DB $00,$0F,$07,$18,$0F,$30,$0F,$77
 DB $1F,$EF,$3F,$DF,$3F,$DF,$3F,$FF
-DB $00,$00,$1F,$1F,$FF,$FF,$FF,$FF
-DB $FF,$9D,$FF,$0F,$FF,$07,$FF,$CF
-DB $00,$03,$F0,$F0,$FF,$FF,$FF,$FF
-DB $FF,$F1,$FF,$E0,$FF,$E0,$FF,$C1
-DB $00,$F0,$C0,$18,$F0,$0C,$D0,$CA
-DB $F8,$F5,$FC,$F9,$FC,$FB,$F8,$FB
-DB $3E,$FF,$1F,$FF,$8F,$7F,$C1,$3F
+DB $FF,$00,$FE,$1E,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FC,$03,$FF,$F0,$F9,$F9,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $00,$F0,$C0,$18,$F0,$0C,$B0,$AA
+DB $F8,$F5,$EC,$E9,$FC,$FB,$FC,$FF
+DB $3F,$FF,$1F,$FF,$8F,$7F,$C1,$3F
 DB $F0,$0F,$FC,$03,$7F,$00,$7F,$00
-DB $FF,$FF,$FF,$FD,$FF,$F7,$FF,$FF
-DB $1F,$FF,$00,$FF,$00,$3F,$00,$00
-DB $FF,$FF,$FF,$FF,$FF,$9F,$FF,$FF
-DB $F8,$FF,$00,$FF,$00,$DC,$00,$20
+DB $F7,$F7,$FD,$FD,$FF,$FF,$FF,$FF
+DB $1F,$FF,$00,$FF,$C0,$3F,$FF,$00
+DB $EF,$EF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $F8,$FF,$00,$FF,$23,$DC,$DF,$20
 DB $FC,$FF,$F8,$FF,$F1,$FE,$83,$FC
 DB $0F,$F0,$3F,$C0,$FE,$00,$FE,$00
-DB $40,$3F,$60,$1F,$30,$0F,$18,$07
-DB $0C,$03,$03,$00,$00,$00,$00,$00
-DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
-DB $00,$FF,$00,$FF,$70,$0F,$00,$00
-DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
-DB $00,$FF,$00,$FF,$00,$F0,$00,$00
-DB $00,$FC,$00,$F8,$00,$F0,$00,$E0
-DB $00,$C0,$00,$00,$00,$00,$00,$00
+DB $7F,$40,$7F,$60,$3F,$30,$1F,$18
+DB $0F,$0C,$03,$03,$00,$00,$00,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$7F,$70,$00,$00
+DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+DB $FF,$00,$FF,$00,$F0,$00,$00,$00
+DB $FC,$00,$F8,$00,$F0,$00,$E0,$00
+DB $C0,$00,$00,$00,$00,$00,$00,$00
 .brothEnd::
 .soup::
 DB $00,$00,$00,$00,$00,$00,$00,$00
