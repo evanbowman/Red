@@ -59,7 +59,7 @@ BonfireUpdate:
         call    AnimationAdvance
         or      a
         jr      Z, .done
-        ld      a, 1
+	ld      a, ENTITY_TEXTURE_SWAP_FLAG
         pop     bc                       ; restore pointer to start of entity
         ld      [bc], a                  ; set texture swap flag
 

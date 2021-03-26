@@ -660,7 +660,7 @@ r9_PlayerAnimate:
         ld      [var_player_display_flag], a
 
 .frameChanged:
-        ld      a, 1
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
         ret
 
@@ -688,7 +688,7 @@ r9_PlayerJoypadResponse:
         cp      e
         jr      Z, .setSpeed    ; the base frame is unchanged
 
-        ld      a, 1
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
         ld      a, e
@@ -716,7 +716,7 @@ r9_PlayerJoypadResponse:
         ld      a, [var_player_kf]
         sub     5
         ld      [var_player_kf], a
-        ld      a, 1
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
 .setSpeed:
@@ -791,7 +791,7 @@ r9_PlayerUpdateImpl:
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
-        ld      a, 1
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
 .checkUpReleased:
@@ -809,7 +809,7 @@ r9_PlayerUpdateImpl:
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
-        ld      a, 1
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
 .checkLeftReleased:
@@ -827,7 +827,7 @@ r9_PlayerUpdateImpl:
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
-        ld      a, 1
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
 .checkRightReleased:
@@ -845,7 +845,7 @@ r9_PlayerUpdateImpl:
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
-        ld      a, 1
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
 .animate:

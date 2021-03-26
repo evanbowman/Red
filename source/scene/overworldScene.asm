@@ -318,7 +318,7 @@ VBlankCopySpriteTextures:
         inc     de
 
         ld      a, [hl]         ; load texture swap flag from entity
-        or      a
+        and     ENTITY_TEXTURE_SWAP_FLAG
         jr      Z, .noTextureCopy ; swap flag false, nothing to do
         ld      a, 0
         ld      [hl], a         ; We're swapping the texture, zero the flag

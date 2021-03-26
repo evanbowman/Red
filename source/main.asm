@@ -415,7 +415,6 @@ MapSpriteBlock:
         INCLUDE "fixnum.asm"
         INCLUDE "map.asm"
         INCLUDE "video.asm"
-        INCLUDE "data.asm"
         INCLUDE "rom1_code.asm"
         INCLUDE "rom2_data.asm"
         INCLUDE "rom7_data.asm"
