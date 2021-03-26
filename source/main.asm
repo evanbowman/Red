@@ -216,47 +216,13 @@ Main:
 
         LONG_CALL r1_SetCgbColorProfile, 1
 
-        ld      b, ITEM_DAGGER
-        call    InventoryAddItem
-
-        ld      b, ITEM_RAW_MEAT
-        call    InventoryAddItem
-
-        ld      b, ITEM_RAW_MEAT
-        call    InventoryAddItem
-
-        ld      b, ITEM_STICK
-        call    InventoryAddItem
-
-        ld      b, ITEM_POTATO
-        call    InventoryAddItem
-
-        ld      b, ITEM_POTATO
-        call    InventoryAddItem
-
-        ld      b, ITEM_TURNIP
-        call    InventoryAddItem
-
-        ld      b, ITEM_POTATO
-        call    InventoryAddItem
-
-        ld      b, ITEM_TURNIP
-        call    InventoryAddItem
-
-
-        SET_BANK 10
-	RAM_BANK 1
-        ld      hl, r10_DefaultMap1
-        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
-        ld      de, wram1_var_world_map_info
-        call    Memcpy
-
         LONG_CALL r1_CopyDMARoutine, 1
-	LONG_CALL r1_SetRoomVisited, 1
 
-	ld      b, 5
-        ld      c, 6
-        LONG_CALL r1_LoadRoom, 1
+        call    LoadFont
+
+        call    LcdOn
+
+        ei
 
         ld      de, OverworldSceneEnter
         call    SceneSetUpdateFn
@@ -264,25 +230,9 @@ Main:
         ld      de, VoidVBlankFn
         call    SceneSetVBlankFn
 
-        LONG_CALL r1_PlayerNew, 1
 
-        call    LoadFont
-
-        call    MapInit
-        call    MapLoad
-
-        ld      hl, test_string
-        ld      b, $88
-        ld      de, _SCRN1
-        call    PutText
-
-        call    LcdOn
-
-        ld      b, 96
-        ld      c, 96
-        LONG_CALL r1_BonfireNew, 1
-
-        ei
+        call    CreateWorld
+        call    InventoryTest
 
 .loop:
         LONG_CALL r1_ReadKeys, 1
@@ -343,6 +293,66 @@ Main:
 ;;; that I can copy within the vblank window.
 .vbl_window_exceeded:
         stop
+
+
+;;; ----------------------------------------------------------------------------
+
+CreateWorld:
+        call    VBlankIntrWait
+        call    LcdOff
+
+        SET_BANK 10
+        RAM_BANK 1
+        ld      hl, r10_DefaultMap1
+        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
+        ld      de, wram1_var_world_map_info
+        call    Memcpy
+
+        call    MapLoad2__rom0_only
+        call    MapShow
+
+        call    LcdOn
+
+        LONG_CALL r1_PlayerNew, 1
+
+        LONG_CALL r1_LoadRoomEntities, 1
+
+	LONG_CALL r1_SetRoomVisited, 1
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+InventoryTest:
+        ld      b, ITEM_DAGGER
+        call    InventoryAddItem
+
+        ld      b, ITEM_RAW_MEAT
+        call    InventoryAddItem
+
+        ld      b, ITEM_RAW_MEAT
+        call    InventoryAddItem
+
+        ld      b, ITEM_STICK
+        call    InventoryAddItem
+
+        ld      b, ITEM_POTATO
+        call    InventoryAddItem
+
+        ld      b, ITEM_POTATO
+        call    InventoryAddItem
+
+        ld      b, ITEM_TURNIP
+        call    InventoryAddItem
+
+        ld      b, ITEM_POTATO
+        call    InventoryAddItem
+
+        ld      b, ITEM_TURNIP
+        call    InventoryAddItem
+
+        ret
 
 
 ;;; ----------------------------------------------------------------------------

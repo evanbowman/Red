@@ -43,13 +43,6 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-MapInit:
-
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
 ;;; Copy map from wram to vram
 MapShow:
         ld      c, 0
@@ -120,39 +113,6 @@ MapGetTile:
 
 ;;; ----------------------------------------------------------------------------
 
-MapPutSampleData:
-        SET_BANK 10
-        ld      hl, r10_TEST_MAP
-        ld      bc, r10_TEST_MAP_END - r10_TEST_MAP
-        ld      de, var_map_info
-	call    Memcpy
-
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-MapLoad:
-        call    MapPutSampleData
-        call    MapShow
-        ret
-
-
-
-;;; ----------------------------------------------------------------------------
-
-MapLoad0:
-        SET_BANK 10
-        ld      hl, r10_TEST_MAP
-        ld      bc, r10_TEST_MAP_END - r10_TEST_MAP
-        ld      de, var_map_info
-	call    Memcpy
-        SET_BANK 1
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
 ;;; Does a bunch of bank swapping, may only be called from rom0.
 MapLoad2__rom0_only:
         RAM_BANK 1
@@ -200,21 +160,21 @@ MapLoad2__rom0_only:
 
 .roomDataLookupTab::
 DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_3
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
-DW      r10_TEST_MAP_2
+DW      r10_room_data_d
+DW      r10_room_data_u
+DW      r10_room_data_du
+DW      r10_room_data_r
+DW      r10_room_data_dr
+DW      r10_room_data_ur
+DW      r10_room_data_dur
+DW      r10_room_data_l
+DW      r10_room_data_dl
+DW      r10_room_data_ul
+DW      r10_room_data_dul
+DW      r10_room_data_rl
+DW      r10_room_data_drl
+DW      r10_room_data_url
+DW      r10_room_data_durl
 .roomDataLookupTabEnd::
 
 .roomDataBankTab::
