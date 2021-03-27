@@ -588,6 +588,46 @@ r1_Mul13Fast:
 
 
 
+;;; ----------------------------------------------------------------------------
+
+;;; IMPORTANT: assumes that the switchable ram bank, where we store map info, is
+;;; already set to bank 1!
+r1_InitializeRoom:
+        ld      a, [var_room_x]
+        ld      b, a
+
+        ld      a, [var_room_y]
+        ld      c, a
+
+        call    r1_LoadRoom
+
+        ld      de, var_map_info
+
+        ld      c, 0            ; y counter
+.outer_loop:
+        ld      b, 0            ; x counter
+.inner_loop:
+        ld      a, ROOM_META_WIDTH
+        cp      b
+        jr      Z, .outer_loop_step
+
+        ld      a, [de]
+
+
+        inc     de
+        inc     b
+        jr      .inner_loop
+
+.outer_loop_step:
+        inc     c
+        ld      a, ROOM_META_HEIGHT
+        cp      c
+
+        jr      NZ, .outer_loop
+
+        ret
+
+
 ;;; ---------------------------------------------------------------------------
 
 ;;; IMPORTANT: assumes that the switchable ram bank, where we store map info, is

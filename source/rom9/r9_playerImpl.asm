@@ -33,6 +33,9 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+WALL_TILES_END  EQU     16
+
+
 ;;; ----------------------------------------------------------------------------
 
 
@@ -165,7 +168,7 @@ r9_PlayerCheckWallCollisionDown:
 ;;; Player.y < tile.y? Then no collision
         push    bc
         ld      a, [var_player_coord_y]
-        add     8
+        add     11
         cp      b
 	pop     bc
         jr      C, .false
@@ -173,7 +176,7 @@ r9_PlayerCheckWallCollisionDown:
 ;;; Player.y > tile.y + 16? Then no collision
         push    bc
         ld      a, [var_player_coord_y]
-        add     8
+        add     11
         ld      c, a
         ld      a, b
         add     16
@@ -296,7 +299,7 @@ r9_PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        cp      15
+        cp      WALL_TILES_END
 
         jr      C, .test_xm1_ym1
         jr      .skip_xm1_ym1
@@ -328,7 +331,7 @@ r9_PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        cp      15
+        cp      WALL_TILES_END
 
         jr      C, .test_xm1_y
         jr      .skip_xm1_y
@@ -356,7 +359,7 @@ r9_PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        cp      15
+        cp      WALL_TILES_END
 
         jr      C, .test_xm1_yp1
         jr      .skip_xm1_yp1
@@ -390,7 +393,7 @@ r9_PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        cp      15
+        cp      WALL_TILES_END
 
         jr      C, .test_x_ym1
         jr      .skip_x_ym1
@@ -418,7 +421,7 @@ r9_PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        cp      15
+        cp      WALL_TILES_END
 
         jr      C, .test_x_yp1
         jr      .skip_x_yp1
@@ -446,7 +449,7 @@ r9_PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        cp      15
+        cp      WALL_TILES_END
 
         jr      C, .test_xp1_ym1
         jr      .skip_xp1_ym1
@@ -479,7 +482,7 @@ r9_PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        cp      15
+        cp      WALL_TILES_END
 
         jr      C, .test_xp1_y
         jr      .skip_xp1_y
@@ -508,7 +511,7 @@ r9_PlayerCheckWallCollisions:
         call    MapGetTile
 
         ld      a, b
-        cp      15
+        cp      WALL_TILES_END
 
         jr      C, .test_xp1_yp1
         jr      .skip_xp1_yp1

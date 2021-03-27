@@ -7,10 +7,16 @@ import csv
 this_script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
+def item_tile_is_collectible(t):
+    return t == 15
+
+
 
 def encode_map_data(path, output):
     with open(path) as csvfile:
         reader = csv.reader(csvfile)
+
+        collectible_item_tiles = []
 
         for row in reader:
             output.write('DB ')
@@ -30,6 +36,14 @@ def encode_map_data(path, output):
                     output.write('$')
                     output.write(hex(int(num))[2:])
 
+                if item_tile_is_collectible(int(num)):
+                    collectible_item_tiles.append(int(num))
+
+                    if len(collectible_item_tiles) > 8:
+                        print("warning: too many collectible items assigned to room")
+                        print("\tin file: " + path)
+
+
             output.write("\n")
 
 
@@ -38,7 +52,8 @@ for subdir in os.listdir(this_script_dir + "/../data/map"):
     dirfiles = []
 
     for map_data in os.listdir(this_script_dir + "/../data/map/" + subdir):
-        dirfiles.append(map_data)
+        if not "~" in map_data:
+            dirfiles.append(map_data)
 
     dirfiles.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
 

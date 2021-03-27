@@ -155,7 +155,12 @@ MapLoad2__rom0_only:
         ld      de, var_map_info
 	call    Memcpy
 
-        SET_BANK 1
+        ;; Now, the room data is sitting in RAM. We can safely call back into
+        ;; bank 1 to do whatever other loading or level generation that we want
+        ;; to do.
+
+        LONG_CALL r1_InitializeRoom, 1
+
         ret
 
 .roomDataLookupTab::
