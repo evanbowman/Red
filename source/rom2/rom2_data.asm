@@ -1,7 +1,9 @@
 ;;; ############################################################################
 
 ;;; NOTE: We're copying date from here with GDMA, so the eight byte alignment is
-;;; important.
+;;; important. But... our spritesheet is the only data in the whole rom bank, so
+;;; it's probably aligned regardless, although I guess it can't hurt to make
+;;; things explicit.
 SECTION "SPRITESHEET1", ROMX, ALIGN[8], BANK[SPRITESHEET1_ROM_BANK]
 ;;; I'm putting this data in a separate rom bank, so that I can keep most of the
 ;;; code in bank 0.
