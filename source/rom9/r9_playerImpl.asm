@@ -1084,7 +1084,7 @@ r9_CollectMapItem:
         sla     a                       ; 2x2 background meta tiles
         sla     d                       ;
 
-        ld      e, 18                   ; TODO: Define constant for this empty tile
+        ld      e, $40                  ; TODO: Define constant for this empty tile
         ld      c, 2
 
         call    SetBackgroundTile16x16
