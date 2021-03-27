@@ -1,7 +1,6 @@
 import sys
 import os
-import csv
-
+import json
 
 
 this_script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -13,38 +12,24 @@ def item_tile_is_collectible(t):
 
 
 def encode_map_data(path, output):
-    with open(path) as csvfile:
-        reader = csv.reader(csvfile)
+    print("encoding " + path)
 
-        collectible_item_tiles = []
+    with open(path) as jsonfile:
+        data = json.load(jsonfile)
 
-        for row in reader:
-            output.write('DB ')
+        output.write('DB ')
 
-            first = True
+        for tile in data["layers"][0]["data"]:
+            if int(tile - 1) < 16:
+                output.write('$0')
+                output.write(hex(int(tile - 1))[2:])
+            else:
+                output.write('$')
+                output.write(hex(int(tile - 1))[2:])
 
-            for num in row:
-                if not first:
-                    output.write(', ')
+            output.write(", ")
 
-                first = False
-
-                if int(num) < 16:
-                    output.write('$0')
-                    output.write(hex(int(num))[2:])
-                else:
-                    output.write('$')
-                    output.write(hex(int(num))[2:])
-
-                if item_tile_is_collectible(int(num)):
-                    collectible_item_tiles.append(int(num))
-
-                    if len(collectible_item_tiles) > 8:
-                        print("warning: too many collectible items assigned to room")
-                        print("\tin file: " + path)
-
-
-            output.write("\n")
+        output.write("\n")
 
 
 
@@ -52,7 +37,7 @@ for subdir in os.listdir(this_script_dir + "/../data/map"):
     dirfiles = []
 
     for map_data in os.listdir(this_script_dir + "/../data/map/" + subdir):
-        if not "~" in map_data:
+        if not "~" in map_data and ".json" in map_data:
             dirfiles.append(map_data)
 
     dirfiles.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))

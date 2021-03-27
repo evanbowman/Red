@@ -137,7 +137,7 @@ MapLoad2__rom0_only:
         ld      [rROMB0], a             ; /
 
         sla     e                       ; Two bytes per pointer in roomdata lut
-
+.here:
         ld      hl, .roomDataLookupTab  ; \ Load pointer to room data array
         add     hl, de                  ; /
         ld      e, [hl]
