@@ -141,6 +141,10 @@ ENTITY_SIZE EQU var_player_struct_end - var_player_struct
 var_player_spill1:      DS      1
 var_player_spill2:      DS      1
 
+
+var_collect_item_xy:    DS      1
+
+
 ;;; SECTION Player
 
 ;;; ############################################################################
@@ -243,7 +247,6 @@ var_inventory_scene_craftable_items_list:   DS  2 * CRAFTABLE_ITEMS_COUNT
 
 var_crafting_dependency_set:  DS      ITEM_SIZE * 3
 var_crafting_dependency_set_end:
-
 
         NEXTU
         ENDU

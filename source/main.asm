@@ -337,21 +337,6 @@ InventoryTest:
         ld      b, ITEM_STICK
         call    InventoryAddItem
 
-        ld      b, ITEM_POTATO
-        call    InventoryAddItem
-
-        ld      b, ITEM_POTATO
-        call    InventoryAddItem
-
-        ld      b, ITEM_TURNIP
-        call    InventoryAddItem
-
-        ld      b, ITEM_POTATO
-        call    InventoryAddItem
-
-        ld      b, ITEM_TURNIP
-        call    InventoryAddItem
-
         ret
 
 

@@ -55,3 +55,11 @@ PlayerUpdate:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+PlayerUpdatePickupItem:
+        LONG_CALL r9_PlayerUpdatePickupItemImpl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------

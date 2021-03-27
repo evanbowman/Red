@@ -862,9 +862,235 @@ r9_PlayerUpdateImpl:
         call    FixnumSub
 
 	call    r9_PlayerAnimate
-        jr      .done
+
+        ldh     a, [var_joypad_current]
+        bit     PADB_A, a
+        jr      Z, .done
+        ld      a, [var_player_spill1]
+        or      a
+        jr      Z, .done
+        call    r9_PlayerTryInteract
 
 .done:
+        ret
+
+
+r9_PlayerTryInteract:
+        ;; Yeah, this is lazy, but it only runs when we press a button and we're
+        ;; colliding with something, so it's not worth optimizing this part of
+        ;; the code, especially when we have tons of slack space in this rom
+        ;; bank.
+        ld      a, [var_player_fb]
+        cp      SPRID_PLAYER_WL
+        jr      Z, .tryInteractLeft
+        cp      SPRID_PLAYER_SL
+        jr      Z, .tryInteractLeft
+        cp      SPRID_PLAYER_WR
+        jr      Z, .tryInteractRight
+        cp      SPRID_PLAYER_SR
+        jr      Z, .tryInteractRight
+        cp      SPRID_PLAYER_WU
+        jr      Z, .tryInteractUp
+        cp      SPRID_PLAYER_SU
+        jr      Z, .tryInteractUp
+        cp      SPRID_PLAYER_WD
+        jr      Z, .tryInteractDown
+        cp      SPRID_PLAYER_SD
+        jr      Z, .tryInteractDown
+        ret
+
+.tryInteractLeft:
+        ld      a, [var_player_spill1]
+        and     COLLISION_LEFT
+        ret     Z
+
+	call    r9_PlayerTileCoord
+        dec     a
+        ld      d, SPRID_PLAYER_PD
+        call    r9_PlayerInteractTile
+
+        ret
+
+.tryInteractRight:
+        ld      a, [var_player_spill1]
+        and     COLLISION_RIGHT
+        ret     Z
+
+	call    r9_PlayerTileCoord
+        inc     a
+        ld      d, SPRID_PLAYER_PD
+        call    r9_PlayerInteractTile
+
+        ret
+
+.tryInteractUp:
+        ld      a, [var_player_spill1]
+        and     COLLISION_UP
+        ret     Z
+
+	call    r9_PlayerTileCoord
+        dec     b
+        ld      d, SPRID_PLAYER_PU
+        call    r9_PlayerInteractTile
+
+        ret
+
+.tryInteractDown:
+        ld      a, [var_player_spill1]
+        and     COLLISION_DOWN
+        ret     Z
+
+	call    r9_PlayerTileCoord
+        inc     b
+        ld      d, SPRID_PLAYER_PD
+        call    r9_PlayerInteractTile
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_PlayerInteractTile:
+;;; a - x
+;;; b - y
+;;; d - pickup animation frame base
+        push    de
+
+
+        push    af                      ; \
+        push    bc                      ; |
+        swap    a                       ; | Store x,y coords of tile, for later
+        and     $f0                     ; | use, when we want to erase the tile
+        ld      c, a                    ; | from the world map.
+        ld      a, b                    ; |
+        and     $0f                     ; |
+        or      c                       ; |
+        ld      [var_collect_item_xy], a; |
+        pop     bc                      ; |
+        pop     af                      ; /
+
+
+        ld      hl, var_map_info
+        call    MapGetTile
+
+	ld      a, 15
+        cp      b               ; FIXME...
+        jr      NZ, .done
+
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdatePickupItem
+        call    EntitySetUpdateFn
+
+        pop     de
+
+        call    r9_PlayerPickupAnimationInit
+
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_PlayerPickupAnimationInit:
+;;; d - pickup animation frame base
+        ld      a, d
+        ld      [var_player_fb], a
+
+        ld      a, 0
+        ld      [var_player_kf], a
+
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [var_player_swap_spr], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_PlayerUpdatePickupItemImpl:
+        ld      hl, var_player_animation
+        ld      c, 7
+        ld      d, 5
+        call    AnimationAdvance
+        or      a
+        jr      NZ, .frameChanged
+        ret
+
+.frameChanged:
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_display_flag], a
+
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [var_player_swap_spr], a
+
+        ld      a, [var_player_kf]
+        cp      0                       ; Animation complete if we've looped
+        jr      Z, .animationComplete
+
+        cp      4
+        jr      NZ, .skip
+
+        call    r9_CollectMapItem
+
+.skip:
+        ret
+
+.animationComplete:
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdate
+        call    EntitySetUpdateFn
+
+        ld      a, [var_player_fb]
+        cp      SPRID_PLAYER_PD
+        jr      Z, .resumeDown
+        cp      SPRID_PLAYER_PU
+        jr      Z, .resumeUp
+
+.resumeDown:
+        ld      a, SPRID_PLAYER_SD
+        jr      .setFb
+
+.resumeUp:
+        ld      a, SPRID_PLAYER_SU
+        jr      .setFb
+
+.setFb:
+        ld      [var_player_fb], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_CollectMapItem:
+        ld      b, 7
+.waitLoop:
+        call    VBlankIntrWait
+        dec     b
+        ld      a, 0
+        cp      b
+        jr      NZ, .waitLoop
+
+        ld      a, [var_collect_item_xy]
+        and     $0f
+        ld      d, a
+        ld      a, [var_collect_item_xy]
+        and     $f0
+        swap    a
+
+        sla     a                       ; 2x2 background meta tiles
+        sla     d                       ;
+
+        ld      e, 18
+        ld      c, 2
+
+        call    SetBackgroundTile16x16
+
+
+        ld      b, ITEM_TURNIP          ; Fixme!
+        call    InventoryAddItem
+
+
         ret
 
 
