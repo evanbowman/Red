@@ -23,7 +23,7 @@ def encode(room_json):
     out += '${0:0{1}X}, '.format(room_json["variant"], 2)
 
     # Byte is reserved for future use.
-    out += '${0:0{1}X}, '.format(0, 2)
+    out += '${0:0{1}X}, '.format(255, 2)
 
     if len(room_json["entities"]) > 5:
         print("error: too many entities assigned to room.")
@@ -51,7 +51,7 @@ with open(sys.argv[1]) as map_json:
         encode(room)
 
 
-null_room = "DB $0f, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, "
+null_room = "DB $0f, $00, $ff, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, "
 
 
 for row in rooms:

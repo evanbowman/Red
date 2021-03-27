@@ -950,6 +950,9 @@ r9_PlayerTryInteract:
 
 ;;; ----------------------------------------------------------------------------
 
+
+
+
 r9_PlayerInteractTile:
 ;;; a - x
 ;;; b - y
@@ -973,7 +976,7 @@ r9_PlayerInteractTile:
         ld      hl, var_map_info
         call    MapGetTile
 
-	ld      a, 15
+	ld      a, COLLECTIBLE_TILE_TEST
         cp      b               ; FIXME...
         jr      NZ, .done
 
@@ -1062,6 +1065,37 @@ r9_PlayerUpdatePickupItemImpl:
 
 ;;; ----------------------------------------------------------------------------
 
+r9_SetItemCollected:
+        ld      b, 0
+        ld      hl, var_map_collectibles
+.loop:
+        ld      a, 8
+        cp      b
+        jr      Z, .endLoop
+
+        ld      a, [var_collect_item_xy]
+        ld      c, [hl]
+        cp      c
+        jr      NZ, .next
+
+        inc     hl
+        ld      a, 0
+        ld      [hl], a
+        jr      .endLoop
+
+.next:
+        inc     b
+        inc     hl
+        inc     hl
+        jr      .loop
+.endLoop:
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r9_CollectMapItem:
         ld      b, 7
 .waitLoop:
@@ -1101,6 +1135,7 @@ r9_CollectMapItem:
         ld      b, ITEM_TURNIP          ; Fixme!
         call    InventoryAddItem
 
+        call    r9_SetItemCollected
 
         ret
 

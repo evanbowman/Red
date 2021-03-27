@@ -590,9 +590,16 @@ r1_Mul13Fast:
 
 ;;; ----------------------------------------------------------------------------
 
-;;; IMPORTANT: assumes that the switchable ram bank, where we store map info, is
-;;; already set to bank 1!
-r1_InitializeRoom:
+;;; Collectible items are represented in a room's header by a bitmask. For
+;;; easier access, we expand the collectible bitmask into an array of pairs
+;;; in ram, where each pair contains {x,y} in the first byte, and a set/unset
+;;; flag in the second byte. Places in the bitset are assigned to collectible
+;;; tiles in the map data in the order that they appear.
+
+
+r1_StoreCollectibles:
+        RAM_BANK 1
+
         ld      a, [var_room_x]
         ld      b, a
 
@@ -601,7 +608,84 @@ r1_InitializeRoom:
 
         call    r1_LoadRoom
 
+        inc     hl
+        inc     hl
+
+        ld      c, 0
+        ld      b, 0
+
+        ld      de, var_map_collectibles
+        inc     de
+
+.loop:
+        sla     c
+        ld      a, [de]
+        or      c
+        ld      c, a
+
+        inc     de
+        inc     de
+        inc     b
+        ld      a, 8
+        cp      b
+        jr      NZ, .loop
+
+        ld      [hl], c
+
+        ret
+
+
+r1_ExpandCollectibles:
+        ld      a, [var_room_x]
+        ld      b, a
+
+        ld      a, [var_room_y]
+        ld      c, a
+
+        call    r1_LoadRoom
+
+        inc     hl                      ; \ Collectibles taken bitmask in byte
+        inc     hl                      ; / three.
+
+        ld      c, [hl]
+
+        ld      de, var_map_collectibles
+
+
+        ld      b, 0
+.loop:
+        inc     de
+
+        sla     c
+        jr      C, .set
+        jr      .unset
+
+.set:
+        ld      a, 1
+        jr      .store
+.unset:
+        ld      a, 0
+.store:
+        ld      [de], a
+
+
+        inc     de
+        inc     b
+        ld      a, 8
+        cp      b
+        jr      NZ, .loop
+
+        ret
+
+
+;;; IMPORTANT: assumes that the switchable ram bank, where we store map info, is
+;;; already set to bank 1!
+r1_InitializeRoom:
+
+        call    r1_ExpandCollectibles
+.t2:
         ld      de, var_map_info
+        ld      hl, var_map_collectibles
 
         ld      c, 0            ; y counter
 .outer_loop:
@@ -612,8 +696,26 @@ r1_InitializeRoom:
         jr      Z, .outer_loop_step
 
         ld      a, [de]
+        cp      COLLECTIBLE_TILE_TEST
+        jr      NZ, .next
 
+        ld      a, b            ; \ Because rooms are 16x16, this is sufficent
+        swap    a               ; | to encode coords into a single byte.
+        or      c               ; /
 
+        ld      [hl], a         ; Store x,y in expanded collectible array
+        inc     hl
+
+        ld      a, [hl]         ; Test whether collectible has been collected
+        inc     hl
+
+        or      a
+        jr      NZ, .next
+
+        ld      a, 18
+        ld      [de], a
+
+.next:
         inc     de
         inc     b
         jr      .inner_loop

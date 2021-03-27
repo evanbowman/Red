@@ -401,6 +401,7 @@ OverworldSceneTryRoomTransition:
         jr      C, .tryUpTransition
 
         LONG_CALL r1_StoreRoomEntities, 1
+        LONG_CALL r1_StoreCollectibles, 1
 
 	ld      a, [var_room_y]
         inc     a
@@ -430,6 +431,7 @@ OverworldSceneTryRoomTransition:
         jr      C, .tryRightTransition
 
         LONG_CALL r1_StoreRoomEntities, 1
+        LONG_CALL r1_StoreCollectibles, 1
 
 	ld      a, [var_room_y]
         dec     a
@@ -456,6 +458,7 @@ OverworldSceneTryRoomTransition:
         jr      C, .tryLeftTransition
 
         LONG_CALL r1_StoreRoomEntities, 1
+        LONG_CALL r1_StoreCollectibles, 1
 
 	ld      a, [var_room_x]
         inc     a
@@ -484,6 +487,7 @@ OverworldSceneTryRoomTransition:
         jr      C, .done
 
         LONG_CALL r1_StoreRoomEntities, 1
+        LONG_CALL r1_StoreCollectibles, 1
 
 	ld      a, [var_room_x]
         dec     a

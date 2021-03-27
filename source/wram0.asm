@@ -82,7 +82,7 @@ MAP_HEIGHT EQU SCRN_VY / MAP_TILE_WIDTH
 
 var_map_info:    DS     MAP_WIDTH * MAP_HEIGHT
 
-var_collectibles:       DS      8 * 2
+var_map_collectibles:     DS      8 * 2
 
 
 ;;; SECTION MAP_INFO
