@@ -858,7 +858,7 @@ r9_PlayerUpdateImpl:
 
         ld      hl, var_player_stamina
         ld      b, 0
-        ld      c, 20
+        ld      c, 10
         call    FixnumSub
 
 	call    r9_PlayerAnimate
@@ -1084,7 +1084,7 @@ r9_CollectMapItem:
         sla     a                       ; 2x2 background meta tiles
         sla     d                       ;
 
-        ld      e, $40                  ; TODO: Define constant for this empty tile
+        ld      e, $d4                  ; TODO: Define constant for this empty tile
         ld      c, 2
 
         call    SetBackgroundTile16x16
