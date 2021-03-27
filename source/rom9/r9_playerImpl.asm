@@ -1093,7 +1093,7 @@ r9_CollectMapItem:
         pop     af                      ; /
 
         ld      hl, var_map_info
-        ld      b, d
+        ld      b, d                    ; Pass y in reg b
         ld      d, 18                   ; TODO: Define constant for this empty tile
         call    MapSetTile
 
