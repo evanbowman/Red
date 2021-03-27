@@ -287,8 +287,6 @@ VBlankCopySpriteTextures:
 ;;; bunch of work upfront, because we do not always need to actually run the
 ;;; dma. Iterate through each entity, check its swap flag. If the entity
 ;;; requires a texture swap, map the texture into vram with GDMA.
-        SET_BANK SPRITESHEET1_ROM_BANK
-
         ld      de, var_entity_buffer
         ld      a, [var_entity_buffer_size]
 

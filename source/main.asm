@@ -360,9 +360,12 @@ MapSpriteBlock:
 ; overwrites de
 ;;; Sprite blocks are 32x32 in size. Because 32x32 sprites occupy 256 bytes,
 ;;; indexing is super easy.
-;;; FIXME: In the future, if we want to support more than 256 sprites, what to
-;;; do?
-;;; TODO: parameterize vram dest
+
+;;; TODO: Given the size of an animation keyframe, we can fit sixty or so per
+;;; rom bank. To support more animations, we will need to switch to a different
+;;; bank, and adjust the sprite index accordingly...
+        SET_BANK SPRITESHEET1_ROM_BANK
+
         ld      de, r2_SpriteSheetData
         ld      l, 0
         add     hl, de                  ; h is in upper bits, so x256 for free
