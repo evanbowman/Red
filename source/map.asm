@@ -113,6 +113,23 @@ MapGetTile:
 
 ;;; ----------------------------------------------------------------------------
 
+MapSetTile:
+;;; hl - map
+;;; a - x
+;;; b - y
+;;; d - tile
+;;; trashes hl, c, a, b
+        swap    b
+        add     b
+        ld      c, a
+        ld      b, 0
+        add     hl, bc
+        ld      [hl], d
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 ;;; Does a bunch of bank swapping, may only be called from rom0.
 MapLoad2__rom0_only:
         RAM_BANK 1

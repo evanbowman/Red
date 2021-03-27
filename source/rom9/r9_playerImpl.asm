@@ -1078,13 +1078,24 @@ r9_CollectMapItem:
         and     $f0
         swap    a
 
+        push    af                      ; \ Store coordinate
+        push    de                      ; /
+
         sla     a                       ; 2x2 background meta tiles
         sla     d                       ;
 
-        ld      e, 18
+        ld      e, 18                   ; TODO: Define constant for this empty tile
         ld      c, 2
 
         call    SetBackgroundTile16x16
+
+	pop     de                      ; \ Restore coordinate
+        pop     af                      ; /
+
+        ld      hl, var_map_info
+        ld      b, d
+        ld      d, 18                   ; TODO: Define constant for this empty tile
+        call    MapSetTile
 
 
         ld      b, ITEM_TURNIP          ; Fixme!
