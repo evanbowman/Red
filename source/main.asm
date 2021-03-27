@@ -365,6 +365,11 @@ MapSpriteBlock:
 ;;; rom bank. To support more animations, we will need to switch to a different
 ;;; bank, and adjust the sprite index accordingly...
         SET_BANK SPRITESHEET1_ROM_BANK
+;;; TODO: Remap the bank and index here
+.TODO_REMAP_BANK_AND_INDEX:
+        ld      a, 60
+        cp      h
+        jr      C, .TODO_REMAP_BANK_AND_INDEX
 
         ld      de, r2_SpriteSheetData
         ld      l, 0
