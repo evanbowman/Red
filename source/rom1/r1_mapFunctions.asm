@@ -815,8 +815,9 @@ r1_LoadRoomEntities:
         cp      ROOM_ENTITYDESC_ARRAY_SIZE / 2
         jr      Z, .endloop
 
-        ld      a, [hl]
-        cp      0
+        ld      d, [hl]
+        ld      a, 0
+        cp      d
         jr      NZ, .test
         jr      .here
 .test:
@@ -824,8 +825,6 @@ r1_LoadRoomEntities:
 
         push    hl
 	push    bc
-	call    VBlankIntrWait
-        call    LcdOff
 
         ld      a, [hl]
         and     $f0
@@ -834,9 +833,9 @@ r1_LoadRoomEntities:
         and     $0f
         swap    a
         ld      b, a
-        call    r1_BonfireNew
 
-        call    LcdOn
+        call    r1_SpawnEntity
+
         pop     bc
         pop     hl
 .here:
@@ -847,6 +846,36 @@ r1_LoadRoomEntities:
 
         ;; TODO: create entities based on contents of room's entity array.
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_SpawnEntity:
+;;; b - x
+;;; c - y
+;;; d - typeid
+        ld      a, d
+        cp      ENTITY_TYPE_BONFIRE
+        jr      Z, .spawnBonfire
+        cp      ENTITY_TYPE_SPIDER
+        jr      Z, .spawnSpider
+        cp      ENTITY_TYPE_GREYWOLF
+        jr      Z, .spawnGreywolf
+
+.spawnBonfire:
+	call    VBlankIntrWait
+        call    LcdOff          ; FIXME...
+        call    r1_BonfireNew
+        call    LcdOn
+        ret
+
+.spawnSpider:
+;;; TODO...
+        ret
+
+.spawnGreywolf:
+;;; TODO...
         ret
 
 

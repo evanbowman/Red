@@ -232,7 +232,6 @@ Main:
 
 
         call    CreateWorld
-        call    InventoryTest
 
 .loop:
         LONG_CALL r1_ReadKeys, 1
@@ -319,22 +318,7 @@ CreateWorld:
 
 	LONG_CALL r1_SetRoomVisited, 1
 
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-InventoryTest:
         ld      b, ITEM_DAGGER
-        call    InventoryAddItem
-
-        ld      b, ITEM_RAW_MEAT
-        call    InventoryAddItem
-
-        ld      b, ITEM_RAW_MEAT
-        call    InventoryAddItem
-
-        ld      b, ITEM_STICK
         call    InventoryAddItem
 
         ret
