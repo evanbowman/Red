@@ -1196,7 +1196,7 @@ r9_PlayerAttackInit:
         jr      Z, .up
 
 .right:
-        ld      a, SPRID_PLAYER_KNIFE_ATK_D
+        ld      a, SPRID_PLAYER_KNIFE_ATK_R
         jr      .set
 
 .left:
