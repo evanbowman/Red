@@ -63,3 +63,51 @@ PlayerUpdatePickupItem:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+PlayerUpdateAttack1:
+        LONG_CALL r9_PlayerUpdateAttack1Impl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+PlayerUpdateAttack2:
+        LONG_CALL r9_PlayerUpdateAttack2Impl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+PlayerUpdateAttack3:
+        LONG_CALL r9_PlayerUpdateAttack3Impl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+PlayerAttack1Exit:
+        LONG_CALL r9_PlayerAttack1ExitImpl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+PlayerAttack2Exit:
+        LONG_CALL r9_PlayerAttack2ExitImpl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+PlayerAttack3Exit:
+        LONG_CALL r9_PlayerAttack3ExitImpl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------

@@ -866,11 +866,17 @@ r9_PlayerUpdateImpl:
 
         ldh     a, [var_joypad_current]
         bit     PADB_A, a
-        jr      Z, .done
+        jr      Z, .checkB
         ld      a, [var_player_spill1]
         or      a
         jr      Z, .done
         call    r9_PlayerTryInteract
+        jr      .done
+
+.checkB:
+        bit     PADB_B, a
+        jr      Z, .done
+        call    r9_PlayerAttackInit
 
 .done:
         ret
@@ -1150,6 +1156,267 @@ r9_CollectMapItem:
 
         call    r9_SetItemCollected
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerAttackInit:
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdateAttack1
+        call    EntitySetUpdateFn
+
+        ld      a, 0
+        ld      [var_player_kf], a
+
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [var_player_swap_spr], a
+
+        ld      a, 1 | SPRITE_SHAPE_SQUARE_32
+        ld      [var_player_display_flag], a
+
+
+        ld      a, [var_player_fb]
+        cp      a, SPRID_PLAYER_WR
+        jr      Z, .right
+        cp      a, SPRID_PLAYER_SR
+        jr      Z, .right
+        cp      a, SPRID_PLAYER_WL
+        jr      Z, .left
+        cp      a, SPRID_PLAYER_SL
+        jr      Z, .right
+        cp      a, SPRID_PLAYER_WD
+        jr      Z, .down
+        cp      a, SPRID_PLAYER_SD
+        jr      Z, .down
+        cp      a, SPRID_PLAYER_WU
+        jr      Z, .up
+        cp      a, SPRID_PLAYER_SU
+        jr      Z, .up
+
+.right:
+        ld      a, SPRID_PLAYER_KNIFE_ATK_D
+        jr      .set
+
+.left:
+        ld      a, SPRID_PLAYER_KNIFE_ATK_D
+	jr      .set
+
+.down:
+        ld      a, SPRID_PLAYER_KNIFE_ATK_D
+	jr      .set
+
+.up:
+        ld      a, SPRID_PLAYER_KNIFE_ATK_U
+        jr      .set
+
+
+.set:
+        ld      [var_player_fb], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerUpdateAttack1Impl:
+        ld      hl, var_player_animation
+        ld      c, 7
+        ld      d, 15
+        call    AnimationAdvance
+        or      a
+        jr      NZ, .frameChanged
+        ret
+
+.frameChanged:
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [var_player_swap_spr], a
+
+        ld      a, [var_player_kf]
+        cp      4
+        jr      Z, .checkBtn
+        ret
+
+.checkBtn:
+        ldh     a, [var_joypad_raw]
+        bit     PADB_B, a
+
+        jr      NZ, .next
+
+        ld      hl, var_player_struct
+        ld      de, PlayerAttack1Exit
+        call    EntitySetUpdateFn
+
+        ret
+
+.next:
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdateAttack2
+        call    EntitySetUpdateFn
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerUpdateAttack2Impl:
+        ld      hl, var_player_animation
+        ld      c, 7
+        ld      d, 15
+        call    AnimationAdvance
+        or      a
+        jr      NZ, .frameChanged
+        ret
+
+.frameChanged:
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [var_player_swap_spr], a
+
+        ld      a, [var_player_kf]
+        cp      8
+        jr      Z, .checkBtn
+        ret
+
+.checkBtn:
+        ldh     a, [var_joypad_raw]
+        bit     PADB_B, a
+
+        jr      NZ, .next
+
+        ld      hl, var_player_struct
+        ld      de, PlayerAttack2Exit
+        call    EntitySetUpdateFn
+
+        ret
+
+.next:
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdateAttack3
+        call    EntitySetUpdateFn
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerUpdateAttack3Impl:
+        ld      hl, var_player_animation
+        ld      c, 7
+        ld      d, 15
+        call    AnimationAdvance
+        or      a
+        jr      NZ, .frameChanged
+        ret
+
+.frameChanged:
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [var_player_swap_spr], a
+
+        ld      a, [var_player_kf]
+        cp      14
+        jr      Z, .done
+        ret
+
+.done:
+        ld      hl, var_player_struct
+        ld      de, PlayerAttack3Exit
+        call    EntitySetUpdateFn
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerAttackTryExit:
+;;; de - potential resume dest
+        ld      a, [var_joypad_raw]
+        bit     PADB_B, a
+
+        jr      NZ, .resume
+
+
+        ld      a, [var_player_tmr]
+        inc     a
+        cp      14
+        jr      Z, .next
+        ld      [var_player_tmr], a
+
+        ret
+
+.resume:
+        ld      hl, var_player_struct
+        call    EntitySetUpdateFn
+
+        ld      a, 0
+        ld      [var_player_tmr], a
+
+        ret
+
+.next:
+        ld      a, [var_player_fb]
+        cp      SPRID_PLAYER_KNIFE_ATK_U
+        jr      Z, .up
+        cp      SPRID_PLAYER_KNIFE_ATK_L
+        jr      Z, .left
+        cp      SPRID_PLAYER_KNIFE_ATK_R
+        jr      Z, .right
+
+        ld      a, SPRID_PLAYER_SD
+        jr      .set
+.up:
+        ld      a, SPRID_PLAYER_SU
+        jr      .set
+.left:
+        ld      a, SPRID_PLAYER_SL
+        jr      .set
+.right:
+        ld      a, SPRID_PLAYER_SR
+
+.set:
+        ld      [var_player_fb], a
+        ld      a, 0
+        ld      [var_player_kf], a
+        ld      [var_player_tmr], a
+
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdate
+        call    EntitySetUpdateFn
+
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [var_player_swap_spr], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerAttack1ExitImpl:
+        ld      de, PlayerUpdateAttack2
+        call    r9_PlayerAttackTryExit
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerAttack2ExitImpl:
+        ld      de, PlayerUpdateAttack3
+        call    r9_PlayerAttackTryExit
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerAttack3ExitImpl:
+        ld      de, PlayerUpdateAttack1
+        call    r9_PlayerAttackTryExit
         ret
 
 

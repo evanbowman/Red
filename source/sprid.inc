@@ -36,17 +36,43 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-;;; Spritesheet constants (needs to match the ordering of data in bank 2)
-SPRID_PLAYER_WR EQU     0
-SPRID_PLAYER_SR EQU     5
-SPRID_PLAYER_WL EQU     6
-SPRID_PLAYER_SL EQU     11
-SPRID_PLAYER_WD EQU     12
-SPRID_PLAYER_SD EQU     22
-SPRID_PLAYER_WU EQU     23
-SPRID_PLAYER_SU EQU     33
-SPRID_BONFIRE   EQU     34
-SPRID_PLAYER_PD EQU     40
-SPRID_PLAYER_PU EQU     45
-SPRID_PLAYER_PR EQU     50
-SPRID_PLAYER_PL EQU     55
+;;; Spritesheet constants (needs to match the ordering of data in appropriate
+;;; ROM banks).
+
+
+;;; ROM Bank 2 Sprites:
+SPRID_PLAYER_WR          EQU     0
+SPRID_PLAYER_SR          EQU     5
+SPRID_PLAYER_WL          EQU     6
+SPRID_PLAYER_SL          EQU     11
+SPRID_PLAYER_WD          EQU     12
+SPRID_PLAYER_SD          EQU     22
+SPRID_PLAYER_WU          EQU     23
+SPRID_PLAYER_SU          EQU     33
+SPRID_BONFIRE            EQU     34
+SPRID_PLAYER_PD          EQU     40
+SPRID_PLAYER_PU          EQU     45
+SPRID_PLAYER_PR          EQU     50
+SPRID_PLAYER_PL          EQU     55
+
+SPRID_BANK2_UNUSED_1     EQU 60
+SPRID_BANK2_UNUSED_2     EQU 61
+SPRID_BANK2_UNUSED_3     EQU 62
+SPRID_BANK2_UNUSED_4     EQU 63
+
+
+;;; ROM Bank 3 Sprites:
+;;; ...
+SPRID_PLAYER_KNIFE_ATK_D EQU 64
+SPRID_PLAYER_KNIFE_ATK_U EQU 79
+SPRID_PLAYER_KNIFE_ATK_R EQU 94
+SPRID_PLAYER_KNIFE_ATK_L EQU 109
+
+SPRID_BANK3_UNUSED_1     EQU 124
+SPRID_BANK3_UNUSED_2     EQU 125
+SPRID_BANK3_UNUSED_3     EQU 126
+SPRID_BANK3_UNUSED_4     EQU 127
+
+
+;;; ROM Bank 4 Sprites:
+;;; ...

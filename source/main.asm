@@ -321,6 +321,9 @@ CreateWorld:
         ld      b, ITEM_DAGGER
         call    InventoryAddItem
 
+        ld      b, ITEM_RAW_MEAT
+        call    InventoryAddItem
+
         ret
 
 
@@ -358,7 +361,7 @@ MapSpriteBlock:
 ;;; TODO: make this more flexible, instead of just hard-coding two banks...
 .nextBank:
         ld      a, h
-        sub     63
+        sub     64
         ld      h, a
 
         SET_BANK SPRITESHEET1_ROM_BANK2
