@@ -778,6 +778,7 @@ r9_PlayerJoypadResponse:
 ;;; ----------------------------------------------------------------------------
 
 r9_PlayerUpdateImpl:
+
         call    r9_PlayerUpdateMovement
 
         ldh     a, [var_joypad_released]
@@ -906,7 +907,7 @@ r9_PlayerTryInteract:
 
 	call    r9_PlayerTileCoord
         dec     a
-        ld      d, SPRID_PLAYER_PD
+        ld      d, SPRID_PLAYER_PL
         call    r9_PlayerInteractTile
 
         ret
@@ -918,7 +919,7 @@ r9_PlayerTryInteract:
 
 	call    r9_PlayerTileCoord
         inc     a
-        ld      d, SPRID_PLAYER_PD
+        ld      d, SPRID_PLAYER_PR
         call    r9_PlayerInteractTile
 
         ret
@@ -1048,6 +1049,10 @@ r9_PlayerUpdatePickupItemImpl:
         jr      Z, .resumeDown
         cp      SPRID_PLAYER_PU
         jr      Z, .resumeUp
+        cp      SPRID_PLAYER_PR
+        jr      Z, .resumeRight
+        cp      SPRID_PLAYER_PL
+        jr      Z, .resumeLeft
 
 .resumeDown:
         ld      a, SPRID_PLAYER_SD
@@ -1055,6 +1060,14 @@ r9_PlayerUpdatePickupItemImpl:
 
 .resumeUp:
         ld      a, SPRID_PLAYER_SU
+        jr      .setFb
+
+.resumeRight:
+        ld      a, SPRID_PLAYER_SR
+        jr      .setFb
+
+.resumeLeft:
+        ld      a, SPRID_PLAYER_SL
         jr      .setFb
 
 .setFb:
