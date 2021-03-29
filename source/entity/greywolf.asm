@@ -33,126 +33,13 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-
-;;; ----------------------------------------------------------------------------
-
-
-GreywolfIdleSetFacing:
-        call    EntityGetPos
-        ld      a, [var_player_coord_x]
-        cp      b
-        jr      C, .faceLeft
-
-        ld      a, SPRID_GREYWOLF_R
-
-        call    EntityGetFrameBase
-        cp      b
-        jr      Z, .skip
-
-        call    EntitySetFrameBase
-
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
-        ld      [hl], a
-
-        ret
-
-.faceLeft:
-        call    EntityGetFrameBase
-        cp      b
-        jr      Z, .skip
-
-        ld      a, SPRID_GREYWOLF_L
-        call    EntitySetFrameBase
-
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
-        ld      [hl], a
-
-.skip:
-        ret
-
-
 ;;; ----------------------------------------------------------------------------
 
 
 GreywolfUpdate:
 ;;; bc - self
-        ld      h, b                    ; \ Update functions are invoked through
-        ld      l, c                    ; / hl, so it can't be a param :/
-
-        ;; call    GreywolfIdleSetFacing
-
-        ld      e, 6
-        ld      d, 5
-        call    EntityAnimationAdvance
-
-
-        ld      bc, 0
-        call    EntityGetSlack
-        ld      a, [bc]
-        cp      a, 0
-        jr      NZ, .decColorCounter
-
-	ld      a, 3
-        call    EntitySetPalette
-
-        jr      .next
-
-.decColorCounter:
-        dec     a
-        ld      [bc], a
-
-.next:
-
-;;         ld      a, [var_player_attack]
-;;         cp      PLAYER_ATTACK_NONE
-;;         jr      Z, .resetColor
-
-;;         ld      a, 7
-;;         call    EntitySetPalette
-
-;;         jr      .done
-
-;; .resetColor:
-;; 	ld      a, 3
-;;         call    EntitySetPalette
-
-        push    hl                      ; Store entity pointer on stack
-
-        call    EntityGetMessageQueue
-        call    MessageQueueLoad
-
-        pop     de                      ; Pass entity pointer in de
-        ld      bc, GreywolfOnMessage
-	call    MessageQueueDrain
-
-.done:
+        LONG_CALL r9_GreywolfUpdateImpl, 9
         jp      EntityUpdateLoopResume
-
-
-;;; ----------------------------------------------------------------------------
-
-
-GreywolfOnMessage:
-;;; bc - message pointer
-;;; de - self
-        ld      a, [bc]
-        cp      a, MESSAGE_PLAYER_KNIFE_ATTACK
-        jr      Z, .onPlayerKnifeAttack
-
-        ret
-
-.onPlayerKnifeAttack:
-        ld      h, d
-        ld      l, e
-
-        ld      a, 7
-        call    EntitySetPalette
-
-        ld      bc, 0
-        call    EntityGetSlack
-        ld      a, 20
-        ld      [bc], a
-        ret
 
 
 ;;; ----------------------------------------------------------------------------
