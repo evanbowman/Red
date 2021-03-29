@@ -876,6 +876,7 @@ r1_SpawnEntity:
 
 .spawnGreywolf:
 ;;; TODO...
+        call    r1_GreywolfNew
         ret
 
 

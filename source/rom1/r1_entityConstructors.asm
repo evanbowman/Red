@@ -76,16 +76,19 @@ r1_PlayerNew:
 
 ;;; ----------------------------------------------------------------------------
 
-r1_BonfireNew:
+
+;;; Alloc and enqueue an entity, bind texture, misc other boilerplate
+r1_EntityInit:
 ;;; b - x
 ;;; c - y
-        push    bc
+;;; return hl - entity pointer
         push    bc
 
         call    AllocateEntity
         ld      a, 0
         or      h
         or      l
+.failedAlloc:
         jr      Z, .failedAlloc
 
         push    hl
@@ -101,10 +104,6 @@ r1_BonfireNew:
 
         call    EntitySetPos
 
-        ld      a, SPRID_BONFIRE
-        call    EntitySetFrameBase
-
-        ;; Fixme: allocate texture slots dynamically
         push    hl
         call    AllocateTexture
         cp      0
@@ -114,6 +113,22 @@ r1_BonfireNew:
 
         pop     hl
         call    EntitySetTexture
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r1_BonfireNew:
+;;; b - x
+;;; c - y
+        push    bc
+
+        call    r1_EntityInit
+
+        ld      a, SPRID_BONFIRE
+        call    EntitySetFrameBase
 
         ld      a, 1
         call    EntitySetPalette
@@ -147,9 +162,25 @@ r1_BonfireNew:
         call    LcdOn
         ret
 
-.failedAlloc:
-        pop     bc
-        pop     bc
+
+;;; ----------------------------------------------------------------------------
+
+
+r1_GreywolfNew:
+        call    r1_EntityInit
+
+        ld      a, SPRID_GREYWOLF_L
+        call    EntitySetFrameBase
+
+        ld      a, 3
+        call    EntitySetPalette
+
+        ld      a, ENTITY_TYPE_GREYWOLF
+        call    EntitySetType
+
+        ld      de, GreywolfUpdate
+        call    EntitySetUpdateFn
+
         ret
 
 
