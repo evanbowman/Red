@@ -1185,7 +1185,7 @@ r9_PlayerAttackInit:
         cp      a, SPRID_PLAYER_WL
         jr      Z, .left
         cp      a, SPRID_PLAYER_SL
-        jr      Z, .right
+        jr      Z, .left
         cp      a, SPRID_PLAYER_WD
         jr      Z, .down
         cp      a, SPRID_PLAYER_SD
@@ -1200,7 +1200,7 @@ r9_PlayerAttackInit:
         jr      .set
 
 .left:
-        ld      a, SPRID_PLAYER_KNIFE_ATK_D
+        ld      a, SPRID_PLAYER_KNIFE_ATK_L
 	jr      .set
 
 .down:

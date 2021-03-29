@@ -348,10 +348,13 @@ MapSpriteBlock:
 ;;; Sprite blocks are 32x32 in size. Because 32x32 sprites occupy 256 bytes,
 ;;; indexing is super easy.
 
-;;; TODO: Given the size of an animation keyframe, we can fit sixty or so per
+;;; TODO: Given the size of an animation keyframe, we can fit sixty-four per
 ;;; rom bank. To support more animations, we will need to switch to a different
 ;;; bank, and adjust the sprite index accordingly...
         SET_BANK SPRITESHEET1_ROM_BANK
+
+        ld      a, h
+
 
         ld      a, 63
         cp      h
