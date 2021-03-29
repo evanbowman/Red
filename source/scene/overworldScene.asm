@@ -273,9 +273,6 @@ EntityUpdateLoopDone:
 
         call    OverworldSceneTryRoomTransition
 
-;;; TODO: left, right, up transitions. The level map that I drew only has an
-;;; exit on one side.
-
         ret
 
 

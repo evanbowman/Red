@@ -55,6 +55,7 @@
 ;;;     }
 ;;;     Pointer update_fn_;
 ;;;     char type_;
+;;;     Mid message_bus_number_;
 ;;; };
 ;;;
 ;;;
@@ -75,6 +76,17 @@ EntityBufferReset:
 ;;; Same here, we just cleared all entities, let's free the associated textures.
         ld      hl, var_texture_slots
         ld      bc, var_texture_slots_end - var_texture_slots
+        ld      a, 0
+        call    Memset
+
+;;; And, we can clear out message queues as well.
+        ld      hl, var_message_queues
+        ld      bc, var_message_queues_end - var_message_queues
+        ld      a, 0
+        call    Memset
+
+        ld      hl, var_message_queue_memory
+        ld      bc, var_message_queue_memeory_end - var_message_queue_memory
         ld      a, 0
         call    Memset
 
@@ -610,6 +622,15 @@ AllocateEntity:
 
         pop     hl
 
+        push    hl                ; \
+        push    hl                ; |
+        call    MessageQueueAlloc ; |
+        pop     hl                ; |
+        ld      bc, 16            ; | Bind message queue to entity
+        add     hl, bc            ; |
+        ld      [hl], a           ; |
+        pop     hl                ; /
+
         ret
 
 .next:
@@ -619,6 +640,21 @@ AllocateEntity:
 
 .failed:
         ld      hl, 0
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+EntityGetMessageQueue:
+;;; hl - entity
+;;; trashes bc
+;;; return a - queue
+        push    hl
+        ld      bc, 16
+        add     hl, bc
+        ld      a, [hl]
+        pop     hl
         ret
 
 

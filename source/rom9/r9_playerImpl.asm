@@ -777,7 +777,33 @@ r9_PlayerJoypadResponse:
 
 ;;; ----------------------------------------------------------------------------
 
+
+r9_PlayerOnMessage:
+;;; bc - message pointer
+        ld      a, [bc]                 ; Load message type
+
+        ;; TODO... currently, we're ignoring all messages.
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerMessageLoop:
+        ;; NOTE: This is fine, because the player will always use message queue
+        ;; id zero, so we don't need to add any offsets, we can just load the
+        ;; beginning of the message queue memory in ram.
+        ld      hl, var_message_queue_memory
+
+        ld      bc, r9_PlayerOnMessage
+	call    MessageQueueDrain
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r9_PlayerUpdateImpl:
+        call    r9_PlayerMessageLoop
 
         call    r9_PlayerUpdateMovement
 
@@ -956,8 +982,6 @@ r9_PlayerTryInteract:
 
 
 ;;; ----------------------------------------------------------------------------
-
-
 
 
 r9_PlayerInteractTile:
@@ -1254,8 +1278,30 @@ r9_PlayerAttackSetFacing:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerKnifeAttackBroadcast:
+        ld      c, MESSAGE_PLAYER_KNIFE_ATTACK ; \
+        ld      b, 0                           ; |
+        push    bc                             ; | Setup message arg on stack.
+        push    bc                             ; |
+        ld      hl, sp+0                       ; /
+
+        call    MessageQueueBroadcast
+
+        pop     bc              ; \ Pop message arg from stack
+        pop     bc              ; /
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 
 r9_PlayerUpdateAttack1Impl:
+        call    r9_PlayerMessageLoop
+
         call    r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
@@ -1268,6 +1314,13 @@ r9_PlayerUpdateAttack1Impl:
 .frameChanged:
         ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
+
+        ld      a, [var_player_kf]
+        cp      3
+        jr      NZ, .skip
+
+        call    r9_PlayerKnifeAttackBroadcast
+.skip:
 
         ld      a, [var_player_kf]
         cp      4
@@ -1298,6 +1351,8 @@ r9_PlayerUpdateAttack1Impl:
 
 
 r9_PlayerUpdateAttack2Impl:
+        call    r9_PlayerMessageLoop
+
         call    r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
@@ -1310,6 +1365,13 @@ r9_PlayerUpdateAttack2Impl:
 .frameChanged:
         ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
+
+        ld      a, [var_player_kf]
+        cp      7
+        jr      NZ, .skip
+
+        call    r9_PlayerKnifeAttackBroadcast
+.skip:
 
         ld      a, [var_player_kf]
         cp      8
@@ -1340,6 +1402,8 @@ r9_PlayerUpdateAttack2Impl:
 
 
 r9_PlayerUpdateAttack3Impl:
+        call    r9_PlayerMessageLoop
+
         call    r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
@@ -1352,6 +1416,13 @@ r9_PlayerUpdateAttack3Impl:
 .frameChanged:
         ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
+
+        ld      a, [var_player_kf]
+        cp      13
+        jr      NZ, .skip
+
+        call    r9_PlayerKnifeAttackBroadcast
+.skip:
 
         ld      a, [var_player_kf]
         cp      14

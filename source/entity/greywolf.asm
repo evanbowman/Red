@@ -85,7 +85,51 @@ GreywolfUpdate:
         ld      d, 5
         call    EntityAnimationAdvance
 
+;;         ld      a, [var_player_attack]
+;;         cp      PLAYER_ATTACK_NONE
+;;         jr      Z, .resetColor
+
+;;         ld      a, 7
+;;         call    EntitySetPalette
+
+;;         jr      .done
+
+;; .resetColor:
+;; 	ld      a, 3
+;;         call    EntitySetPalette
+
+        push    hl                      ; Store entity pointer on stack
+
+        call    EntityGetMessageQueue
+        call    MessageQueueLoad
+
+        pop     de                      ; Pass entity pointer in de
+        ld      bc, GreywolfOnMessage
+	call    MessageQueueDrain
+
+.done:
         jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+GreywolfOnMessage:
+;;; bc - message pointer
+;;; de - self
+        ld      a, [bc]
+        cp      a, MESSAGE_PLAYER_KNIFE_ATTACK
+        jr      Z, .onPlayerKnifeAttack
+
+        ret
+
+.onPlayerKnifeAttack:
+        ld      h, d
+        ld      l, e
+
+        ld      a, 7
+        call    EntitySetPalette
+        ret
 
 
 ;;; ----------------------------------------------------------------------------

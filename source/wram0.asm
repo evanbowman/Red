@@ -103,6 +103,32 @@ var_last_entity_idx:    DS      1
 
 ;;; SECTION ENTITY_BUFFER
 
+
+;;; ############################################################################
+
+        SECTION "MESSAGE_BUS", WRAM0
+
+
+MESSAGE_QUEUE_COUNT EQU ENTITY_BUFFER_CAPACITY - 1
+
+var_message_queues::
+DS      MESSAGE_QUEUE_COUNT
+var_message_queues_end::
+
+
+MESSAGE_SIZE EQU 4                      ; Four bytes per message
+
+MESSAGE_QUEUE_CAPACITY EQU 7            ; Seven messages per queue
+
+;;; Add one message to the queue capacity, for queue header (size, flags, etc.)
+MESSAGE_QUEUE_SIZE EQU MESSAGE_SIZE * (MESSAGE_QUEUE_CAPACITY + 1)
+
+
+var_message_queue_memory::
+DS      MESSAGE_QUEUE_SIZE * (MESSAGE_QUEUE_COUNT + 1) ; +1 for player's queue
+var_message_queue_memeory_end::
+
+
 ;;; ############################################################################
 
         SECTION "PLAYER", WRAM0
@@ -130,6 +156,8 @@ var_player_display_flag:DS   1
 
 var_player_update_fn:   DS   2  ; Engine will call this fn to update player
 var_player_type:        DS   1
+
+var_player_message_bus: DS   1
 
 var_player_struct_end:
 
@@ -192,7 +220,7 @@ var_entity_mem_used_end::
 
 	SECTION "TEXTURE_SLOTS", WRAM0
 
-TEXTURE_SLOT_COUNT EQU 7
+TEXTURE_SLOT_COUNT EQU ENTITY_BUFFER_CAPACITY - 1
 
 var_texture_slots::
 DS      TEXTURE_SLOT_COUNT

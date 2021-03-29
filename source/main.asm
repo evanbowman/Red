@@ -48,6 +48,7 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
         INCLUDE "entityType.inc"
         INCLUDE "item.inc"
         INCLUDE "room.inc"
+        INCLUDE "message.inc"
 
 
 ;;; NOTE: LONG_CALL does not restore the current rom bank
@@ -411,6 +412,7 @@ MapSpriteBlock:
         INCLUDE "introCreditsScene.asm"
         INCLUDE "roomTransitionScene.asm"
         INCLUDE "worldmapScene.asm"
+        INCLUDE "messageQueue.asm"
         INCLUDE "utility.asm"
         INCLUDE "fixnum.asm"
         INCLUDE "map.asm"
