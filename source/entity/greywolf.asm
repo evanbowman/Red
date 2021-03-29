@@ -85,6 +85,23 @@ GreywolfUpdate:
         ld      d, 5
         call    EntityAnimationAdvance
 
+
+        call    EntityGetSlack
+        ld      a, [bc]
+        cp      a, 0
+        jr      NZ, .decColorCounter
+
+	ld      a, 3
+        call    EntitySetPalette
+
+        jr      .next
+
+.decColorCounter:
+        dec     a
+        ld      [bc], a
+
+.next:
+
 ;;         ld      a, [var_player_attack]
 ;;         cp      PLAYER_ATTACK_NONE
 ;;         jr      Z, .resetColor
@@ -129,6 +146,10 @@ GreywolfOnMessage:
 
         ld      a, 7
         call    EntitySetPalette
+
+        call    EntityGetSlack
+        ld      a, 20
+        ld      [bc], a
         ret
 
 

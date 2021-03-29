@@ -659,3 +659,21 @@ EntityGetMessageQueue:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+;;; Entities are 32 bytes in size, and the entity header only consumes about
+;;; half of the reserved space. The rest of the slack space may be used by
+;;; various entity implementations.
+EntityGetSlack:
+;;; hl - entity
+;;; bc - result (pointer to slack space)
+        push    hl
+        ld      bc, 17
+        add     hl, bc
+        ld      b, h
+        ld      c, l
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
