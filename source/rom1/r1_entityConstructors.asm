@@ -169,7 +169,7 @@ r1_BonfireNew:
 r1_GreywolfNew:
         call    r1_EntityInit
 
-        ld      a, SPRID_GREYWOLF_L
+        ld      a, SPRID_GREYWOLF_RUN_L
         call    EntitySetFrameBase
 
         ld      a, 3

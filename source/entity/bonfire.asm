@@ -46,27 +46,14 @@
 
 BonfireUpdate:
 ;;; bc - self
-        push    bc
-
         ld      h, b
         ld      l, c
 
-        ld      bc, 7
-        add     hl, bc                  ; position of animation in entity
-
-        ld      c, 6
+        ld      e, 6
         ld      d, 5
-        call    AnimationAdvance
-        or      a
-        jr      Z, .done
-	ld      a, ENTITY_TEXTURE_SWAP_FLAG
-        pop     bc                       ; restore pointer to start of entity
-        ld      [bc], a                  ; set texture swap flag
 
-        jp      EntityUpdateLoopResume
+        call    EntityAnimationAdvance
 
-.done:
-        pop     bc
         jp      EntityUpdateLoopResume
 
 

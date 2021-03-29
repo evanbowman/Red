@@ -83,6 +83,34 @@ EntityBufferReset:
 
 ;;; ----------------------------------------------------------------------------
 
+
+EntityAnimationAdvance:
+;;; hl - entity
+;;; e - frame time
+;;; d - anim length
+;;; trashes bc, d
+;;; return d - true if frame swapped, false otherwise
+        push    hl
+        ld      bc, 7
+        add     hl, bc
+        ld      c, e
+        call    AnimationAdvance
+        pop     hl
+
+        ld      d, a                    ; return frameChanged:true/false in d
+        or      a
+        jr      Z, .done
+
+        ld      a, [hl]
+        or      ENTITY_TEXTURE_SWAP_FLAG
+        ld      [hl], a
+
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 EntityGetType:
 ;;; hl - entity
 ;;; return b - type
@@ -111,6 +139,21 @@ EntitySetType:
 
 
 ;;; ----------------------------------------------------------------------------
+
+EntityGetFrameBase:
+;;; hl - entity
+;;; trashes c
+;;; b - result
+        push    hl
+        ld      bc, 9
+        add     hl, bc
+        ld      b, [hl]
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 
 EntitySetFrameBase:
 ;;; hl - entity
@@ -185,6 +228,24 @@ EntitySetPos:
         inc     hl
         ld      [hl+], a
         ld      [hl], a
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+EntityGetPos:
+;;; hl - entity
+;;; return b - x
+;;; return c - y
+        push    hl
+        inc     hl
+        ld      c, [hl]
+        inc     hl
+        inc     hl
+        inc     hl
+        ld      b, [hl]
         pop     hl
         ret
 

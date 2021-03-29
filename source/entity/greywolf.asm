@@ -37,8 +37,54 @@
 ;;; ----------------------------------------------------------------------------
 
 
+GreywolfIdleSetFacing:
+        call    EntityGetPos
+        ld      a, [var_player_coord_x]
+        cp      b
+        jr      C, .faceLeft
+
+        ld      a, SPRID_GREYWOLF_R
+
+        call    EntityGetFrameBase
+        cp      b
+        jr      Z, .skip
+
+        call    EntitySetFrameBase
+
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [hl], a
+
+        ret
+
+.faceLeft:
+        call    EntityGetFrameBase
+        cp      b
+        jr      Z, .skip
+
+        ld      a, SPRID_GREYWOLF_L
+        call    EntitySetFrameBase
+
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [hl], a
+
+.skip:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 GreywolfUpdate:
-;;; TODO...
+;;; bc - self
+        ld      h, b                    ; \ Update functions are invoked through
+        ld      l, c                    ; / hl, so it can't be a param :/
+
+        ;; call    GreywolfIdleSetFacing
+
+        ld      e, 6
+        ld      d, 5
+        call    EntityAnimationAdvance
+
         jp      EntityUpdateLoopResume
 
 

@@ -1221,7 +1221,42 @@ r9_PlayerAttackInit:
 ;;; ----------------------------------------------------------------------------
 
 
+r9_PlayerAttackSetFacing:
+        ld      a, [var_joypad_current]
+        bit     PADB_UP, a
+        jr      NZ, .faceUp
+        bit     PADB_DOWN, a
+        jr      NZ, .faceDown
+        bit     PADB_LEFT, a
+        jr      NZ, .faceLeft
+        bit     PADB_RIGHT, a
+        jr      NZ, .faceRight
+        ret
+
+.faceLeft:
+        ld      a, SPRID_PLAYER_KNIFE_ATK_L
+        ld      [var_player_fb], a
+        ret
+
+.faceRight:
+        ld      a, SPRID_PLAYER_KNIFE_ATK_R
+        ld      [var_player_fb], a
+        ret
+
+.faceUp:
+        ld      a, SPRID_PLAYER_KNIFE_ATK_U
+        ld      [var_player_fb], a
+        ret
+
+.faceDown:
+        ld      a, SPRID_PLAYER_KNIFE_ATK_D
+        ld      [var_player_fb], a
+        ret
+
+
+
 r9_PlayerUpdateAttack1Impl:
+        call    r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
         ld      d, 15
@@ -1263,6 +1298,7 @@ r9_PlayerUpdateAttack1Impl:
 
 
 r9_PlayerUpdateAttack2Impl:
+        call    r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
         ld      d, 15
@@ -1304,6 +1340,7 @@ r9_PlayerUpdateAttack2Impl:
 
 
 r9_PlayerUpdateAttack3Impl:
+        call    r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
         ld      d, 15
