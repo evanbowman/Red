@@ -181,6 +181,9 @@ r1_GreywolfNew:
         ld      de, GreywolfUpdate
         call    EntitySetUpdateFn
 
+        ld      a, 1 | SPRITE_SHAPE_SQUARE_32
+        call    EntitySetDisplayFlags
+
         ret
 
 

@@ -1390,6 +1390,9 @@ r9_PlayerAttackTryExit:
         ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
+        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      [var_player_display_flag], a
+
         ret
 
 

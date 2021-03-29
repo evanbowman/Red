@@ -257,7 +257,7 @@ DrawEntities:
 
         ld      a, 0
         ld      [var_oam_top_counter], a
-        ld      a, 38
+        ld      a, 40
         ld      [var_oam_bottom_counter], a
         ld      de, var_entity_buffer
         ld      a, [var_entity_buffer_size] ; loop counter
@@ -390,8 +390,8 @@ EntitySwapResume:
         ld      c, a
 
 	ld      a, [var_oam_bottom_counter]
-        ld      l, a
         sub     2                       ; Shadows are 16x16, grow from oam end
+        ld      l, a
         ld      [var_oam_bottom_counter], a
         ld      e, $7c
         ld      d, 2
