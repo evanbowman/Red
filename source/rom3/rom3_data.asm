@@ -4,9 +4,6 @@
 ;;; important.
 SECTION "SPRITESHEET1_PART2", ROMX, ALIGN[8], BANK[SPRITESHEET1_ROM_BANK2]
 
-;;; TODO....
-
-;;; ############################################################################
 
 r3_SpriteSheetData::
 r3_SpritePlayerKnifeAttackDown::
@@ -1941,3 +1938,9 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$80,$00,$80,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 r3_SpritePlayerKnifeAttackLeftEnd::
+
+
+;;; SECTION SPRITESHEET1_PART2
+
+
+;;; ############################################################################

@@ -348,28 +348,35 @@ MapSpriteBlock:
 ;;; Sprite blocks are 32x32 in size. Because 32x32 sprites occupy 256 bytes,
 ;;; indexing is super easy.
 
-;;; TODO: Given the size of an animation keyframe, we can fit sixty-four per
-;;; rom bank. To support more animations, we will need to switch to a different
-;;; bank, and adjust the sprite index accordingly...
-        SET_BANK SPRITESHEET1_ROM_BANK
+;;; TODO: We currently only support 256 keyframes. Support more than 256. I have
+;;; not decided yet how to support more sprites, as we use a single byte for our
+;;; sprite indices. Maybe, use some bits in an entity header, to allow the base
+;;; spritesheet rom bank to be adjusted. Currently, we use rom banks 2, 3, 4,
+;;; and 5 for our regular spritesheet, and we more-or-less just calculate which
+;;; rom bank to load the sprite data from by dividing the sprite index by 64.
 
-        ld      a, h
+        ld      a, h            ; \
+        srl     a               ; |
+        srl     a               ; | Divide sprite index by 64 to determine bank.
+        and     $30             ; |
+        swap    a               ; /
+
+        ld      d, a            ; save a in d for later use
+
+        add     SPRITESHEET1_ROM_BANK ; Add calculated offset to base bank
+        ld      [rROMB0], a     ; set rom bank
 
 
-        ld      a, 63
-        cp      h
-        jr      C, .nextBank
-        jr      .ready
+        swap    d               ; \
+        sla     d               ; | Multiply back up by 64
+        sla     d               ; /
 
-;;; TODO: make this more flexible, instead of just hard-coding two banks...
-.nextBank:
-        ld      a, h
-        sub     64
+        ld      a, h            ; We have 64 sprite blocks per rom bank. So, we
+        sub     d               ; need to subtract 64 * bank from our sprite num
+
         ld      h, a
 
-        SET_BANK SPRITESHEET1_ROM_BANK2
 
-.ready:
         ld      de, r2_SpriteSheetData
         ld      l, 0
         add     hl, de                  ; h is in upper bits, so x256 for free
