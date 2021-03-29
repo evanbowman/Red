@@ -33,6 +33,10 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+GREYWOLF_VAR_COLOR_COUNTER EQU 0
+GREYWOLF_VAR_COUNTER       EQU 1
+
+
 ;;; ----------------------------------------------------------------------------
 
 
@@ -73,21 +77,7 @@ r9_GreywolfIdleSetFacing:
 ;;; ----------------------------------------------------------------------------
 
 
-GREYWOLF_VAR_COLOR_COUNTER EQU 0
-
-
-r9_GreywolfUpdateImpl:
-;;; bc - self
-        ld      h, b                    ; \ Update functions are invoked through
-        ld      l, c                    ; / hl, so it can't be a param :/
-
-        ;; call    GreywolfIdleSetFacing
-
-        ld      e, 6
-        ld      d, 5
-        call    EntityAnimationAdvance
-
-
+r9_GreywolfUpdateColor:
         ld      bc, GREYWOLF_VAR_COLOR_COUNTER
         call    EntityGetSlack
         ld      a, [bc]
@@ -97,27 +87,54 @@ r9_GreywolfUpdateImpl:
 	ld      a, 3
         call    EntitySetPalette
 
-        jr      .next
+        ret
 
 .decColorCounter:
         dec     a
         ld      [bc], a
+        ret
 
-.next:
 
-;;         ld      a, [var_player_attack]
-;;         cp      PLAYER_ATTACK_NONE
-;;         jr      Z, .resetColor
+;;; ----------------------------------------------------------------------------
 
-;;         ld      a, 7
-;;         call    EntitySetPalette
 
-;;         jr      .done
+r9_GreywolfUpdateIdleImpl:
+;;; bc - self
+        ld      h, b                    ; \ Update functions are invoked through
+        ld      l, c                    ; / hl, so it can't be a param :/
 
-;; .resetColor:
-;; 	ld      a, 3
-;;         call    EntitySetPalette
+        call    r9_GreywolfIdleSetFacing
 
+        call    r9_GreywolfUpdateColor
+        call    r9_GreywolfMessageLoop
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfUpdateRunImpl:
+;;; bc - self
+        ld      h, b                    ; \ Update functions are invoked through
+        ld      l, c                    ; / hl, so it can't be a param :/
+
+
+        ld      e, 6
+        ld      d, 5
+        call    EntityAnimationAdvance
+
+        call    r9_GreywolfUpdateColor
+        call    r9_GreywolfMessageLoop
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfMessageLoop:
+;;; trashes hl, should probably be called last
         push    hl                      ; Store entity pointer on stack
 
         call    EntityGetMessageQueue
@@ -127,7 +144,6 @@ r9_GreywolfUpdateImpl:
         ld      bc, r9_GreywolfOnMessage
 	call    MessageQueueDrain
 
-.done:
         ret
 
 
