@@ -86,6 +86,7 @@ GreywolfUpdate:
         call    EntityAnimationAdvance
 
 
+        ld      bc, 0
         call    EntityGetSlack
         ld      a, [bc]
         cp      a, 0
@@ -147,6 +148,7 @@ GreywolfOnMessage:
         ld      a, 7
         call    EntitySetPalette
 
+        ld      bc, 0
         call    EntityGetSlack
         ld      a, 20
         ld      [bc], a

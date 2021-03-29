@@ -666,8 +666,10 @@ EntityGetMessageQueue:
 ;;; various entity implementations.
 EntityGetSlack:
 ;;; hl - entity
-;;; bc - result (pointer to slack space)
+;;; bc - offset into slack space array
+;;; return bc - result (pointer to slack space)
         push    hl
+        add     hl, bc
         ld      bc, 17
         add     hl, bc
         ld      b, h
