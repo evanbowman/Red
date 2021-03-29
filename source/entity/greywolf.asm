@@ -43,3 +43,12 @@ GreywolfUpdate:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+GreywolfUpdateRun:
+;;; bc - self
+        LONG_CALL r9_GreywolfUpdateRunImpl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------

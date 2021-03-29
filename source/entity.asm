@@ -96,6 +96,22 @@ EntityBufferReset:
 ;;; ----------------------------------------------------------------------------
 
 
+;;; Set entity keyframe to zero
+EntityAnimationResetKeyframe:
+;;; hl - entity
+;;; trashes bc
+        push    hl
+        ld      bc, 8
+        add     hl, bc
+        ld      a, 0
+        ld      [hl], a
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 EntityAnimationAdvance:
 ;;; hl - entity
 ;;; e - frame time

@@ -35,6 +35,7 @@
 
 GREYWOLF_VAR_COLOR_COUNTER EQU 0
 GREYWOLF_VAR_COUNTER       EQU 1
+GREYWOLF_VAR_STAMINA       EQU 2
 
 
 ;;; ----------------------------------------------------------------------------
@@ -103,10 +104,34 @@ r9_GreywolfUpdateIdleImpl:
         ld      h, b                    ; \ Update functions are invoked through
         ld      l, c                    ; / hl, so it can't be a param :/
 
+        ld      bc, GREYWOLF_VAR_COUNTER
+        call    EntityGetSlack
+        ld      a, [bc]
+        inc     a
+        ld      [bc], a
+        cp      64
+        jr      Z, .run
+
         call    r9_GreywolfIdleSetFacing
 
         call    r9_GreywolfUpdateColor
         call    r9_GreywolfMessageLoop
+
+        ret
+
+.run:
+        ld      a, 0
+        ld      [bc], a
+
+        ld      de, GreywolfUpdateRun
+        call    EntitySetUpdateFn
+
+        ld      a, SPRID_GREYWOLF_RUN_L
+        call    EntitySetFrameBase
+
+        ld      a, [hl]
+        or      ENTITY_TEXTURE_SWAP_FLAG
+        ld      [hl], a
 
         ret
 
@@ -120,14 +145,35 @@ r9_GreywolfUpdateRunImpl:
         ld      l, c                    ; / hl, so it can't be a param :/
 
 
-        ld      e, 6
+        ld      e, 5
         ld      d, 5
         call    EntityAnimationAdvance
+
+
+        ld      bc, GREYWOLF_VAR_COUNTER
+        call    EntityGetSlack
+        ld      a, [bc]
+        inc     a
+        ld      [bc], a
+        cp      255
+        jr      Z, .idle
+
 
         call    r9_GreywolfUpdateColor
         call    r9_GreywolfMessageLoop
 
         ret
+.idle:
+        ld      a, 0
+        ld      [bc], a
+
+        ld      de, GreywolfUpdate
+        call    EntitySetUpdateFn
+
+        call    EntityAnimationResetKeyframe
+
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -166,10 +212,14 @@ r9_GreywolfOnMessage:
         ld      a, 7
         call    EntitySetPalette
 
+        ld      bc, GREYWOLF_VAR_STAMINA
+        call    EntityGetSlack
+
         ld      bc, GREYWOLF_VAR_COLOR_COUNTER
         call    EntityGetSlack
         ld      a, 20
         ld      [bc], a
+
         ret
 
 
