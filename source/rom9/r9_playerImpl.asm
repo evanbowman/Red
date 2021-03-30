@@ -1299,8 +1299,82 @@ r9_PlayerKnifeAttackBroadcast:
 ;;; ----------------------------------------------------------------------------
 
 
+r9_PlayerAttackMovement:
+        ld      a, [var_player_fb]
+        cp      SPRID_PLAYER_KNIFE_ATK_D
+        jr      Z, .checkMoveDown
+        cp      SPRID_PLAYER_KNIFE_ATK_U
+        jr      Z, .checkMoveUp
+        cp      SPRID_PLAYER_KNIFE_ATK_R
+        jr      Z, .checkMoveRight
+        cp      SPRID_PLAYER_KNIFE_ATK_L
+        jr      Z, .checkMoveLeft
+
+        ret
+
+.checkMoveDown:
+        ldh     a, [var_joypad_raw]
+        bit     PADB_DOWN, a
+        jr      Z, .skipMoveDown
+
+        ld      hl, var_player_coord_y
+        ld      b, 0
+        ld      c, 30
+        call    FixnumAdd
+
+.skipMoveDown:
+        ret
+
+
+.checkMoveUp:
+	ld      a, [var_joypad_raw]
+        bit     PADB_UP, a
+        jr      Z, .skipMoveUp
+
+        ld      hl, var_player_coord_y
+        ld      b, 0
+        ld      c, 30
+        call    FixnumSub
+
+.skipMoveUp:
+        ret
+
+
+.checkMoveRight:
+	ld      a, [var_joypad_raw]
+        bit     PADB_RIGHT, a
+        jr      Z, .skipMoveRight
+
+        ld      hl, var_player_coord_x
+        ld      b, 0
+        ld      c, 30
+        call    FixnumAdd
+
+.skipMoveRight:
+        ret
+
+
+.checkMoveLeft:
+	ld      a, [var_joypad_raw]
+        bit     PADB_LEFT, a
+        jr      Z, .skipMoveLeft
+
+        ld      hl, var_player_coord_x
+        ld      b, 0
+        ld      c, 30
+        call    FixnumSub
+
+.skipMoveLeft:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r9_PlayerUpdateAttack1Impl:
         call    r9_PlayerMessageLoop
+
+        call    r9_PlayerAttackMovement
 
         call    r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
@@ -1353,6 +1427,8 @@ r9_PlayerUpdateAttack1Impl:
 r9_PlayerUpdateAttack2Impl:
         call    r9_PlayerMessageLoop
 
+        call    r9_PlayerAttackMovement
+
         call    r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
@@ -1403,6 +1479,8 @@ r9_PlayerUpdateAttack2Impl:
 
 r9_PlayerUpdateAttack3Impl:
         call    r9_PlayerMessageLoop
+
+        call    r9_PlayerAttackMovement
 
         call    r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
@@ -1508,6 +1586,8 @@ r9_PlayerAttackTryExit:
 
 
 r9_PlayerAttack1ExitImpl:
+        call    r9_PlayerAttackMovement
+
         ld      de, PlayerUpdateAttack2
         call    r9_PlayerAttackTryExit
         ret
@@ -1517,6 +1597,8 @@ r9_PlayerAttack1ExitImpl:
 
 
 r9_PlayerAttack2ExitImpl:
+        call    r9_PlayerAttackMovement
+
         ld      de, PlayerUpdateAttack3
         call    r9_PlayerAttackTryExit
         ret
@@ -1526,6 +1608,8 @@ r9_PlayerAttack2ExitImpl:
 
 
 r9_PlayerAttack3ExitImpl:
+        call    r9_PlayerAttackMovement
+
         ld      de, PlayerUpdateAttack1
         call    r9_PlayerAttackTryExit
         ret
