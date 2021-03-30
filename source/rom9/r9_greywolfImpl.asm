@@ -118,7 +118,7 @@ r9_GreywolfUpdateIdleImpl:
         ld      a, 0
         ld      [bc], a
 
-        ld      de, GreywolfUpdateRun
+        ld      de, GreywolfUpdateRunSeekX
         call    EntitySetUpdateFn
 
         ld      a, [hl]
@@ -155,6 +155,14 @@ r9_GreywolfUpdateStunnedImpl:
         ld      bc, GREYWOLF_VAR_COUNTER
         call    EntityGetSlack
         ld      a, [bc]
+        cp      0
+
+        jr      NZ, .skip
+        ld      e, 4
+        call    ScheduleSleep
+        ld      a, [bc]
+
+.skip:
         inc     a
         ld      [bc], a
         cp      24
@@ -176,8 +184,147 @@ r9_GreywolfUpdateStunnedImpl:
 
 ;;; ----------------------------------------------------------------------------
 
+r9_absdiff:
+;;; a - x1
+;;; b - x2
+        cp      b
+        jr      C, .blah
+	sub     b
+        ret
+.blah:
+        ld      c, a
+        ld      a, b
+        ld      b, c
+        sub     b
+        ret
 
-r9_GreywolfUpdateRunImpl:
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfMoveY:
+;;; hl - self
+        call    EntityGetPos
+        ld      a, [var_player_coord_x]
+        push    bc
+        call    r9_absdiff
+        pop     bc
+        cp      36
+        jr      C, .moveY
+
+        ld      de, GreywolfUpdateRunSeekX
+        call    EntitySetUpdateFn
+
+        ret
+
+.moveY:
+        call    EntityGetPos
+        ld      a, [var_player_coord_y]
+        cp      c
+        jr      Z, .skip2
+        jr      C, .moveLeft2
+
+        push    hl
+        call    EntityGetYPos
+        ld      b, 1
+        ld      c, 146
+        call    FixnumAdd
+        pop     hl
+.skip2:
+        ret
+
+.moveLeft2:
+        push    hl
+        call    EntityGetYPos
+        ld      b, 1
+        ld      c, 146
+        call    FixnumSub
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfMoveX:
+        call    EntityGetPos
+        ld      a, [var_player_coord_x]
+        push    bc
+        call    r9_absdiff
+        pop     bc
+        cp      12
+        jr      C, .moveY
+	ld      a, [var_player_coord_x]
+        cp      b
+        jr      C, .moveLeft
+
+        push    hl
+        call    EntityGetXPos
+        ld      b, 1
+        ld      c, 146
+        call    FixnumAdd
+        pop     hl
+.skip:
+        ret
+
+.moveLeft:
+        push    hl
+        call    EntityGetXPos
+        ld      b, 1
+        ld      c, 146
+        call    FixnumSub
+        pop     hl
+        ret
+
+.moveY:
+        ld      de, GreywolfUpdateRunSeekY
+        call    EntitySetUpdateFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfUpdateRunXImpl:
+;;; bc - self
+        ld      h, b
+        ld      l, c
+
+        ld      e, 5
+        ld      d, 5
+        call    EntityAnimationAdvance
+
+        call    r9_GreywolfMoveX
+
+        ld      bc, GREYWOLF_VAR_COUNTER
+        call    EntityGetSlack
+        ld      a, [bc]
+        inc     a
+        ld      [bc], a
+        cp      255
+        jr      Z, .idle
+
+
+        call    r9_GreywolfUpdateColor
+        call    r9_GreywolfMessageLoop
+
+        ret
+.idle:
+        ld      a, 0
+        ld      [bc], a
+
+        ld      de, GreywolfUpdate
+        call    EntitySetUpdateFn
+
+        call    EntityAnimationResetKeyframe
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfUpdateRunYImpl:
 ;;; bc - self
         ld      h, b                    ; \ Update functions are invoked through
         ld      l, c                    ; / hl, so it can't be a param :/
@@ -187,6 +334,7 @@ r9_GreywolfUpdateRunImpl:
         ld      d, 5
         call    EntityAnimationAdvance
 
+	call    r9_GreywolfMoveY
 
         ld      bc, GREYWOLF_VAR_COUNTER
         call    EntityGetSlack

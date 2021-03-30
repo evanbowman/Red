@@ -263,6 +263,24 @@ EntitySetPos:
 ;;; ----------------------------------------------------------------------------
 
 
+EntityGetXPos:
+;;; hl - entity
+;;; return hl - x position
+        ld      bc, 4
+        add     hl, bc
+        ret
+
+
+EntityGetYPos:
+;;; hl - entity
+;;; return hl - y position
+        inc     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 EntityGetPos:
 ;;; hl - entity
 ;;; return b - x

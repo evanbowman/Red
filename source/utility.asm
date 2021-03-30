@@ -96,11 +96,16 @@ Reset:
 ;;; ----------------------------------------------------------------------------
 
 ScheduleSleep:
-; e - frames to sleep
+;;; e - frames to sleep
         ldh     a, [var_sleep_counter]
+        cp      e
+        jr      C, .set
+        ret
+.set:
         add     a, e
         ldh     [var_sleep_counter], a
         ret
+
 
 
 ;;; ----------------------------------------------------------------------------

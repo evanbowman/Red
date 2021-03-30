@@ -50,9 +50,15 @@ GreywolfUpdate:
 ;;; ----------------------------------------------------------------------------
 
 
-GreywolfUpdateRun:
+GreywolfUpdateRunSeekX:
 ;;; bc - self
-        LONG_CALL r9_GreywolfUpdateRunImpl, 9
+        LONG_CALL r9_GreywolfUpdateRunXImpl, 9
+        jp      EntityUpdateLoopResume
+
+
+GreywolfUpdateRunSeekY:
+;;; bc - self
+        LONG_CALL r9_GreywolfUpdateRunYImpl, 9
         jp      EntityUpdateLoopResume
 
 

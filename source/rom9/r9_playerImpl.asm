@@ -1300,6 +1300,8 @@ r9_PlayerKnifeAttackBroadcast:
 
 
 r9_PlayerAttackMovement:
+        call    r9_PlayerCheckWallCollisions
+
         ld      a, [var_player_fb]
         cp      SPRID_PLAYER_KNIFE_ATK_D
         jr      Z, .checkMoveDown
@@ -1316,6 +1318,9 @@ r9_PlayerAttackMovement:
         ldh     a, [var_joypad_raw]
         bit     PADB_DOWN, a
         jr      Z, .skipMoveDown
+        ld      a, [var_player_spill1]
+        and     COLLISION_DOWN
+        jr      NZ, .skipMoveDown
 
         ld      hl, var_player_coord_y
         ld      b, 0
@@ -1330,6 +1335,9 @@ r9_PlayerAttackMovement:
 	ld      a, [var_joypad_raw]
         bit     PADB_UP, a
         jr      Z, .skipMoveUp
+        ld      a, [var_player_spill1]
+        and     COLLISION_UP
+        jr      NZ, .skipMoveUp
 
         ld      hl, var_player_coord_y
         ld      b, 0
@@ -1344,6 +1352,9 @@ r9_PlayerAttackMovement:
 	ld      a, [var_joypad_raw]
         bit     PADB_RIGHT, a
         jr      Z, .skipMoveRight
+        ld      a, [var_player_spill1]
+        and     COLLISION_RIGHT
+        jr      NZ, .skipMoveRight
 
         ld      hl, var_player_coord_x
         ld      b, 0
@@ -1358,6 +1369,9 @@ r9_PlayerAttackMovement:
 	ld      a, [var_joypad_raw]
         bit     PADB_LEFT, a
         jr      Z, .skipMoveLeft
+        ld      a, [var_player_spill1]
+        and     COLLISION_LEFT
+        jr      NZ, .skipMoveLeft
 
         ld      hl, var_player_coord_x
         ld      b, 0
