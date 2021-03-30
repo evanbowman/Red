@@ -413,6 +413,7 @@ MapSpriteBlock:
         INCLUDE "roomTransitionScene.asm"
         INCLUDE "worldmapScene.asm"
         INCLUDE "messageQueue.asm"
+        INCLUDE "slabTable.asm"
         INCLUDE "utility.asm"
         INCLUDE "fixnum.asm"
         INCLUDE "map.asm"

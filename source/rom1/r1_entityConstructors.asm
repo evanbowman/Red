@@ -167,6 +167,8 @@ r1_BonfireNew:
 
 
 r1_GreywolfNew:
+;;; b - x
+;;; c - y
         call    r1_EntityInit
 
         ld      a, SPRID_GREYWOLF_RUN_L
@@ -185,6 +187,26 @@ r1_GreywolfNew:
         call    EntitySetDisplayFlags
 
 
+        ld      bc, GREYWOLF_VAR_SLAB
+        call    EntityGetSlack
+
+	push    bc              ; \ bc -> de
+        pop     de              ; /
+
+
+        ld      d, 6
+        call    SlabTableFindAnyUnused
+        ld      a, c
+        ld      [de], a         ; store slab in slack var
+
+        ld      d, 6            ; our weight
+        call    SlabTableBind
+
+        ;; FIXME: this scenario would happen if someone tries to put too many
+        ;; enemies in the same initial map row.
+.failed:
+        or      a
+        jr      Z, .failed
 
         ret
 

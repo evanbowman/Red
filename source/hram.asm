@@ -79,3 +79,18 @@ agb_detected:   DS      1
 
 
 ;;; ############################################################################
+
+
+        SECTION "WALL_COLLISON_TEST_VARS", HRAM
+
+var_wall_collision_source_x: DS 1
+var_wall_collision_source_y: DS 1
+
+
+var_wall_collision_result:   DS 1
+
+
+;;; SECTION WALL_COLLISON_TEST_VARS
+
+
+;;; ############################################################################

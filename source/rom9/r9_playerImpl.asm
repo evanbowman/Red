@@ -36,235 +36,6 @@
 WALL_TILES_END  EQU     16
 
 
-;;; ----------------------------------------------------------------------------
-
-
-r9_PlayerCheckWallCollisionLeft:
-;;; a - wall tile x
-;;; b - wall tile y
-;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
-        swap    a
-        swap    b
-        ld      c, a
-
-;;; We have the abs coords, now we want to check whether the absolute coord of
-;;; the player falls within the bounds of the square tile. So we need to do a
-;;; bounding box test:
-
-
-;;; Player.y < tile.y? Then no collision
-        push    bc
-        ld      a, [var_player_coord_y]
-        cp      b
-	pop     bc
-        jr      C, .false
-
-;;; Player.y > tile.y + 16? Then no collision
-        push    bc
-        ld      a, [var_player_coord_y]
-        ld      c, a
-        ld      a, b
-        add     16
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x < tile.x? Then no collision
-        push    bc
-        ld      a, [var_player_coord_x]
-        sub     8
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x > tile.x + 16? Then no collision
-        push    bc
-        ld      a, [var_player_coord_x]
-        sub     8
-        ld      b, a
-        ld      a, c
-        add     16
-        cp      b
-        pop     bc
-        jr      C, .false
-
-        ld      a, [var_player_spill1]
-        or      COLLISION_LEFT
-        ld      [var_player_spill1], a
-.false:
-        ret
-
-
-
-r9_PlayerCheckWallCollisionUp:
-;;; a - wall tile x
-;;; b - wall tile y
-;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
-        swap    a
-        swap    b
-        ld      c, a
-
-;;; We have the abs coords, now we want to check whether the absolute coord of
-;;; the player falls within the bounds of the square tile. So we need to do a
-;;; bounding box test:
-
-
-;;; Player.y < tile.y? Then no collision
-        push    bc
-        ld      a, [var_player_coord_y]
-        sub     8
-        cp      b
-	pop     bc
-        jr      C, .false
-
-;;; Player.y > tile.y + 16? Then no collision
-        push    bc
-        ld      a, [var_player_coord_y]
-        sub     8
-        ld      c, a
-        ld      a, b
-        add     16
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x < tile.x? Then no collision
-        push    bc
-        ld      a, [var_player_coord_x]
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x > tile.x + 16? Then no collision
-        push    bc
-        ld      a, [var_player_coord_x]
-        ld      b, a
-        ld      a, c
-        add     16
-        cp      b
-        pop     bc
-        jr      C, .false
-
-        ld      a, [var_player_spill1]
-        or      COLLISION_UP
-        ld      [var_player_spill1], a
-.false:
-        ret
-
-
-r9_PlayerCheckWallCollisionDown:
-;;; a - wall tile x
-;;; b - wall tile y
-;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
-        swap    a
-        swap    b
-        ld      c, a
-
-;;; We have the abs coords, now we want to check whether the absolute coord of
-;;; the player falls within the bounds of the square tile. So we need to do a
-;;; bounding box test:
-
-
-;;; Player.y < tile.y? Then no collision
-        push    bc
-        ld      a, [var_player_coord_y]
-        add     11
-        cp      b
-	pop     bc
-        jr      C, .false
-
-;;; Player.y > tile.y + 16? Then no collision
-        push    bc
-        ld      a, [var_player_coord_y]
-        add     11
-        ld      c, a
-        ld      a, b
-        add     16
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x < tile.x? Then no collision
-        push    bc
-        ld      a, [var_player_coord_x]
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x > tile.x + 16? Then no collision
-        push    bc
-        ld      a, [var_player_coord_x]
-        ld      b, a
-        ld      a, c
-        add     16
-        cp      b
-        pop     bc
-        jr      C, .false
-
-        ld      a, [var_player_spill1]
-        or      COLLISION_DOWN
-        ld      [var_player_spill1], a
-.false:
-        ret
-
-
-
-r9_PlayerCheckWallCollisionRight:
-;;; a - wall tile x
-;;; b - wall tile y
-;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
-        swap    a
-        swap    b
-        ld      c, a
-
-;;; We have the abs coords, now we want to check whether the absolute coord of
-;;; the player falls within the bounds of the square tile. So we need to do a
-;;; bounding box test:
-
-
-;;; Player.y < tile.y? Then no collision
-        push    bc
-        ld      a, [var_player_coord_y]
-        cp      b
-	pop     bc
-        jr      C, .false
-
-;;; Player.y > tile.y + 16? Then no collision
-        push    bc
-        ld      a, [var_player_coord_y]
-        ld      c, a
-        ld      a, b
-        add     16
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x < tile.x? Then no collision
-        push    bc
-        ld      a, [var_player_coord_x]
-        add     8
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x > tile.x + 16? Then no collision
-        push    bc
-        ld      a, [var_player_coord_x]
-        add     8
-        ld      b, a
-        ld      a, c
-        add     16
-        cp      b
-        pop     bc
-        jr      C, .false
-
-        ld      a, [var_player_spill1]
-        or      COLLISION_RIGHT
-        ld      [var_player_spill1], a
-.false:
-        ret
-
-
 r9_PlayerTileCoord:
 ;;; return b - y
 ;;; return a - x
@@ -279,272 +50,20 @@ r9_PlayerTileCoord:
         ret
 
 
-r9_PlayerCheckWallCollisions:
-;;; This is manually unrolled, but what we're doing here, is checking a 3x3
-;;; square of 16x16 tiles for collisions.
 
-        ld      a, 0
-        ld      [var_player_spill1], a
-
-	call    r9_PlayerTileCoord
-
-;;; ...... x - 1, y - 1
-        push    af
-        push    bc
-
-        dec     a
-        dec     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xm1_ym1
-        jr      .skip_xm1_ym1
-
-.test_xm1_ym1:
-        call    r9_PlayerTileCoord
-        dec     a
-        dec     b
-        call    r9_PlayerCheckWallCollisionLeft
-
-        call    r9_PlayerTileCoord
-        dec     a
-        dec     b
-        call    r9_PlayerCheckWallCollisionUp
-
-
-.skip_xm1_ym1:
-        pop     bc
-        pop     af
-
-;;; ...... x - 1, y
-
-        push    af
-        push    bc
-
-        dec     a
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xm1_y
-        jr      .skip_xm1_y
-
-.test_xm1_y:
-        call    r9_PlayerTileCoord
-        dec     a
-        call    r9_PlayerCheckWallCollisionLeft
-
-
-.skip_xm1_y:
-        pop     bc
-        pop     af
-
-
-;;; ...... x - 1, y + 1
-
-        push    af
-        push    bc
-
-        dec     a
-        inc     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xm1_yp1
-        jr      .skip_xm1_yp1
-
-.test_xm1_yp1:
-        call    r9_PlayerTileCoord
-        dec     a
-        inc     b
-        call    r9_PlayerCheckWallCollisionLeft
-
-        call    r9_PlayerTileCoord
-        dec     a
-        inc     b
-        call    r9_PlayerCheckWallCollisionDown
-
-
-.skip_xm1_yp1:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x, y - 1
-
-        push    af
-        push    bc
-
-        dec     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_x_ym1
-        jr      .skip_x_ym1
-
-.test_x_ym1:
-        call    r9_PlayerTileCoord
-        dec     b
-        call    r9_PlayerCheckWallCollisionUp
-
-
-.skip_x_ym1:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x, y + 1
-
-        push    af
-        push    bc
-
-        inc     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_x_yp1
-        jr      .skip_x_yp1
-
-.test_x_yp1:
-        call    r9_PlayerTileCoord
-        inc     b
-        call    r9_PlayerCheckWallCollisionDown
-
-.skip_x_yp1:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x + 1, y - 1
-
-        push    af
-        push    bc
-
-        inc     a
-        dec     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xp1_ym1
-        jr      .skip_xp1_ym1
-
-.test_xp1_ym1:
-        call    r9_PlayerTileCoord
-        inc     a
-        dec     b
-        call    r9_PlayerCheckWallCollisionRight
-
-        call    r9_PlayerTileCoord
-        inc     a
-        dec     b
-        call    r9_PlayerCheckWallCollisionUp
-
-.skip_xp1_ym1:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x + 1, y
-
-        push    af
-        push    bc
-
-        inc     a
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xp1_y
-        jr      .skip_xp1_y
-
-.test_xp1_y:
-        call    r9_PlayerTileCoord
-        inc     a
-        call    r9_PlayerCheckWallCollisionRight
-
-
-.skip_xp1_y:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x + 1, y + 1
-
-        push    af
-        push    bc
-
-        inc     a
-        inc     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xp1_yp1
-        jr      .skip_xp1_yp1
-
-.test_xp1_yp1:
-        call    r9_PlayerTileCoord
-        inc     a
-        inc     b
-        call    r9_PlayerCheckWallCollisionRight
-
-        call    r9_PlayerTileCoord
-        inc     a
-        inc     b
-        call    r9_PlayerCheckWallCollisionDown
-
-
-.skip_xp1_yp1:
-
-        pop     bc
-        pop     af
-
-
-;;; TODO... We want to check collisions based on all tiles around the player.
-
-        ret
+;;; ----------------------------------------------------------------------------
 
 
 r9_PlayerUpdateMovement:
-        call    r9_PlayerCheckWallCollisions
+        ld      a, [var_player_coord_x]
+        ld      [var_wall_collision_source_x], a
+        ld      a, [var_player_coord_y]
+        ld      [var_wall_collision_source_y], a
+        call    r9_WallCollisionCheck
 
 
 ;;; try walk left
-        ld      a, [var_player_spill1]  ; Load collision mask
+        ld      a, [var_wall_collision_result]  ; Load collision mask
         and     COLLISION_LEFT
         ld      [var_player_spill2], a  ; Store part of mask in temp var
 
@@ -563,7 +82,7 @@ r9_PlayerUpdateMovement:
 
 
 ;;; try walk right
-        ld      a, [var_player_spill1]  ; Load collision mask
+        ld      a, [var_wall_collision_result]  ; Load collision mask
         and     COLLISION_RIGHT
         ld      [var_player_spill2], a  ; Store part of mask in temp var
 
@@ -579,7 +98,7 @@ r9_PlayerUpdateMovement:
 
 
 ;;; try walk down
-        ld      a, [var_player_spill1]  ; Load collision mask
+        ld      a, [var_wall_collision_result]  ; Load collision mask
         and     COLLISION_DOWN
         ld      [var_player_spill2], a  ; Store part of mask in temp var
 
@@ -598,7 +117,7 @@ r9_PlayerUpdateMovement:
 
 
 ;;; try walk up
-        ld      a, [var_player_spill1]  ; Load collision mask
+        ld      a, [var_wall_collision_result]  ; Load collision mask
         and     COLLISION_UP
         ld      [var_player_spill2], a  ; Store part of mask in temp var
 
@@ -893,7 +412,7 @@ r9_PlayerUpdateImpl:
         ldh     a, [var_joypad_current]
         bit     PADB_A, a
         jr      Z, .checkB
-        ld      a, [var_player_spill1]
+        ld      a, [var_wall_collision_result]
         or      a
         jr      Z, .done
         call    r9_PlayerTryInteract
@@ -933,7 +452,7 @@ r9_PlayerTryInteract:
         ret
 
 .tryInteractLeft:
-        ld      a, [var_player_spill1]
+        ld      a, [var_wall_collision_result]
         and     COLLISION_LEFT
         ret     Z
 
@@ -945,7 +464,7 @@ r9_PlayerTryInteract:
         ret
 
 .tryInteractRight:
-        ld      a, [var_player_spill1]
+        ld      a, [var_wall_collision_result]
         and     COLLISION_RIGHT
         ret     Z
 
@@ -957,7 +476,7 @@ r9_PlayerTryInteract:
         ret
 
 .tryInteractUp:
-        ld      a, [var_player_spill1]
+        ld      a, [var_wall_collision_result]
         and     COLLISION_UP
         ret     Z
 
@@ -969,7 +488,7 @@ r9_PlayerTryInteract:
         ret
 
 .tryInteractDown:
-        ld      a, [var_player_spill1]
+        ld      a, [var_wall_collision_result]
         and     COLLISION_DOWN
         ret     Z
 
@@ -1300,7 +819,11 @@ r9_PlayerKnifeAttackBroadcast:
 
 
 r9_PlayerAttackMovement:
-        call    r9_PlayerCheckWallCollisions
+        ld      a, [var_player_coord_x]
+        ld      [var_wall_collision_source_x], a
+        ld      a, [var_player_coord_y]
+        ld      [var_wall_collision_source_y], a
+        call    r9_WallCollisionCheck
 
         ld      a, [var_player_fb]
         cp      SPRID_PLAYER_KNIFE_ATK_D
@@ -1318,7 +841,7 @@ r9_PlayerAttackMovement:
         ldh     a, [var_joypad_raw]
         bit     PADB_DOWN, a
         jr      Z, .skipMoveDown
-        ld      a, [var_player_spill1]
+        ld      a, [var_wall_collision_result]
         and     COLLISION_DOWN
         jr      NZ, .skipMoveDown
 
@@ -1335,7 +858,7 @@ r9_PlayerAttackMovement:
 	ld      a, [var_joypad_raw]
         bit     PADB_UP, a
         jr      Z, .skipMoveUp
-        ld      a, [var_player_spill1]
+        ld      a, [var_wall_collision_result]
         and     COLLISION_UP
         jr      NZ, .skipMoveUp
 
@@ -1352,7 +875,7 @@ r9_PlayerAttackMovement:
 	ld      a, [var_joypad_raw]
         bit     PADB_RIGHT, a
         jr      Z, .skipMoveRight
-        ld      a, [var_player_spill1]
+        ld      a, [var_wall_collision_result]
         and     COLLISION_RIGHT
         jr      NZ, .skipMoveRight
 
@@ -1369,7 +892,7 @@ r9_PlayerAttackMovement:
 	ld      a, [var_joypad_raw]
         bit     PADB_LEFT, a
         jr      Z, .skipMoveLeft
-        ld      a, [var_player_spill1]
+        ld      a, [var_wall_collision_result]
         and     COLLISION_LEFT
         jr      NZ, .skipMoveLeft
 

@@ -85,7 +85,11 @@ var_map_info:    DS     MAP_WIDTH * MAP_HEIGHT
 var_map_collectibles:     DS      8 * 2
 
 
+var_map_slabs:   DS     MAP_HEIGHT / 2 ; Eight slabs
+
+
 ;;; SECTION MAP_INFO
+
 
 ;;; ############################################################################
 

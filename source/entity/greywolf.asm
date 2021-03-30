@@ -36,6 +36,9 @@
 GREYWOLF_VAR_COLOR_COUNTER EQU 0
 GREYWOLF_VAR_COUNTER       EQU 1
 GREYWOLF_VAR_STAMINA       EQU 2
+GREYWOLF_VAR_SLAB          EQU 3
+GREYWOLF_VAR_KNOCKBACK     EQU 4
+GREYWOLF_VAR_KNOCKBACK_DIR EQU 5
 
 
 ;;; ----------------------------------------------------------------------------

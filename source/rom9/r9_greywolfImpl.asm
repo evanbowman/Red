@@ -146,23 +146,103 @@ r9_GreywolfUpdateIdleImpl:
 ;;; ----------------------------------------------------------------------------
 
 
+;;; Due to overlapping and the number of sprites allowed per line, we only
+;;; support L/R knockback, not U/D. As nice as it would be to have knockback
+;;; in all four directions, we would risk creating display issues, but we could
+;;; try adding it and see whether it's an issue in practice...
+
+r9_GreywolfApplyKnockback:
+        push    hl
+        call    EntityGetPos
+        ld      a, b
+        ld      [var_wall_collision_source_x], a
+        ld      a, c
+        ld      [var_wall_collision_source_y], a
+        call    r9_WallCollisionCheck
+        pop     hl
+
+
+        ld      bc, GREYWOLF_VAR_KNOCKBACK_DIR
+        call    EntityGetSlack
+        ld      a, [bc]
+        or      a
+        jr      Z, .knockbackRight
+
+.knockbackLeft:
+
+        ld      a, [var_wall_collision_result]
+        and     COLLISION_LEFT
+        jr      NZ, .skip
+
+
+        push    hl
+        ld      bc, GREYWOLF_VAR_KNOCKBACK
+        call    EntityGetSlack
+	ld      a, [bc]
+        ld      d, a
+        srl     d               ; Subtract off some each time, sort of
+        srl     d               ; like a friction effect...
+        srl     d
+        srl     d
+        sub     d
+        ld      [bc], a
+        ld      c, a
+        ld      b, 0
+        push    bc
+
+        call    EntityGetXPos
+        pop     bc
+        call    FixnumSub
+        pop     hl
+.skip:
+        ret
+
+.knockbackRight:
+        ld      a, [var_wall_collision_result]
+        and     COLLISION_RIGHT
+        jr      NZ, .skip
+
+
+        push    hl
+
+        ld      bc, GREYWOLF_VAR_KNOCKBACK
+        call    EntityGetSlack
+	ld      a, [bc]
+        ld      d, a
+        srl     d               ; Subtract off some each time, sort of
+        srl     d               ; like a friction effect...
+        srl     d
+        srl     d
+        sub     d
+        ld      [bc], a
+        ld      c, a
+        ld      b, 0
+        push    bc
+
+        call    EntityGetXPos
+	pop     bc
+        call    FixnumAdd
+        pop     hl
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r9_GreywolfUpdateStunnedImpl:
         ld      h, b                    ; \ Update functions are invoked through
         ld      l, c                    ; / hl, so it can't be a param :/
 
 	call    r9_GreywolfUpdateColor
 
+        call    r9_GreywolfApplyKnockback
+
         ld      bc, GREYWOLF_VAR_COUNTER
         call    EntityGetSlack
         ld      a, [bc]
         cp      0
 
-        jr      NZ, .skip
-        ld      e, 4
-        call    ScheduleSleep
-        ld      a, [bc]
-
-.skip:
         inc     a
         ld      [bc], a
         cp      24
@@ -202,50 +282,6 @@ r9_absdiff:
 ;;; ----------------------------------------------------------------------------
 
 
-r9_GreywolfMoveY:
-;;; hl - self
-        call    EntityGetPos
-        ld      a, [var_player_coord_x]
-        push    bc
-        call    r9_absdiff
-        pop     bc
-        cp      36
-        jr      C, .moveY
-
-        ld      de, GreywolfUpdateRunSeekX
-        call    EntitySetUpdateFn
-
-        ret
-
-.moveY:
-        call    EntityGetPos
-        ld      a, [var_player_coord_y]
-        cp      c
-        jr      Z, .skip2
-        jr      C, .moveLeft2
-
-        push    hl
-        call    EntityGetYPos
-        ld      b, 1
-        ld      c, 146
-        call    FixnumAdd
-        pop     hl
-.skip2:
-        ret
-
-.moveLeft2:
-        push    hl
-        call    EntityGetYPos
-        ld      b, 1
-        ld      c, 146
-        call    FixnumSub
-        pop     hl
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-
 r9_GreywolfMoveX:
         call    EntityGetPos
         ld      a, [var_player_coord_x]
@@ -258,22 +294,38 @@ r9_GreywolfMoveX:
         cp      b
         jr      C, .moveLeft
 
+        ld      a, [var_wall_collision_result]
+        and     COLLISION_RIGHT
+        jr      NZ, .moveY
+
         push    hl
         call    EntityGetXPos
         ld      b, 1
-        ld      c, 146
+        ld      c, 136
         call    FixnumAdd
         pop     hl
+
+        ld      a, SPRID_GREYWOLF_RUN_R
+        call    EntitySetFrameBase
+
 .skip:
         ret
 
 .moveLeft:
+        ld      a, [var_wall_collision_result]
+        and     COLLISION_LEFT
+        jr      NZ, .moveY
+
         push    hl
         call    EntityGetXPos
         ld      b, 1
-        ld      c, 146
+        ld      c, 136
         call    FixnumSub
         pop     hl
+
+        ld      a, SPRID_GREYWOLF_RUN_L
+        call    EntitySetFrameBase
+
         ret
 
 .moveY:
@@ -285,10 +337,125 @@ r9_GreywolfMoveX:
 ;;; ----------------------------------------------------------------------------
 
 
+r9_GetDestSlab:
+;;; d - result
+;;; trashes bc
+        push    hl
+
+        ld      bc, GREYWOLF_VAR_SLAB
+        call    EntityGetSlack
+        ld      a, [bc]
+        ld      b, a
+
+        ld      a, [var_player_coord_y]
+        add     16
+        call    GetSlabNum
+
+        ld      c, a
+
+        ld      d, 6
+        call    SlabTableRebindNearest
+
+        ld      d, c
+
+        pop     hl
+
+        ld      bc, GREYWOLF_VAR_SLAB
+        call    EntityGetSlack
+        ld      a, d
+        ld      [bc], a
+        ld      d, a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_MoveYTest:
+        call    r9_GetDestSlab
+
+        ld      a, d
+
+        swap    a
+        sla     a
+
+        call    EntityGetPos
+	push    af
+	push    bc
+        ld      b, c
+        call    r9_absdiff
+        cp      2
+        pop     bc
+        jr      C, .skip2
+        pop     af
+
+        cp      c
+
+        jr      C, .moveLeft2
+
+        ld      a, [var_wall_collision_result]
+        and     COLLISION_DOWN
+        jr      NZ, .skip2
+
+        push    hl
+        call    EntityGetYPos
+        ld      b, 1
+        ld      c, 136
+        call    FixnumAdd
+        pop     hl
+	ret
+
+.skip2:
+        pop     af
+        call    EntityGetPos
+        ld      a, [var_player_coord_x]
+        call    r9_absdiff
+        cp      13
+        jr      C, .idle
+
+        ld      de, GreywolfUpdateRunSeekX
+        call    EntitySetUpdateFn
+
+        ret
+
+.idle:
+        ld      de, GreywolfUpdate
+        call    EntitySetUpdateFn
+        call    EntityAnimationResetKeyframe
+
+        ret
+
+
+.moveLeft2:
+        ld      a, [var_wall_collision_result]
+        and     COLLISION_UP
+        jr      NZ, .skip2
+
+        push    hl
+        call    EntityGetYPos
+        ld      b, 1
+        ld      c, 136
+        call    FixnumSub
+        pop     hl
+        ret
+
+        ret
+
+
 r9_GreywolfUpdateRunXImpl:
 ;;; bc - self
         ld      h, b
         ld      l, c
+
+        push    hl
+        call    EntityGetPos
+        ld      a, b
+        ld      [var_wall_collision_source_x], a
+        ld      a, c
+        ld      [var_wall_collision_source_y], a
+        call    r9_WallCollisionCheck
+        pop     hl
 
         ld      e, 5
         ld      d, 5
@@ -303,6 +470,9 @@ r9_GreywolfUpdateRunXImpl:
         ld      [bc], a
         cp      255
         jr      Z, .idle
+
+        ld      a, [var_player_coord_x]
+
 
 
         call    r9_GreywolfUpdateColor
@@ -329,12 +499,20 @@ r9_GreywolfUpdateRunYImpl:
         ld      h, b                    ; \ Update functions are invoked through
         ld      l, c                    ; / hl, so it can't be a param :/
 
+        push    hl
+        call    EntityGetPos
+        ld      a, b
+        ld      [var_wall_collision_source_x], a
+        ld      a, c
+        ld      [var_wall_collision_source_y], a
+        call    r9_WallCollisionCheck
+        pop     hl
 
         ld      e, 5
         ld      d, 5
         call    EntityAnimationAdvance
 
-	call    r9_GreywolfMoveY
+        call    r9_MoveYTest
 
         ld      bc, GREYWOLF_VAR_COUNTER
         call    EntityGetSlack
@@ -382,6 +560,37 @@ r9_GreywolfMessageLoop:
 ;;; ----------------------------------------------------------------------------
 
 
+r9_GreywolfSetKnockback:
+        ld      bc, GREYWOLF_VAR_KNOCKBACK
+        call    EntityGetSlack
+        ld      a, 100
+        ld      [bc], a
+
+
+        call    EntityGetPos
+        ld      a, [var_player_coord_x]
+
+        cp      b
+        jr      C, .knockbackRight
+
+.knockbackLeft:
+        ld      bc, GREYWOLF_VAR_KNOCKBACK_DIR
+        call    EntityGetSlack
+        ld      a, 1
+        ld      [bc], a
+        ret
+
+.knockbackRight:
+        ld      bc, GREYWOLF_VAR_KNOCKBACK_DIR
+        call    EntityGetSlack
+        ld      a, 0
+        ld      [bc], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r9_GreywolfOnMessage:
 ;;; bc - message pointer
 ;;; de - self
@@ -395,6 +604,25 @@ r9_GreywolfOnMessage:
         ld      h, d
         ld      l, e
 
+        call    EntityGetPos
+	ld      a, [var_player_coord_x]
+        call    r9_absdiff
+        ld      b, a
+        ld      a, 32
+        cp      b
+        jr      C, .skip
+
+        call    EntityGetPos
+        ld      a, [var_player_coord_y]
+        ld      b, c
+        call    r9_absdiff
+        ld      b, a
+        ld      a, 32
+        cp      b
+        jr      C, .skip
+
+        call    r9_GreywolfSetKnockback
+
         ld      a, 7
         call    EntitySetPalette
 
@@ -407,10 +635,6 @@ r9_GreywolfOnMessage:
         call    EntityGetSlack
         ld      a, 0
         ld      [bc], a
-
-        ld      a, [hl]
-        or      ENTITY_TEXTURE_SWAP_FLAG
-        ld      [hl], a
 
         ld      bc, GREYWOLF_VAR_STAMINA
         call    EntityGetSlack
@@ -428,9 +652,22 @@ r9_GreywolfOnMessage:
         ld      a, SPRID_GREYWOLF_RUN_L
         cp      b
         jr      Z, .left
+        ld      a, SPRID_GREYWOLF_R
+        cp      b
+        jr      Z, .right
+        ld      a, SPRID_GREYWOLF_RUN_R
+        cp      b
+        jr      Z, .right
 
+        ret
+
+.right:
 	ld      a, SPRID_GREYWOLF_STUN_R
         call    EntitySetFrameBase
+
+        ld      a, [hl]
+        or      ENTITY_TEXTURE_SWAP_FLAG
+        ld      [hl], a
 
         ret
 
@@ -438,7 +675,14 @@ r9_GreywolfOnMessage:
 	ld      a, SPRID_GREYWOLF_STUN_L
         call    EntitySetFrameBase
 
+        ld      a, [hl]
+        or      ENTITY_TEXTURE_SWAP_FLAG
+        ld      [hl], a
+
         ret
+.skip:
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------

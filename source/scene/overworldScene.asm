@@ -383,6 +383,11 @@ OverworldSceneStartTransition:
 
 	call    EntityBufferReset
 
+        ld      hl, var_map_slabs
+        ld      bc, MAP_HEIGHT / 2
+        ld      a, 0
+        call    Memset
+
         ;; The player entity is always present in every room (obviously?)
         ld      de, var_player_struct
         call    EntityBufferEnqueue
