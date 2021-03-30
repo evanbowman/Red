@@ -1496,7 +1496,7 @@ r9_PlayerUpdateAttack3Impl:
         ld      [var_player_swap_spr], a
 
         ld      a, [var_player_kf]
-        cp      13
+        cp      12
         jr      NZ, .skip
 
         call    r9_PlayerKnifeAttackBroadcast

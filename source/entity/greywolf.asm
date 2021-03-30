@@ -33,6 +33,11 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+GREYWOLF_VAR_COLOR_COUNTER EQU 0
+GREYWOLF_VAR_COUNTER       EQU 1
+GREYWOLF_VAR_STAMINA       EQU 2
+
+
 ;;; ----------------------------------------------------------------------------
 
 
@@ -48,6 +53,15 @@ GreywolfUpdate:
 GreywolfUpdateRun:
 ;;; bc - self
         LONG_CALL r9_GreywolfUpdateRunImpl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+GreywolfUpdateStunned:
+;;; bc - self
+        LONG_CALL r9_GreywolfUpdateStunnedImpl, 9
         jp      EntityUpdateLoopResume
 
 

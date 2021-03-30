@@ -33,11 +33,6 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-GREYWOLF_VAR_COLOR_COUNTER EQU 0
-GREYWOLF_VAR_COUNTER       EQU 1
-GREYWOLF_VAR_STAMINA       EQU 2
-
-
 ;;; ----------------------------------------------------------------------------
 
 
@@ -126,12 +121,55 @@ r9_GreywolfUpdateIdleImpl:
         ld      de, GreywolfUpdateRun
         call    EntitySetUpdateFn
 
-        ld      a, SPRID_GREYWOLF_RUN_L
-        call    EntitySetFrameBase
-
         ld      a, [hl]
         or      ENTITY_TEXTURE_SWAP_FLAG
         ld      [hl], a
+
+        call    EntityGetFrameBase
+        ld      a, SPRID_GREYWOLF_L
+        cp      b
+        jr      Z, .left
+
+        ld      a, SPRID_GREYWOLF_RUN_R
+        call    EntitySetFrameBase
+
+        ret
+
+.left:
+
+        ld      a, SPRID_GREYWOLF_RUN_L
+        call    EntitySetFrameBase
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfUpdateStunnedImpl:
+        ld      h, b                    ; \ Update functions are invoked through
+        ld      l, c                    ; / hl, so it can't be a param :/
+
+	call    r9_GreywolfUpdateColor
+
+        ld      bc, GREYWOLF_VAR_COUNTER
+        call    EntityGetSlack
+        ld      a, [bc]
+        inc     a
+        ld      [bc], a
+        cp      24
+        jr      Z, .idle
+
+        call    r9_GreywolfUpdateColor
+        call    r9_GreywolfMessageLoop
+
+        ret
+.idle:
+        ld      a, 0
+        ld      [bc], a
+
+        ld      de, GreywolfUpdate
+        call    EntitySetUpdateFn
 
         ret
 
@@ -212,13 +250,45 @@ r9_GreywolfOnMessage:
         ld      a, 7
         call    EntitySetPalette
 
+        ld      de, GreywolfUpdateStunned
+        call    EntitySetUpdateFn
+
+        call    EntityAnimationResetKeyframe
+
+        ld      bc, GREYWOLF_VAR_COUNTER
+        call    EntityGetSlack
+        ld      a, 0
+        ld      [bc], a
+
+        ld      a, [hl]
+        or      ENTITY_TEXTURE_SWAP_FLAG
+        ld      [hl], a
+
         ld      bc, GREYWOLF_VAR_STAMINA
         call    EntityGetSlack
+        ;; TODO: subtract stamina
 
         ld      bc, GREYWOLF_VAR_COLOR_COUNTER
         call    EntityGetSlack
         ld      a, 20
         ld      [bc], a
+
+        call    EntityGetFrameBase
+        ld      a, SPRID_GREYWOLF_L
+        cp      b
+        jr      Z, .left
+        ld      a, SPRID_GREYWOLF_RUN_L
+        cp      b
+        jr      Z, .left
+
+	ld      a, SPRID_GREYWOLF_STUN_R
+        call    EntitySetFrameBase
+
+        ret
+
+.left:
+	ld      a, SPRID_GREYWOLF_STUN_L
+        call    EntitySetFrameBase
 
         ret
 

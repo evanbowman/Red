@@ -184,6 +184,8 @@ r1_GreywolfNew:
         ld      a, 1 | SPRITE_SHAPE_SQUARE_32
         call    EntitySetDisplayFlags
 
+
+
         ret
 
 
