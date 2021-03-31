@@ -821,7 +821,7 @@ r9_PlayerKnifeAttackBroadcast:
         push    bc                             ; |
         ld      hl, sp+0                       ; /
 
-        call    MessageQueueBroadcast
+        call    MessageBusBroadcast
 
         pop     bc              ; \ Pop message arg from stack
         pop     bc              ; /

@@ -456,7 +456,7 @@ r9_GreywolfMoveY:
         call    r9_absdiff      ; \ Because otherwise, we can flop back and
         cp      2               ; / forth if we teeter on a fractional pixel.
         pop     bc
-        jr      C, .skip2
+        jr      C, .tryMoveHorizontally
         pop     af
 
         cp      c
@@ -465,7 +465,7 @@ r9_GreywolfMoveY:
 
         ld      a, [var_wall_collision_result]
         and     COLLISION_DOWN
-        jr      NZ, .skip2
+        jr      NZ, .tryMoveHorizontally
 
         push    hl
         call    EntityGetYPos
@@ -838,7 +838,7 @@ r9_GreywolfAttackBroadcast:
 
         ld      hl, sp+0                ; Pass pointer to message on stack
 
-        call    MessageQueueBroadcast
+        call    MessageBusBroadcast
 
         pop     bc              ; \ Pop message arg from stack
         pop     bc              ; /
