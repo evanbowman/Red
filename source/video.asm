@@ -810,12 +810,19 @@ UpdateStaminaBar:
         call    SetOverlayTile
 
         inc     c
-        ld      a, 18
+        ld      a, 17
         cp      c
         jr      Z, .done
 
-.done:
+.empty:
+        ld      a, $02
+        call    SetOverlayTile
+        inc     c
+        ld      a, 17
+        cp      c
+        jr      NZ, .empty
 
+.done:
         ret
 
 

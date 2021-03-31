@@ -300,8 +300,20 @@ r9_PlayerJoypadResponse:
 r9_PlayerOnMessage:
 ;;; bc - message pointer
         ld      a, [bc]                 ; Load message type
+        cp      MESSAGE_WOLF_ATTACK
+        jr      Z, .onWolfAttack
 
         ;; TODO... currently, we're ignoring all messages.
+        ret
+
+.onWolfAttack:
+        ld      hl, var_player_stamina
+        ld      b, 20
+        ld      c, 70
+        call    FixnumSub
+
+        ld      a, 25
+        ld      [var_player_color_counter], a
         ret
 
 
@@ -323,6 +335,8 @@ r9_PlayerMessageLoop:
 
 r9_PlayerUpdateImpl:
         call    r9_PlayerMessageLoop
+
+        call    r9_PlayerUpdateInjuredColor
 
         call    r9_PlayerUpdateMovement
 
@@ -909,6 +923,7 @@ r9_PlayerAttackMovement:
 
 
 r9_PlayerUpdateAttack1Impl:
+        call    r9_PlayerUpdateInjuredColor
         call    r9_PlayerMessageLoop
 
         call    r9_PlayerAttackMovement
@@ -962,6 +977,7 @@ r9_PlayerUpdateAttack1Impl:
 
 
 r9_PlayerUpdateAttack2Impl:
+        call    r9_PlayerUpdateInjuredColor
         call    r9_PlayerMessageLoop
 
         call    r9_PlayerAttackMovement
@@ -1015,6 +1031,7 @@ r9_PlayerUpdateAttack2Impl:
 
 
 r9_PlayerUpdateAttack3Impl:
+        call    r9_PlayerUpdateInjuredColor
         call    r9_PlayerMessageLoop
 
         call    r9_PlayerAttackMovement
@@ -1149,6 +1166,30 @@ r9_PlayerAttack3ExitImpl:
 
         ld      de, PlayerUpdateAttack1
         call    r9_PlayerAttackTryExit
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerUpdateInjuredColor:
+        ld      a, [var_player_color_counter]
+        cp      0
+        jr      Z, .skip
+        cp      1
+        jr      Z, .done
+
+        dec     a
+        ld      [var_player_color_counter], a
+        ld      a, 7
+        ld      [var_player_palette], a
+        ret
+
+.done:
+        ld      a, 0
+        ld      [var_player_palette], a
+        ld      [var_player_color_counter], a
+.skip:
         ret
 
 

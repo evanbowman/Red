@@ -35,10 +35,12 @@
 
 GREYWOLF_VAR_COLOR_COUNTER EQU 0
 GREYWOLF_VAR_COUNTER       EQU 1
-GREYWOLF_VAR_STAMINA       EQU 2
-GREYWOLF_VAR_SLAB          EQU 3
-GREYWOLF_VAR_KNOCKBACK     EQU 4
-GREYWOLF_VAR_KNOCKBACK_DIR EQU 5
+GREYWOLF_VAR_STAMINA       EQU 2 ; \
+GREYWOLF_VAR_STAMINA2      EQU 3 ; | Fixnum
+GREYWOLF_VAR_STAMINA3      EQU 4 ; /
+GREYWOLF_VAR_SLAB          EQU 5
+GREYWOLF_VAR_KNOCKBACK     EQU 6
+GREYWOLF_VAR_KNOCKBACK_DIR EQU 7
 
 
 ;;; ----------------------------------------------------------------------------
@@ -71,6 +73,40 @@ GreywolfUpdateRunSeekY:
 GreywolfUpdateStunned:
 ;;; bc - self
         LONG_CALL r9_GreywolfUpdateStunnedImpl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+GreywolfUpdateAttacking:
+;;; bc - self
+        LONG_CALL r9_GreywolfUpdateAttackingImpl, 9
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+GreywolfUpdatePause:
+;;; bc - self
+        ld      h, b
+        ld      l, c
+
+        ld      bc, GREYWOLF_VAR_COUNTER
+        call    EntityGetSlack
+        ld      a, [bc]
+        dec     a
+        ld      [bc], a
+        cp      0
+        jr      Z, .idle
+
+        jp      EntityUpdateLoopResume
+
+.idle:
+        ld      de, GreywolfUpdate
+        call    EntitySetUpdateFn
+
         jp      EntityUpdateLoopResume
 
 

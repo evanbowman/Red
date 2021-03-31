@@ -36,6 +36,64 @@
 ;;; ----------------------------------------------------------------------------
 
 
+r9_GreywolfResetCounter:
+        ld      bc, GREYWOLF_VAR_COUNTER
+        call    EntityGetSlack
+        ld      a, 0
+        ld      [bc], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfIdleTryAttack:
+        call    EntityGetPos
+	ld      a, [var_player_coord_x]
+        call    r9_absdiff
+        ld      b, a
+        ld      a, 16
+        cp      b
+        jr      C, .skip
+
+        call    EntityGetPos
+        ld      a, [var_player_coord_y]
+        ld      b, c
+        call    r9_absdiff
+        ld      b, a
+        ld      a, 16
+        cp      b
+        jr      C, .skip
+
+        call    EntityAnimationResetKeyframe
+
+        call    r9_GreywolfResetCounter
+
+        ld      de, GreywolfUpdateAttacking
+        call    EntitySetUpdateFn
+
+        call    EntityGetPos
+        ld      a, [var_player_coord_x]
+        cp      b
+        jr      C, .faceLeft
+
+.faceRight:
+        ld      a, SPRID_GREYWOLF_ATTACK_R
+        call    EntitySetFrameBase
+        ret
+
+.faceLeft:
+        ld      a, SPRID_GREYWOLF_ATTACK_L
+        call    EntitySetFrameBase
+
+
+.skip:
+	ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r9_GreywolfIdleSetFacing:
         call    EntityGetPos
         ld      a, [var_player_coord_x]
@@ -108,6 +166,8 @@ r9_GreywolfUpdateIdleImpl:
         jr      Z, .run
 
         call    r9_GreywolfIdleSetFacing
+
+        call    r9_GreywolfIdleTryAttack
 
         call    r9_GreywolfUpdateColor
         call    r9_GreywolfMessageLoop
@@ -286,27 +346,30 @@ r9_GreywolfMoveX:
         call    EntityGetPos
         ld      a, [var_player_coord_x]
         push    bc
-        call    r9_absdiff
-        pop     bc
-        cp      12
-        jr      C, .moveY
+
+        call    r9_absdiff      ; \
+        pop     bc              ; | If our x coord is close to the player's, try
+        cp      12              ; | moving in the y direction
+        jr      C, .moveY       ; /
+
 	ld      a, [var_player_coord_x]
         cp      b
         jr      C, .moveLeft
 
-        ld      a, [var_wall_collision_result]
-        and     COLLISION_RIGHT
-        jr      NZ, .moveY
-
-        push    hl
-        call    EntityGetXPos
-        ld      b, 1
-        ld      c, 136
-        call    FixnumAdd
-        pop     hl
-
-        ld      a, SPRID_GREYWOLF_RUN_R
-        call    EntitySetFrameBase
+.moveRight:
+        ld      a, [var_wall_collision_result] ; \
+        and     COLLISION_RIGHT                ; |
+        jr      NZ, .moveY                     ; | Unless we're colliding with
+                                               ; | a wall, move rightwards.
+        push    hl                             ; |
+        call    EntityGetXPos                  ; |
+        ld      b, 1                           ; |
+        ld      c, 136                         ; |
+        call    FixnumAdd                      ; |
+        pop     hl                             ; |
+                                               ; |
+        ld      a, SPRID_GREYWOLF_RUN_R        ; |
+        call    EntitySetFrameBase             ; /
 
 .skip:
         ret
@@ -337,6 +400,12 @@ r9_GreywolfMoveX:
 ;;; ----------------------------------------------------------------------------
 
 
+;;; NOTE: movement is constrained to grids in the y direction. We need to ask
+;;; the engine if we have enough capacity in a specific map row before
+;;; occupying that map row, otherwise, we may exceed the oam-per-scanline
+;;; limit. The current code already does exceed the scanline limits sometimes,
+;;; but only when entities are moving from one row to another, entities will
+;;; never settle in the same row for extended periods of time.
 r9_GetDestSlab:
 ;;; d - result
 ;;; trashes bc
@@ -372,7 +441,7 @@ r9_GetDestSlab:
 ;;; ----------------------------------------------------------------------------
 
 
-r9_MoveYTest:
+r9_GreywolfMoveY:
         call    r9_GetDestSlab
 
         ld      a, d
@@ -384,15 +453,15 @@ r9_MoveYTest:
 	push    af
 	push    bc
         ld      b, c
-        call    r9_absdiff
-        cp      2
+        call    r9_absdiff      ; \ Because otherwise, we can flop back and
+        cp      2               ; / forth if we teeter on a fractional pixel.
         pop     bc
         jr      C, .skip2
         pop     af
 
         cp      c
 
-        jr      C, .moveLeft2
+        jr      C, .moveUp
 
         ld      a, [var_wall_collision_result]
         and     COLLISION_DOWN
@@ -406,7 +475,7 @@ r9_MoveYTest:
         pop     hl
 	ret
 
-.skip2:
+.tryMoveHorizontally:
         pop     af
         call    EntityGetPos
         ld      a, [var_player_coord_x]
@@ -427,10 +496,10 @@ r9_MoveYTest:
         ret
 
 
-.moveLeft2:
+.moveUp:
         ld      a, [var_wall_collision_result]
         and     COLLISION_UP
-        jr      NZ, .skip2
+        jr      NZ, .tryMoveHorizontally
 
         push    hl
         call    EntityGetYPos
@@ -441,6 +510,9 @@ r9_MoveYTest:
         ret
 
         ret
+
+
+;;; ----------------------------------------------------------------------------
 
 
 r9_GreywolfUpdateRunXImpl:
@@ -512,7 +584,7 @@ r9_GreywolfUpdateRunYImpl:
         ld      d, 5
         call    EntityAnimationAdvance
 
-        call    r9_MoveYTest
+        call    r9_GreywolfMoveY
 
         ld      bc, GREYWOLF_VAR_COUNTER
         call    EntityGetSlack
@@ -563,7 +635,7 @@ r9_GreywolfMessageLoop:
 r9_GreywolfSetKnockback:
         ld      bc, GREYWOLF_VAR_KNOCKBACK
         call    EntityGetSlack
-        ld      a, 100
+        ld      a, 50
         ld      [bc], a
 
 
@@ -591,19 +663,11 @@ r9_GreywolfSetKnockback:
 ;;; ----------------------------------------------------------------------------
 
 
-r9_GreywolfOnMessage:
+r9_GreywolfCheckKnifeAttackCollision:
 ;;; bc - message pointer
-;;; de - self
-        ld      a, [bc]
-        cp      a, MESSAGE_PLAYER_KNIFE_ATTACK
-        jr      Z, .onPlayerKnifeAttack
+;;; return a - true if attack hit, false if missed
 
-        ret
-
-.onPlayerKnifeAttack:
-        ld      h, d
-        ld      l, e
-
+;;; FIXME: do real collision testing...
         call    EntityGetPos
 	ld      a, [var_player_coord_x]
         call    r9_absdiff
@@ -621,6 +685,33 @@ r9_GreywolfOnMessage:
         cp      b
         jr      C, .skip
 
+        ld      a, 1
+        ret
+.skip:
+        ld      a, 0
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfOnMessage:
+;;; bc - message pointer
+;;; de - self
+        ld      a, [bc]
+        cp      a, MESSAGE_PLAYER_KNIFE_ATTACK
+        jr      Z, .onPlayerKnifeAttack
+
+        ret
+
+.onPlayerKnifeAttack:
+        ld      h, d
+        ld      l, e
+
+        call    r9_GreywolfCheckKnifeAttackCollision
+        or      a
+        jr      Z, .skip
+
         call    r9_GreywolfSetKnockback
 
         ld      a, 7
@@ -631,10 +722,7 @@ r9_GreywolfOnMessage:
 
         call    EntityAnimationResetKeyframe
 
-        ld      bc, GREYWOLF_VAR_COUNTER
-        call    EntityGetSlack
-        ld      a, 0
-        ld      [bc], a
+        call    r9_GreywolfResetCounter
 
         ld      bc, GREYWOLF_VAR_STAMINA
         call    EntityGetSlack
@@ -652,10 +740,16 @@ r9_GreywolfOnMessage:
         ld      a, SPRID_GREYWOLF_RUN_L
         cp      b
         jr      Z, .left
+        ld      a, SPRID_GREYWOLF_ATTACK_L
+        cp      b
+        jr      Z, .left
         ld      a, SPRID_GREYWOLF_R
         cp      b
         jr      Z, .right
         ld      a, SPRID_GREYWOLF_RUN_R
+        cp      b
+        jr      Z, .right
+        ld      a, SPRID_GREYWOLF_ATTACK_R
         cp      b
         jr      Z, .right
 
@@ -683,6 +777,73 @@ r9_GreywolfOnMessage:
 .skip:
         ret
 
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfUpdateAttackingImpl:
+;;; bc - self
+        ld      h, b
+        ld      l, c
+
+        ld      e, 5
+        ld      d, 5
+        call    EntityAnimationAdvance
+        ld      a, d
+        or      a
+        jr      Z, .frameUnchanged
+
+        call    EntityAnimationGetKeyframe
+        cp      0
+        jr      Z, .idle
+        cp      3
+        jr      Z, .sendAttack
+
+        call    r9_GreywolfMessageLoop
+
+        ret
+
+.sendAttack:
+        call    r9_GreywolfAttackBroadcast
+        ret
+
+.idle:
+        call    EntityAnimationResetKeyframe
+
+        ld      bc, GREYWOLF_VAR_COUNTER
+        call    EntityGetSlack
+        ld      a, 24
+        ld      [bc], a
+
+        ld      de, GreywolfUpdatePause
+        call    EntitySetUpdateFn
+
+.frameUnchanged:
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfAttackBroadcast:
+        call    EntityGetFrameBase
+
+        call    EntityGetPos            ; \ Second two message bytes: y, x
+        push    bc                      ; /
+
+        ld      c, MESSAGE_WOLF_ATTACK  ; \ First two message bytes:
+        push    bc                      ; / Message type, frame base
+
+        ld      hl, sp+0                ; Pass pointer to message on stack
+
+        call    MessageQueueBroadcast
+
+        pop     bc              ; \ Pop message arg from stack
+        pop     bc              ; /
+
+        ret
 
 
 ;;; ----------------------------------------------------------------------------

@@ -165,6 +165,7 @@ var_player_message_bus: DS   1
 
 var_player_struct_end:
 
+var_player_color_counter: DS   1
 
 ENTITY_SIZE EQU var_player_struct_end - var_player_struct
 

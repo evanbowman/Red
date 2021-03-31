@@ -96,6 +96,21 @@ EntityBufferReset:
 ;;; ----------------------------------------------------------------------------
 
 
+EntityAnimationGetKeyframe:
+;;; hl - entity
+;;; trashes bc
+;;; return a - keyframe
+        push    hl
+        ld      bc, 8
+        add     hl, bc
+        ld      a, [hl]
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 ;;; Set entity keyframe to zero
 EntityAnimationResetKeyframe:
 ;;; hl - entity
