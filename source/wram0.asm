@@ -288,6 +288,24 @@ var_scene_union_end:
 
 ;;; ############################################################################
 
+        SECTION "MISC", WRAM0
+
+;;; TODO: reserve some scratch space for random calculations in one of the less
+;;; important ram banks.
+
+var_misc_data_union:
+        UNION
+;;; Vars for bounding box testing. Otherwise, I would need to put this stuff on
+;;; the stack, which is possible but inconvenient.
+var_temp_hitbox1:       DS      4
+var_temp_hitbox2:       DS      4
+	NEXTU
+        ENDU
+var_misc_data_union_end:
+
+
+;;; ############################################################################
+
         SECTION "FADE", WRAM0
 
 var_last_fade_amount:   DS      1

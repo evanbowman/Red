@@ -297,6 +297,7 @@ Main:
 
 ;;; ----------------------------------------------------------------------------
 
+
 CreateWorld:
         call    VBlankIntrWait
         call    LcdOff
@@ -406,6 +407,7 @@ MapSpriteBlock:
         INCLUDE "player.asm"
         INCLUDE "greywolf.asm"
         INCLUDE "scene.asm"
+        INCLUDE "rect.asm"
         INCLUDE "inventory.asm"
         INCLUDE "overworldScene.asm"
         INCLUDE "inventoryScene.asm"

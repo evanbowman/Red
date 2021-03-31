@@ -307,6 +307,29 @@ r9_PlayerOnMessage:
         ret
 
 .onWolfAttack:
+        push    bc
+        pop     hl
+
+        inc     hl
+        inc     hl
+        ld      c, [hl]         ; Load enemy y from message
+        inc     hl
+        ld      b, [hl]         ; Load enemy x from message
+
+        ld      hl, var_temp_hitbox2
+        call    r9_GreywolfPopulateHitbox
+
+        ld      hl, var_temp_hitbox1
+        call    r9_PlayerPopulateHitbox
+
+
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        call    CheckIntersection
+
+        or      a
+        jr      Z, .skip
+
         ld      hl, var_player_stamina
         ld      b, 20
         ld      c, 70
@@ -314,6 +337,7 @@ r9_PlayerOnMessage:
 
         ld      a, 25
         ld      [var_player_color_counter], a
+.skip:
         ret
 
 
@@ -1190,6 +1214,55 @@ r9_PlayerUpdateInjuredColor:
         ld      [var_player_palette], a
         ld      [var_player_color_counter], a
 .skip:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerPopulateHitbox:
+;;; hl - hitbox to fill with data
+
+        ;; FIXME: Play around with hitbox size. Currently uses 16x32, which is
+        ;; perhaps a bit large...
+
+        ld      a, [var_player_coord_x]
+        add     8
+        ld      b, a
+        ld      [hl+], a
+        ld      a, [var_player_coord_y]
+        ld      c, a
+        ld      [hl+], a
+
+        ld      a, 16
+        add     b
+        ld      [hl+], a
+        ld      a, 32
+        add     c
+        ld      [hl], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerKnifeAttackPopulateHitbox:
+;;; a - current frame base
+;;; hl - hitbox to fill with data
+        ld      a, [var_player_coord_x]
+        ld      b, a
+        ld      [hl+], a
+        ld      a, [var_player_coord_y]
+        ld      c, a
+        ld      [hl+], a
+
+        ld      a, 32
+        add     b
+        ld      [hl+], a
+        ld      a, 32
+        add     c
+        ld      [hl], a
         ret
 
 

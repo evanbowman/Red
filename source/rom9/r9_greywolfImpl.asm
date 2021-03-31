@@ -847,3 +847,26 @@ r9_GreywolfAttackBroadcast:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfPopulateHitbox:
+;;; b - x coord (top left)
+;;; c - y coord (top left)
+;;; hl - hitbox
+        ld      [hl], b
+        inc     hl
+        ld      [hl], c
+        inc     hl
+
+        ld      a, 32           ; FIXME: use something other than 32x32...
+        add     b
+        ld      [hl+], a
+
+        ld      a, 32
+        add     c
+        ld      [hl], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
