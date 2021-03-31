@@ -744,6 +744,8 @@ r9_CollectMapItem:
 
 
 r9_PlayerAttackInit:
+	call    r9_PlayerKnifeAttackDepleteStamina
+
         ld      hl, var_player_struct
         ld      de, PlayerUpdateAttack1
         call    EntitySetUpdateFn
@@ -946,6 +948,17 @@ r9_PlayerAttackMovement:
 ;;; ----------------------------------------------------------------------------
 
 
+r9_PlayerKnifeAttackDepleteStamina:
+        ld      hl, var_player_stamina
+        ld      b, 0
+        ld      c, 48
+        call    FixnumSub
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r9_PlayerUpdateAttack1Impl:
         call    r9_PlayerUpdateInjuredColor
         call    r9_PlayerMessageLoop
@@ -993,6 +1006,8 @@ r9_PlayerUpdateAttack1Impl:
         ld      hl, var_player_struct
         ld      de, PlayerUpdateAttack2
         call    EntitySetUpdateFn
+
+        call    r9_PlayerKnifeAttackDepleteStamina
 
         ret
 
@@ -1047,6 +1062,8 @@ r9_PlayerUpdateAttack2Impl:
         ld      hl, var_player_struct
         ld      de, PlayerUpdateAttack3
         call    EntitySetUpdateFn
+
+	call    r9_PlayerKnifeAttackDepleteStamina
 
         ret
 
@@ -1115,6 +1132,8 @@ r9_PlayerAttackTryExit:
 .resume:
         ld      hl, var_player_struct
         call    EntitySetUpdateFn
+
+	call    r9_PlayerKnifeAttackDepleteStamina
 
         ld      a, 0
         ld      [var_player_tmr], a
@@ -1223,21 +1242,19 @@ r9_PlayerUpdateInjuredColor:
 r9_PlayerPopulateHitbox:
 ;;; hl - hitbox to fill with data
 
-        ;; FIXME: Play around with hitbox size. Currently uses 16x32, which is
-        ;; perhaps a bit large...
-
         ld      a, [var_player_coord_x]
         add     8
         ld      b, a
         ld      [hl+], a
         ld      a, [var_player_coord_y]
+        add     4
         ld      c, a
         ld      [hl+], a
 
         ld      a, 16
         add     b
         ld      [hl+], a
-        ld      a, 32
+        ld      a, 24
         add     c
         ld      [hl], a
 
@@ -1248,8 +1265,15 @@ r9_PlayerPopulateHitbox:
 
 
 r9_PlayerKnifeAttackPopulateHitbox:
-;;; a - current frame base
 ;;; hl - hitbox to fill with data
+        ;; ld      a, [var_player_fb]
+        ;; cp      SPRID_PLAYER_KNIFE_ATK_L
+        ;; jr      Z, .left
+        ;; cp      SPRID_PLAYER_KNIFE_ATK_R
+        ;; jr      Z, .right
+        ;; cp      SPRID_PLAYER_KNIFE_ATK_U
+        ;; jr      Z, .up
+
         ld      a, [var_player_coord_x]
         ld      b, a
         ld      [hl+], a
@@ -1263,6 +1287,51 @@ r9_PlayerKnifeAttackPopulateHitbox:
         ld      a, 32
         add     c
         ld      [hl], a
+        ret
+
+;; .left:
+;;         ld      a, [var_player_coord_x]
+;;         sub     4
+;;         ld      b, a
+;;         ld      [hl+], a
+;;         ld      a, [var_player_coord_y]
+;;         ld      c, a
+;;         ld      [hl+], a
+
+;;         ld      a, 16
+;;         add     b
+;;         ld      [hl+], a
+
+;;         ld      a, 32
+;;         add     c
+;;         ld      [hl], a
+;;         ret
+
+
+;; .right:
+;;         ld      a, [var_player_coord_x]
+;;         add     20
+;;         ld      b, a
+;;         ld      [hl+], a
+;;         ld      a, [var_player_coord_y]
+;;         ld      c, a
+;;         ld      [hl+], a
+
+;;         ld      a, 16
+;;         add     b
+;;         ld      [hl+], a
+
+;;         ld      a, 32
+;;         add     c
+;;         ld      [hl], a
+;;         ret
+
+;; .up:
+        ;; call    r9_PlayerPopulateHitbox ;todo
+;;         ret
+
+;; .down:
+;;         call    r9_PlayerPopulateHitbox ;todo
         ret
 
 

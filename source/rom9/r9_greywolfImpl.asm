@@ -666,29 +666,20 @@ r9_GreywolfSetKnockback:
 r9_GreywolfCheckKnifeAttackCollision:
 ;;; bc - message pointer
 ;;; return a - true if attack hit, false if missed
-
-;;; FIXME: do real collision testing...
-        call    EntityGetPos
-	ld      a, [var_player_coord_x]
-        call    r9_absdiff
-        ld      b, a
-        ld      a, 32
-        cp      b
-        jr      C, .skip
+	push    hl
 
         call    EntityGetPos
-        ld      a, [var_player_coord_y]
-        ld      b, c
-        call    r9_absdiff
-        ld      b, a
-        ld      a, 32
-        cp      b
-        jr      C, .skip
+        ld      hl, var_temp_hitbox1
+        call    r9_GreywolfPopulateHitbox
 
-        ld      a, 1
-        ret
-.skip:
-        ld      a, 0
+        ld      hl, var_temp_hitbox2
+        call    r9_PlayerKnifeAttackPopulateHitbox
+
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        call    CheckIntersection
+
+        pop     hl
         ret
 
 
