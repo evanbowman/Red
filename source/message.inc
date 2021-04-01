@@ -37,3 +37,4 @@
 MESSAGE_NULL                            EQU 0
 MESSAGE_PLAYER_KNIFE_ATTACK             EQU 1
 MESSAGE_WOLF_ATTACK                     EQU 2
+MESSAGE_PLAYER_INTERACT                 EQU 3

@@ -86,7 +86,7 @@ Memcpy:
 
 ;;; ----------------------------------------------------------------------------
 
-Reset:
+SystemReboot:
         ld      a, $0
         ld      b, a
         ld      a, BOOTUP_A_CGB
@@ -199,6 +199,33 @@ MemmoveLeft:
 	jr	nz, .copy
 	dec	b
 	jr	nz, .copy
+	ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+IntToString:
+;;; hl - int
+;;; de - buffer in which to store string
+        ld	bc, -100
+	call	.num1
+	ld	c, -10
+	call	.num1
+	ld	c, b
+.num1:
+        ld	a, 47           ; '0' - 1
+        push    hl
+.num2:
+        inc	a
+	add	hl, bc
+
+	jr	c, .num2
+        pop     hl
+.here:
+
+	ld	[de], a
+	inc	de
 	ret
 
 

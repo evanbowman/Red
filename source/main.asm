@@ -76,6 +76,11 @@ RAM_BANK: MACRO
 ENDM
 
 
+VIDEO_BANK: MACRO
+        ld      a, \1
+        ld      [rVBK], a
+ENDM
+
 
         INCLUDE "hram.asm"
         INCLUDE "wram0.asm"
@@ -179,9 +184,6 @@ Start:
         cp      a, BOOTUP_B_AGB
         jr      NZ, .configure
 
-;;; TODO: I need to add the corrected color palettes for gba. Until then, the
-;;; game will not be playable on the gba, as the color palettes would not
-;;; look too good anyway.
 .agbDetected:
         LONG_CALL r1_GameboyAdvanceDetected, 1
 
@@ -215,15 +217,27 @@ Main:
         ld	a, IEF_VBLANK	        ; vblank interrupt
 	ld	[rIE], a	        ; setup
 
+        ld      a, 128
+        ld      [var_overlay_y_offset], a
+        ld      [rWY], a
+
         LONG_CALL r1_SetCgbColorProfile, 1
 
         LONG_CALL r1_CopyDMARoutine, 1
 
         call    LoadFont
 
+        call    InitOverlayRow2
+
         call    LcdOn
 
+        ld      hl, 999
+        ld      de, var_temp_string
+        call    IntToString
+
         ei
+
+	call    InitRandom              ; TODO: call this later on
 
         ld      de, OverworldSceneEnter
         call    SceneSetUpdateFn
@@ -235,6 +249,8 @@ Main:
         call    CreateWorld
 
 .loop:
+        call    GetRandom
+
         LONG_CALL r1_ReadKeys, 1
         ld      a, b
         ldh     [var_joypad_raw], a
@@ -420,6 +436,8 @@ MapSpriteBlock:
         INCLUDE "fixnum.asm"
         INCLUDE "map.asm"
         INCLUDE "video.asm"
+        INCLUDE "rand.asm"
+        INCLUDE "overlayBar.asm"
         INCLUDE "rom1_code.asm"
         INCLUDE "rom2_data.asm"
         INCLUDE "rom3_data.asm"

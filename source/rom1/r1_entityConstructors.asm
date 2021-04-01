@@ -142,8 +142,8 @@ r1_BonfireNew:
         ld      de, BonfireUpdate
         call    EntitySetUpdateFn
 
+	call    VBlankIntrWait  ; required b/c we're setting map tiles
         pop     bc
-        call    LcdOff
         srl     b
         srl     b
         srl     b
@@ -159,7 +159,6 @@ r1_BonfireNew:
         ld      e, $80
         ld      c, 1
         call    SetBackgroundTile32x32
-        call    LcdOn
         ret
 
 
@@ -193,7 +192,7 @@ r1_GreywolfNew:
 	push    bc              ; \ bc -> de
         pop     de              ; /
 
-
+        push    hl
         ld      d, 6
         call    SlabTableFindAnyUnused
         ld      a, c
@@ -201,12 +200,47 @@ r1_GreywolfNew:
 
         ld      d, 6            ; our weight
         call    SlabTableBind
+        pop     hl
 
-        ;; FIXME: this scenario would happen if someone tries to put too many
-        ;; enemies in the same initial map row.
-.failed:
-        or      a
-        jr      Z, .failed
+
+        push    hl
+        ld      bc, GREYWOLF_VAR_STAMINA
+        call    EntityGetSlack
+
+        push    bc              ; \ bc -> hl
+        pop     hl              ; /
+
+        ld      bc, $ffff
+        ld      a, $ff
+        call    FixnumInit
+
+        pop     hl
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r1_GreywolfDeadNew:
+        call    r1_EntityInit
+
+        ld      a, SPRID_GREYWOLF_DEAD_L
+        call    EntitySetFrameBase
+
+        ld      a, 4
+        call    EntitySetPalette
+
+        ld      a, ENTITY_TYPE_GREYWOLF_DEAD
+        call    EntitySetType
+
+        ld      de, GreywolfUpdateDead
+        call    EntitySetUpdateFn
+
+        ld      a, SPRITE_SHAPE_T
+        call    EntitySetDisplayFlags
+
+        ;; TODO: add ourself to slab table...
 
         ret
 

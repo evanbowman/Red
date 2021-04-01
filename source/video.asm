@@ -640,48 +640,77 @@ SetBackgroundTile32x32:
 ;;; d - y index
 ;;; e - start tile
 ;;; c - palette
-        ld      b, 4
-.loop:
+
         push    bc
-
-        push    de
-        call    SetBackgroundTile
-        pop     de
-
-        inc     e
-        inc     a
-
-        push    de
-        call    SetBackgroundTile
-        pop     de
-
-        inc     e
-        inc     a
-
-        push    de
-        call    SetBackgroundTile
-        pop     de
-
-        inc     e
-        inc     a
-
-        push    de
-        call    SetBackgroundTile
-        pop     de
-
-        inc     e
-        ld      c, 3
-        sub     c
-        inc     d
-
+        call    BackgroundTileAddress
         pop     bc
 
+        ld      d, c            ; move pal to d
+
+        ld      c, 4
+.outerLoop:
+        ld      b, 4
+.loop:
+        ld      [hl], e         ; set tile
+
+	ld	a, 1
+	ld	[rVBK], a
+        ld      [hl], d         ; set palette in other vram bank
+        ld      a, 0
+        ld      [rVBK], a
+
+        inc     e
+        inc     hl
+
         dec     b
-        push    af
         ld      a, b
         or      a
-        pop     af
         jr      NZ, .loop
+
+	dec     c
+
+        ld      a, c
+        or      a
+        jr      Z, .done
+
+        push    bc
+        ld      bc, 28          ; go to next row
+        add     hl, bc
+        pop     bc
+
+        jr      .outerLoop
+
+.done:
+
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+BackgroundTileAddress:
+;;; a - x index
+;;; d - y index
+        push    af
+
+        ld      hl, _SCRN0
+        ld      b, 0
+        ld      c, 32
+.loop:
+        ld      a, 0
+        or      d
+	jr      Z, .ready
+        dec     d
+        add     hl, bc
+        jr      .loop
+
+.ready:
+        pop     af
+        ld      c, a
+        ld      b, 0
+
+        add     hl, bc
 
         ret
 
@@ -729,141 +758,6 @@ SetBackgroundTile:
 
 ;;; ----------------------------------------------------------------------------
 
-
-SetOverlayTile:
-;;; c - screen overlay x index
-;;; a - tile number (overlay tiles start at $80)
-;;; trashes b
-        ld      hl, var_overlay_back_buffer
-        ld      b, 0
-        add     hl, bc
-        ld      [hl], a
-        ret
-
-
-ShowOverlay:
-        ld      de, _SCRN1
-        ld      a, [var_overlay_alternate_pos]
-        or      a
-        jr      Z, .skip
-        ld      de, $9e20
-.skip:
-        ld      hl, var_overlay_back_buffer
-        ld      bc, 20
-        call    Memcpy
-
-	ld      a, 1
-        ld      [rVBK], a
-
-        ld      hl, _SCRN1
-        ld      b, 0
-.loop:
-        ld      a, 20
-        cp      b
-        jr      Z, .loopDone
-
-        ld      a, $80
-        ld      [hl], a
-
-        inc     hl
-        inc     b
-        jr      .loop
-
-.loopDone:
-        ld      a, 0
-        ld      [rVBK], a
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-
-UpdateStaminaBar:
-        ld      hl, var_player_stamina
-        call    FixnumUpper
-        ld      c, 1
-
-.loopFull:
-        ld      a, e
-        ld      e, 16
-        cp      e
-        ld      e, a
-        jr      C, .partial
-
-        ld      a, e
-        ld      e, 16
-        sub     e
-        ld      e, a
-        ld      a, $2 + 8
-        call    SetOverlayTile
-        inc     c
-
-        ld      a, 18
-        cp      c
-        jr      Z, .done
-        jr      .loopFull
-
-.partial:
-        ld      a, $2
-        srl     e
-        add     a, e
-        call    SetOverlayTile
-
-        inc     c
-        ld      a, 17
-        cp      c
-        jr      Z, .done
-
-.empty:
-        ld      a, $02
-        call    SetOverlayTile
-        inc     c
-        ld      a, 17
-        cp      c
-        jr      NZ, .empty
-
-.done:
-        ret
-
-
-TestOverlay:
-        ld      c, 0
-        ld      a, $1
-        call    SetOverlayTile
-
-        inc     c
-
-        ld      a, $2
-        call    SetOverlayTile
-
-        inc     c
-
-.loop1:
-        ld      a, $2
-        call    SetOverlayTile
-        inc     c
-        ld      a, 17
-        cp      c
-        jr      NZ, .loop1
-
-	ld      a, $B
-        call    SetOverlayTile
-
-        inc     c
-
-.loop2:
-        ld      a, $0
-        call    SetOverlayTile
-        inc     c
-        ld      a, 20
-        cp      c
-        jr      NZ, .loop2
-
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
 LoadFont:
         SET_BANK 7
 
@@ -899,6 +793,8 @@ AsciiToGlyph:
         jr      Z, .comma
         cp      45
         jr      Z, .dash
+        cp      $2f
+        jr      Z, .slash
         cp      58
         jr      C, .numeral
 	cp      91
@@ -908,6 +804,9 @@ AsciiToGlyph:
 
         ret
 
+.slash:
+        ld      a, $7e
+        ret
 .dash:
         ld      a, $7D
         ret
@@ -915,7 +814,7 @@ AsciiToGlyph:
         ld      a, $32
         ret
 .numeral:
-	sub     3
+	add     3
         ret
 .period:
         ld      a, $56

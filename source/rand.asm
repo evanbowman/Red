@@ -30,25 +30,59 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 ;;;
-;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-
-
-;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;;;
-;;;
-;;;  Bonfire
-;;;
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 
-BonfireUpdate:
-;;; bc - self
-        LONG_CALL r9_BonfireUpdateImpl, 9
+;;; ----------------------------------------------------------------------------
 
-        jp      EntityUpdateLoopResume
+
+;;; Seed the random number generator. VBlank interrupt and screen need to be
+;;; enabled, or the code will hang.
+InitRandom:
+        ld      a, [rDIV]
+        ld      [var_rand_state], a
+
+        call    VBlankIntrWait  ; let rdiv change
+
+        ld      a, [rDIV]
+        ld      [var_rand_state + 1], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+;;; I Should probably comment this...
+GetRandom:
+;;; result - hl
+        ld      a, [var_rand_state]
+        ld      h, a
+        ld      a, [var_rand_state + 1]
+        ld      l, a
+
+	ld      a, h
+	rra
+	ld      a, l
+	rra
+	xor     h
+	ld      h, a
+	ld      a, l
+	rra
+	ld      a, h
+	rra
+	xor     l
+	ld      l, a
+	xor     h
+	ld      h, a
+
+	ld      a, h
+        ld      [var_rand_state], a
+        ld      a, l
+        ld      [var_rand_state + 1], a
+
+	ret
 
 
 ;;; ----------------------------------------------------------------------------

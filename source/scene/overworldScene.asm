@@ -72,10 +72,7 @@ OverworldSceneInitOverlayVRam:
         ld      de, $9000
         call    VramSafeMemcpy
 
-        ld      a, 136
-        ld      [rWY], a
-
-        call    TestOverlay
+        call    InitOverlay
 	call    UpdateStaminaBar
 
         call    VBlankIntrWait
@@ -110,7 +107,7 @@ OverworldSceneEnter:
 
         call    VBlankIntrWait
 
-        ld      a, 136
+        ld      a, 128
         ld      [rWY], a
 
         ld      a, 7
@@ -190,7 +187,6 @@ OverworldSceneUpdateView:
 
 
 OverworldSceneUpdate:
-
         ldh     a, [var_joypad_current]
         bit     PADB_SELECT, a
         jr      Z, .checkStart
@@ -205,6 +201,11 @@ OverworldSceneUpdate:
 .checkStart:
         bit     PADB_START, a
         jr      Z, .checkA
+
+	ld      a, 0
+        ld      [var_inventory_scene_cooking_tab_avail], a
+        ld      a, INVENTORY_TAB_ITEMS
+        ld      [var_inventory_scene_tab], a
 
         ld      de, InventorySceneEnter
         call    SceneSetUpdateFn
@@ -367,6 +368,9 @@ OverworldSceneOnVBlank:
         jr      Z, .skip
         call    ShowOverlay
 .skip:
+        ld      a, [var_overlay_y_offset]
+        ld      [rWY], a
+
         ld      a, [var_player_stamina]
         ld      [var_stamina_last_val], a
 

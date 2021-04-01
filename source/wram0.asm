@@ -245,6 +245,8 @@ var_overlay_alternate_pos:    DS      1
 var_stamina_last_val:         DS      1
 var_overlay_back_buffer:      DS      20
 
+var_overlay_y_offset:         DS      1
+
 
 ;;; ############################################################################
 
@@ -269,7 +271,6 @@ var_room_load_colors:         DS      32
 ;;; Inventory vars
 var_inventory_scene_selected_row:       DS      1
 var_inventory_scene_page:               DS      1
-var_inventory_scene_tab:                DS      1
 
 CRAFTABLE_ITEMS_COUNT   EQU     32
 
@@ -286,6 +287,15 @@ var_crafting_dependency_set_end:
 var_scene_union_end:
 
 
+INVENTORY_TAB_ITEMS     EQU     0
+INVENTORY_TAB_CRAFT     EQU     1
+INVENTORY_TAB_COOK      EQU     2
+INVENTORY_TAB_COUNT     EQU     3
+
+var_inventory_scene_tab:                DS      1
+var_inventory_scene_cooking_tab_avail:  DS      1
+
+
 ;;; ############################################################################
 
         SECTION "MISC", WRAM0
@@ -300,8 +310,12 @@ var_misc_data_union:
 var_temp_hitbox1:       DS      4
 var_temp_hitbox2:       DS      4
 	NEXTU
+var_temp_string:        DS      16
+        NEXTU
         ENDU
 var_misc_data_union_end:
+
+var_i2s_temp:   DS      2
 
 
 ;;; ############################################################################

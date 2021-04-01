@@ -74,6 +74,8 @@ var_vbl_flag:   DS      1
 ;;; TODO: use unique color palettes for Gameboy Advance
 agb_detected:   DS      1
 
+var_rand_state:     DS      2
+
 
 ;;; SECTION MISC_HRAM
 

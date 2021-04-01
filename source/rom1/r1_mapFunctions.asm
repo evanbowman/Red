@@ -862,12 +862,11 @@ r1_SpawnEntity:
         jr      Z, .spawnSpider
         cp      ENTITY_TYPE_GREYWOLF
         jr      Z, .spawnGreywolf
+        cp      ENTITY_TYPE_GREYWOLF_DEAD
+        jr      Z, .spawnGreywolfDead
 
 .spawnBonfire:
-	call    VBlankIntrWait
-        call    LcdOff          ; FIXME...
         call    r1_BonfireNew
-        call    LcdOn
         ret
 
 .spawnSpider:
@@ -877,6 +876,10 @@ r1_SpawnEntity:
 .spawnGreywolf:
 ;;; TODO...
         call    r1_GreywolfNew
+        ret
+
+.spawnGreywolfDead:
+        call    r1_GreywolfDeadNew
         ret
 
 

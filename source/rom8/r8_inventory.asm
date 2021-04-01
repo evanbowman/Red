@@ -145,11 +145,6 @@ DB $4c, $4d, $4e, $4f
 
 ;;; ----------------------------------------------------------------------------
 
-INVENTORY_TAB_ITEMS     EQU     0
-INVENTORY_TAB_CRAFT     EQU     1
-INVENTORY_TAB_COOK      EQU     2
-INVENTORY_TAB_COUNT     EQU     3
-
 
 r8_InventoryGetTabText:
         ld      a, [var_inventory_scene_tab]
@@ -1105,7 +1100,19 @@ r8_InventoryTabRight:
         call    r8_InventoryClearItemInfoBox
 
         ld      a, [var_inventory_scene_tab]
+.next:
         inc     a
+        cp      INVENTORY_TAB_COOK
+        jr      NZ, .checkEnd
+
+        ld      b, a
+        ld      a, [var_inventory_scene_cooking_tab_avail]
+        or      a
+        ld      a, b
+        jr      Z, .next
+        jr      .skip
+
+.checkEnd:
         cp      INVENTORY_TAB_COUNT
         jr      NZ, .skip
         ld      a, INVENTORY_TAB_ITEMS
@@ -1113,6 +1120,8 @@ r8_InventoryTabRight:
         ld      [var_inventory_scene_tab], a
 
         call    r8_InventorySetTab
+
+
 
         ret
 
@@ -1127,7 +1136,18 @@ r8_InventoryTabLeft:
         jr      NZ, .skip
         ld      a, INVENTORY_TAB_COUNT
 .skip:
+.next:
         dec     a
+        cp      INVENTORY_TAB_COOK
+        jr      NZ, .set
+
+        ld      b, a
+        ld      a, [var_inventory_scene_cooking_tab_avail]
+        or      a
+        ld      a, b
+        jr      Z, .next
+
+.set:
         ld      [var_inventory_scene_tab], a
 
         call    r8_InventorySetTab
@@ -1496,12 +1516,9 @@ r8_InventoryOpen:
         cp      b
         jr      NZ, .loop
 .done:
-
-        ;; TODO: use unions for scene-specific variables
         ld      a, 0
         ld      [var_inventory_scene_selected_row], a
         ld      [var_inventory_scene_page], a
-        ld      [var_inventory_scene_tab], a
 
         call    VBlankIntrWait
 
@@ -1518,8 +1535,12 @@ r8_InventoryOpen:
         ld      a, $3c          ; /
         call    Memset
 
-        call    r8_InventoryShowTabHeading
 
+        call    r8_SetupImageTiles
+
+	call    r8_InventorySetTab
+
+        call    VBlankIntrWait
         ret
 
 

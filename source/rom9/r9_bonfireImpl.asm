@@ -33,104 +33,108 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-GREYWOLF_VAR_COLOR_COUNTER EQU 0
-GREYWOLF_VAR_COUNTER       EQU 1
-GREYWOLF_VAR_STAMINA       EQU 2 ; \
-GREYWOLF_VAR_STAMINA2      EQU 3 ; | Fixnum
-GREYWOLF_VAR_STAMINA3      EQU 4 ; /
-GREYWOLF_VAR_SLAB          EQU 5
-GREYWOLF_VAR_KNOCKBACK     EQU 6
-GREYWOLF_VAR_KNOCKBACK_DIR EQU 7
-GREYWOLF_VAR_REPEAT_STUNS  EQU 8
-;;; Bytes 9 - 14 currently unused.
-GREYWOLF_VAR_MAX           EQU 14
-
-
-;;; Make sure vars fit within available entity slack space.
-STATIC_ASSERT((GREYWOLF_VAR_MAX + 1) <= (32 - ENTITY_SIZE))
-
-
-;;; ----------------------------------------------------------------------------
-
-
-GreywolfUpdate:
-;;; bc - self
-        LONG_CALL r9_GreywolfUpdateIdleImpl, 9
-        jp      EntityUpdateLoopResume
-
-
-;;; ----------------------------------------------------------------------------
-
-
-GreywolfUpdateRunSeekX:
-;;; bc - self
-        LONG_CALL r9_GreywolfUpdateRunXImpl, 9
-        jp      EntityUpdateLoopResume
-
-
-GreywolfUpdateRunSeekY:
-;;; bc - self
-        LONG_CALL r9_GreywolfUpdateRunYImpl, 9
-        jp      EntityUpdateLoopResume
-
-
-;;; ----------------------------------------------------------------------------
-
-
-GreywolfUpdateStunned:
-;;; bc - self
-        LONG_CALL r9_GreywolfUpdateStunnedImpl, 9
-        jp      EntityUpdateLoopResume
-
-
-;;; ----------------------------------------------------------------------------
-
-
-GreywolfUpdateAttacking:
-;;; bc - self
-        LONG_CALL r9_GreywolfUpdateAttackingImpl, 9
-        jp      EntityUpdateLoopResume
-
-
-;;; ----------------------------------------------------------------------------
-
-
-GreywolfUpdatePause:
+r9_BonfireUpdateImpl:
 ;;; bc - self
         ld      h, b
         ld      l, c
 
-        ld      bc, GREYWOLF_VAR_COUNTER
-        call    EntityGetSlack
-        ld      a, [bc]
-        dec     a
-        ld      [bc], a
-        cp      0
-        jr      Z, .idle
 
-        jp      EntityUpdateLoopResume
+        ld      e, 6
+        ld      d, 5
 
-.idle:
-        ld      de, GreywolfUpdate
-        call    EntitySetUpdateFn
+        call    EntityAnimationAdvance
 
-        jp      EntityUpdateLoopResume
+        call    r9_BonfireMessageLoop
+
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 
-GreywolfUpdateDying:
+r9_BonfireMessageLoop:
 ;;; bc - self
-        LONG_CALL r9_GreywolfUpdateDyingImpl, 9
-        jp      EntityUpdateLoopResume
+;;; trashes hl
+        push    hl
+
+        call    EntityGetMessageQueue
+        call    MessageQueueLoad
+
+        pop     de
+        ld      bc, r9_BonfireOnMessage
+        call    MessageQueueDrain
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 
-GreywolfUpdateDead:
-        jp      EntityUpdateLoopResume
+r9_BonfireOnMessage:
+;;; bc - message pointer
+;;; de - self
+        ld      a, [bc]
+        cp      MESSAGE_PLAYER_INTERACT
+        jr      Z, .onPlayerInteract
+        ret
+
+.onPlayerInteract:
+	ld      h, d
+        ld      l, e
+
+        call    EntityGetPos
+        ld      hl, var_temp_hitbox1
+        call    r9_BonfirePopulateHitbox
+
+        ld      hl, var_temp_hitbox2
+        call    r9_PlayerPopulateHitbox
+
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        call    CheckIntersection
+
+        or      a
+        jr      Z, .skip
+
+        ld      de, InventorySceneEnter
+        call    SceneSetUpdateFn
+
+        ld      a, 1
+        ld      [var_inventory_scene_cooking_tab_avail], a
+
+        ld      a, INVENTORY_TAB_COOK
+        ld      [var_inventory_scene_tab], a
+
+.skip:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_BonfirePopulateHitbox:
+;;; b - x coord
+;;; c - y coord
+;;; hl - hitbox
+        ld      a, b
+        sub     8
+        ld      b, a
+        ld      [hl], b
+        inc     hl
+        ld      a, c
+        sub     8
+        ld      c, a
+        ld      [hl], c
+        inc     hl
+
+        ld      a, 48
+        add     b
+        ld      [hl+], a
+
+        ld      a, 48
+        add     c
+        ld      [hl], a
+
+        ret
 
 
 ;;; ----------------------------------------------------------------------------

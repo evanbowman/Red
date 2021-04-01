@@ -60,7 +60,7 @@ InventorySceneEnter:
 
 InventorySceneUpdate:
         ldh     a, [var_joypad_current]
-        bit     PADB_START, a
+        and     PADF_START | PADF_B
         jr      Z, .idle
 
         ld      a, 255
@@ -72,11 +72,14 @@ InventorySceneUpdate:
         call    VBlankIntrWait
         ld      a, 136
         ld      [rWY], a
+        ld      [var_overlay_y_offset], a
 
         ld      a, 0
         ld      [var_overlay_alternate_pos], a
 
         call    ShowOverlay
+
+        call    InitOverlayRow2
 
         call    DrawEntities
 
@@ -99,6 +102,19 @@ InventorySceneUpdate:
 InventorySceneFadeinVBlank:
         SET_BANK 7
 
+        ld      a, [var_overlay_y_offset]
+        ld      b, 136
+        cp      b
+        jr      C, .inc
+        jr      .skip
+.inc:
+        inc     a
+        ld      [var_overlay_y_offset], a
+.skip:
+
+        ld      a, [var_overlay_y_offset]
+        ld      [rWY], a
+
         ld      a, [var_scene_counter]
 	ld      c, a
         add     16
@@ -116,13 +132,6 @@ InventorySceneFadeinVBlank:
         call    BlackScreenExcludeOverlay
 
         LONG_CALL r8_InventoryOpen, 8
-
-        call    VBlankIntrWait  ; \ Pause for a couple of frames.
-        call    VBlankIntrWait  ; /
-        LONG_CALL r8_InventoryInitText, 8
-
-        LONG_CALL r8_SetupImageTiles, 8
-        LONG_CALL r8_InventoryUpdateImage, 8
         ret
 
 .continue:

@@ -70,7 +70,12 @@ WorldmapSceneUpdate:
 ;;; i.e. Hide all tiles onscreen
         call    TanScreen
 
+        ld      a, 128
+        ld      [rWY], a
+
         call    OverworldSceneInitOverlayVRam
+
+        call    InitOverlayRow2
 
 	ld      de, WorldmapSceneFadeOutVBlank
         call    SceneSetVBlankFn

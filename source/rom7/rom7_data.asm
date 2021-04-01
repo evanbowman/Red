@@ -172,8 +172,8 @@ r7_OverlayTiles::
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 ;;;
-DB $FF,$FF,$FF,$FF,$EF,$FE,$EF,$FE
-DB $83,$FE,$EF,$FE,$EF,$FE,$FF,$FF
+DB $FF,$FF,$FF,$FF,$EF,$FF,$EF,$FF
+DB $83,$FF,$EF,$FF,$EF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$7F
@@ -194,7 +194,12 @@ DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$7F,$FF,$7F
 DB $FF,$7F,$FF,$7F,$FF,$7F,$FF,$FF
-;;; debug
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$E7
+DB $FF,$E7,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$3F,$3F,$7F,$7F,$7F,$7F
+DB $72,$72,$79,$79,$78,$78,$36,$36
+DB $FF,$FF,$F3,$F3,$BB,$BB,$7B,$7B
+DB $FB,$FB,$FB,$FB,$FB,$FB,$F3,$F3
 r7_OverlayTilesEnd::
 
 r7_BackgroundTiles::

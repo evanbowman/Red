@@ -330,10 +330,7 @@ r9_PlayerOnMessage:
         or      a
         jr      Z, .skip
 
-        ld      hl, var_player_stamina
-        ld      b, 20
-        ld      c, 70
-        call    FixnumSub
+        call    r9_PlayerWolfAttackDepleteStamina
 
         ld      a, 25
         ld      [var_player_color_counter], a
@@ -440,10 +437,7 @@ r9_PlayerUpdateImpl:
         or      a
         jr      Z, .done
 
-        ld      hl, var_player_stamina
-        ld      b, 0
-        ld      c, 10
-        call    FixnumSub
+	call    r9_PlayerWalkDepleteStamina
 
 	call    r9_PlayerAnimate
 
@@ -452,7 +446,7 @@ r9_PlayerUpdateImpl:
         jr      Z, .checkB
         ld      a, [var_wall_collision_result]
         or      a
-        jr      Z, .done
+        jr      Z, .tryInteractEntities
         call    r9_PlayerTryInteract
         jr      .done
 
@@ -463,6 +457,13 @@ r9_PlayerUpdateImpl:
 
 .done:
         ret
+
+.tryInteractEntities:
+        call    r9_PlayerInteractBroadcast
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 
 r9_PlayerTryInteract:
@@ -489,10 +490,14 @@ r9_PlayerTryInteract:
         jr      Z, .tryInteractDown
         ret
 
+.tryInteractEntities:
+        call    r9_PlayerInteractBroadcast
+        ret
+
 .tryInteractLeft:
         ld      a, [var_wall_collision_result]
         and     COLLISION_LEFT
-        ret     Z
+        jr      Z, .tryInteractEntities
 
 	call    r9_PlayerTileCoord
         dec     a
@@ -504,7 +509,7 @@ r9_PlayerTryInteract:
 .tryInteractRight:
         ld      a, [var_wall_collision_result]
         and     COLLISION_RIGHT
-        ret     Z
+        jr      Z, .tryInteractEntities
 
 	call    r9_PlayerTileCoord
         inc     a
@@ -516,7 +521,7 @@ r9_PlayerTryInteract:
 .tryInteractUp:
         ld      a, [var_wall_collision_result]
         and     COLLISION_UP
-        ret     Z
+        jr      Z, .tryInteractEntities
 
 	call    r9_PlayerTileCoord
         dec     b
@@ -528,7 +533,7 @@ r9_PlayerTryInteract:
 .tryInteractDown:
         ld      a, [var_wall_collision_result]
         and     COLLISION_DOWN
-        ret     Z
+        jr      Z, .tryInteractEntities
 
 	call    r9_PlayerTileCoord
         inc     b
@@ -732,7 +737,7 @@ r9_CollectMapItem:
         call    MapSetTile
 
 
-        ld      b, ITEM_TURNIP          ; Fixme!
+        ld      b, ITEM_POTATO          ; Fixme!
         call    InventoryAddItem
 
         call    r9_SetItemCollected
@@ -834,6 +839,29 @@ r9_PlayerAttackSetFacing:
 .faceDown:
         ld      a, SPRID_PLAYER_KNIFE_ATK_D
         ld      [var_player_fb], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+;;; Now, the player could scan through the entity list, ask all of the entities
+;;; what type they are, check overlap accordingly, etc... but we already have a
+;;; message bus. So instead, we broadcast an interact message to all entities,
+;;; and interactible entities will check overlap with the player, and initiate
+;;; the appropriate state change. This way, the player doesn't need to know
+;;; about each individual entity implementation.
+r9_PlayerInteractBroadcast:
+        ld      c, MESSAGE_PLAYER_INTERACT
+        push    bc
+        push    bc
+        ld      hl, sp+0
+
+        call    MessageBusBroadcast
+
+        pop     bc
+        pop     bc
+
         ret
 
 
@@ -948,11 +976,61 @@ r9_PlayerAttackMovement:
 ;;; ----------------------------------------------------------------------------
 
 
-r9_PlayerKnifeAttackDepleteStamina:
+r9_PlayerDepleteStamina:
+;;; b - amount
+;;; c - fraction
+
+;;; Test large unit in Fixnum to determine whether subtraction would drop
+;;; stamina below zero.
         ld      hl, var_player_stamina
+        inc     hl
+        inc     hl
+
+        ld      a, [hl]
+        push    af
+
+        ld      hl, var_player_stamina
+        call    FixnumSub
+
+        pop     af
+
+        cp      d
+        jr      NZ, .exhausted
+
+        ret
+
+.exhausted:
+	call    SystemReboot    ; FIXME...
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerWalkDepleteStamina:
+	ld      b, 0
+        ld      c, 10
+        call    r9_PlayerDepleteStamina
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerWolfAttackDepleteStamina:
+        ld      b, 20
+        ld      c, 70
+        call    r9_PlayerDepleteStamina
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerKnifeAttackDepleteStamina:
         ld      b, 0
         ld      c, 48
-        call    FixnumSub
+        call    r9_PlayerDepleteStamina
         ret
 
 

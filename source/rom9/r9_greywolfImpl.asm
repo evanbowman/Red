@@ -633,9 +633,10 @@ r9_GreywolfMessageLoop:
 
 
 r9_GreywolfSetKnockback:
+;;; d - amount
         ld      bc, GREYWOLF_VAR_KNOCKBACK
         call    EntityGetSlack
-        ld      a, 50
+        ld      a, d
         ld      [bc], a
 
 
@@ -672,12 +673,14 @@ r9_GreywolfCheckKnifeAttackCollision:
         ld      hl, var_temp_hitbox1
         call    r9_GreywolfPopulateHitbox
 
+        ;; TODO: use message to populate hitbox, rather than player's current
+        ;; state.
         ld      hl, var_temp_hitbox2
         call    r9_PlayerKnifeAttackPopulateHitbox
 
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
-        call    CheckIntersection
+        call    CheckIntersection ; leaves result in a
 
         pop     hl
         ret
@@ -703,26 +706,30 @@ r9_GreywolfOnMessage:
         or      a
         jr      Z, .skip
 
-        call    r9_GreywolfSetKnockback
-
         ld      a, 7
         call    EntitySetPalette
 
-        ld      de, GreywolfUpdateStunned
-        call    EntitySetUpdateFn
-
-        call    EntityAnimationResetKeyframe
-
-        call    r9_GreywolfResetCounter
-
-        ld      bc, GREYWOLF_VAR_STAMINA
-        call    EntityGetSlack
-        ;; TODO: subtract stamina
 
         ld      bc, GREYWOLF_VAR_COLOR_COUNTER
         call    EntityGetSlack
         ld      a, 20
         ld      [bc], a
+
+
+	ld      de, GreywolfUpdateStunned
+        call    EntitySetUpdateFn
+
+	ld      d, 50
+        call    r9_GreywolfSetKnockback
+
+        ld      b, 20
+        ld      c, 0
+        call    r9_GreywolfDepleteStamina
+
+        call    r9_GreywolfResetCounter
+
+        call    EntityAnimationResetKeyframe
+
 
         call    EntityGetFrameBase
         ld      a, SPRID_GREYWOLF_L
@@ -802,9 +809,11 @@ r9_GreywolfUpdateAttackingImpl:
 .idle:
         call    EntityAnimationResetKeyframe
 
+GREYWOLF_KNIFE_ATTACK_STUN_DURATION EQU 16
+
         ld      bc, GREYWOLF_VAR_COUNTER
         call    EntityGetSlack
-        ld      a, 24
+        ld      a, GREYWOLF_KNIFE_ATTACK_STUN_DURATION
         ld      [bc], a
 
         ld      de, GreywolfUpdatePause
@@ -856,6 +865,110 @@ r9_GreywolfPopulateHitbox:
         ld      a, 32
         add     c
         ld      [hl], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfDepleteStamina:
+;;; b - amount
+;;; c - fraction
+        push    hl
+        push    bc
+
+        ld      bc, GREYWOLF_VAR_STAMINA
+        call    EntityGetSlack
+
+        push    bc              ; \ bc -> hl
+        pop     hl              ; /
+
+        pop     bc              ; restore fraction, amount
+
+        push    hl
+        inc     hl
+        inc     hl
+        ld      a, [hl]         ; load upper num
+        pop     hl
+
+        push    af              ; store upper num
+
+        call    FixnumSub
+
+        pop     af
+
+        pop     hl
+
+        cp      d               ; if higher bits changed, we dropped below zero
+        jr      NZ, .staminaExhausted
+
+        ret
+
+.staminaExhausted:
+        ld      d, 255
+        call    r9_GreywolfSetKnockback
+
+        ld      de, GreywolfUpdateDying
+        call    EntitySetUpdateFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfUpdateDyingImpl:
+;;; bc - self
+        ld      h, b
+        ld      l, c
+
+	call    r9_GreywolfUpdateColor
+
+        call    r9_GreywolfApplyKnockback
+
+        ld      bc, GREYWOLF_VAR_COUNTER
+        call    EntityGetSlack
+        ld      a, [bc]
+        inc     a
+        ld      [bc], a
+        cp      24
+        jr      Z, .dead
+
+        ret
+
+.dead:
+        ld      a, 0 | SPRITE_SHAPE_T
+        call    EntitySetDisplayFlags
+
+        call    EntityGetPos
+        ld      a, [var_player_coord_x]
+        cp      b
+        jr      C, .faceLeft
+.faceRight:
+        ld      a, SPRID_GREYWOLF_DEAD_R
+        call    EntitySetFrameBase
+        jr      .continue
+.faceLeft:
+        ld      a, SPRID_GREYWOLF_DEAD_L
+        call    EntitySetFrameBase
+.continue:
+
+        ld      de, GreywolfUpdateDead
+        call    EntitySetUpdateFn
+
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [hl], a
+
+        ld      a, ENTITY_TYPE_GREYWOLF_DEAD
+        call    EntitySetType
+
+        ld      a, 4
+        call    EntitySetPalette
+
+        call    EntityGetXPos
+        ld      b, 1
+        ld      c, 0
+        call    FixnumAdd
 
         ret
 

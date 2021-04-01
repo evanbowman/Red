@@ -125,6 +125,9 @@ FixnumSub:
 ;;; c - fractional unit
 ;;; This is a bit more complicated, because there's no subtraction instruction
 ;;; for hl.
+;;; return d - new upper byte
+;;; return e - new lower byte
+;;; return a - new fractional byte
         push    hl
         ld      e, [hl]                      ; small units
         inc     hl
