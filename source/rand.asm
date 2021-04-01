@@ -42,12 +42,12 @@
 ;;; enabled, or the code will hang.
 InitRandom:
         ld      a, [rDIV]
-        ld      [var_rand_state], a
+        ld      [hvar_rand_state], a
 
         call    VBlankIntrWait  ; let rdiv change
 
         ld      a, [rDIV]
-        ld      [var_rand_state + 1], a
+        ld      [hvar_rand_state + 1], a
         ret
 
 
@@ -57,9 +57,9 @@ InitRandom:
 ;;; I Should probably comment this...
 GetRandom:
 ;;; result - hl
-        ld      a, [var_rand_state]
+        ld      a, [hvar_rand_state]
         ld      h, a
-        ld      a, [var_rand_state + 1]
+        ld      a, [hvar_rand_state + 1]
         ld      l, a
 
 	ld      a, h
@@ -78,9 +78,9 @@ GetRandom:
 	ld      h, a
 
 	ld      a, h
-        ld      [var_rand_state], a
+        ld      [hvar_rand_state], a
         ld      a, l
-        ld      [var_rand_state + 1], a
+        ld      [hvar_rand_state + 1], a
 
 	ret
 

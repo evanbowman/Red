@@ -215,9 +215,9 @@ r9_GreywolfApplyKnockback:
         push    hl
         call    EntityGetPos
         ld      a, b
-        ld      [var_wall_collision_source_x], a
+        ld      [hvar_wall_collision_source_x], a
         ld      a, c
-        ld      [var_wall_collision_source_y], a
+        ld      [hvar_wall_collision_source_y], a
         call    r9_WallCollisionCheck
         pop     hl
 
@@ -230,7 +230,7 @@ r9_GreywolfApplyKnockback:
 
 .knockbackLeft:
 
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_LEFT
         jr      NZ, .skip
 
@@ -258,7 +258,7 @@ r9_GreywolfApplyKnockback:
         ret
 
 .knockbackRight:
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_RIGHT
         jr      NZ, .skip
 
@@ -357,7 +357,7 @@ r9_GreywolfMoveX:
         jr      C, .moveLeft
 
 .moveRight:
-        ld      a, [var_wall_collision_result] ; \
+        ld      a, [hvar_wall_collision_result]; \
         and     COLLISION_RIGHT                ; |
         jr      NZ, .moveY                     ; | Unless we're colliding with
                                                ; | a wall, move rightwards.
@@ -375,7 +375,7 @@ r9_GreywolfMoveX:
         ret
 
 .moveLeft:
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_LEFT
         jr      NZ, .moveY
 
@@ -463,7 +463,7 @@ r9_GreywolfMoveY:
 
         jr      C, .moveUp
 
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_DOWN
         jr      NZ, .tryMoveHorizontally
 
@@ -497,7 +497,7 @@ r9_GreywolfMoveY:
 
 
 .moveUp:
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_UP
         jr      NZ, .tryMoveHorizontally
 
@@ -523,9 +523,9 @@ r9_GreywolfUpdateRunXImpl:
         push    hl
         call    EntityGetPos
         ld      a, b
-        ld      [var_wall_collision_source_x], a
+        ld      [hvar_wall_collision_source_x], a
         ld      a, c
-        ld      [var_wall_collision_source_y], a
+        ld      [hvar_wall_collision_source_y], a
         call    r9_WallCollisionCheck
         pop     hl
 
@@ -574,9 +574,9 @@ r9_GreywolfUpdateRunYImpl:
         push    hl
         call    EntityGetPos
         ld      a, b
-        ld      [var_wall_collision_source_x], a
+        ld      [hvar_wall_collision_source_x], a
         ld      a, c
-        ld      [var_wall_collision_source_y], a
+        ld      [hvar_wall_collision_source_y], a
         call    r9_WallCollisionCheck
         pop     hl
 
@@ -897,11 +897,24 @@ r9_GreywolfDepleteStamina:
         call    FixnumSub
 
         pop     af
-
         pop     hl
 
         cp      d               ; if higher bits changed, we dropped below zero
         jr      NZ, .staminaExhausted
+
+
+	push    hl
+        push    af              ; heh, yeah I know
+        push    de
+
+        ld      bc, GREYWOLF_VAR_STAMINA
+        call    EntityGetSlack
+        ld      a, [bc]
+        call    OverlayShowEnemyHealth
+
+        pop     de
+        pop     af
+        pop     hl
 
         ret
 
@@ -911,6 +924,15 @@ r9_GreywolfDepleteStamina:
 
         ld      de, GreywolfUpdateDying
         call    EntitySetUpdateFn
+
+	push    hl
+        push    af              ; heh, yeah I know
+        push    de
+        call    OverlayRepaintRow2
+        pop     de
+        pop     af
+        pop     hl
+
         ret
 
 

@@ -56,14 +56,14 @@ r9_WallCollisionCheckLeft:
 
 ;;; Player.y < tile.y? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_y]
+        ld      a, [hvar_wall_collision_source_y]
         cp      b
 	pop     bc
         jr      C, .false
 
 ;;; Player.y > tile.y + 16? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_y]
+        ld      a, [hvar_wall_collision_source_y]
         ld      c, a
         ld      a, b
         add     16
@@ -73,7 +73,7 @@ r9_WallCollisionCheckLeft:
 
 ;;; Player.x < tile.x? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_x]
+        ld      a, [hvar_wall_collision_source_x]
         sub     8
         cp      c
         pop     bc
@@ -81,7 +81,7 @@ r9_WallCollisionCheckLeft:
 
 ;;; Player.x > tile.x + 16? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_x]
+        ld      a, [hvar_wall_collision_source_x]
         sub     8
         ld      b, a
         ld      a, c
@@ -90,9 +90,9 @@ r9_WallCollisionCheckLeft:
         pop     bc
         jr      C, .false
 
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         or      COLLISION_LEFT
-        ld      [var_wall_collision_result], a
+        ld      [hvar_wall_collision_result], a
 .false:
         ret
 
@@ -113,7 +113,7 @@ r9_WallCollisionCheckUp:
 
 ;;; Player.y < tile.y? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_y]
+        ld      a, [hvar_wall_collision_source_y]
         sub     8
         cp      b
 	pop     bc
@@ -121,7 +121,7 @@ r9_WallCollisionCheckUp:
 
 ;;; Player.y > tile.y + 16? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_y]
+        ld      a, [hvar_wall_collision_source_y]
         sub     8
         ld      c, a
         ld      a, b
@@ -132,14 +132,14 @@ r9_WallCollisionCheckUp:
 
 ;;; Player.x < tile.x? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_x]
+        ld      a, [hvar_wall_collision_source_x]
         cp      c
         pop     bc
         jr      C, .false
 
 ;;; Player.x > tile.x + 16? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_x]
+        ld      a, [hvar_wall_collision_source_x]
         ld      b, a
         ld      a, c
         add     16
@@ -147,9 +147,9 @@ r9_WallCollisionCheckUp:
         pop     bc
         jr      C, .false
 
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         or      COLLISION_UP
-        ld      [var_wall_collision_result], a
+        ld      [hvar_wall_collision_result], a
 .false:
         ret
 
@@ -169,7 +169,7 @@ r9_WallCollisionCheckDown:
 
 ;;; Player.y < tile.y? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_y]
+        ld      a, [hvar_wall_collision_source_y]
         add     11
         cp      b
 	pop     bc
@@ -177,7 +177,7 @@ r9_WallCollisionCheckDown:
 
 ;;; Player.y > tile.y + 16? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_y]
+        ld      a, [hvar_wall_collision_source_y]
         add     11
         ld      c, a
         ld      a, b
@@ -188,14 +188,14 @@ r9_WallCollisionCheckDown:
 
 ;;; Player.x < tile.x? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_x]
+        ld      a, [hvar_wall_collision_source_x]
         cp      c
         pop     bc
         jr      C, .false
 
 ;;; Player.x > tile.x + 16? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_x]
+        ld      a, [hvar_wall_collision_source_x]
         ld      b, a
         ld      a, c
         add     16
@@ -203,9 +203,9 @@ r9_WallCollisionCheckDown:
         pop     bc
         jr      C, .false
 
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         or      COLLISION_DOWN
-        ld      [var_wall_collision_result], a
+        ld      [hvar_wall_collision_result], a
 .false:
         ret
 
@@ -226,14 +226,14 @@ r9_WallCollisionCheckRight:
 
 ;;; Player.y < tile.y? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_y]
+        ld      a, [hvar_wall_collision_source_y]
         cp      b
 	pop     bc
         jr      C, .false
 
 ;;; Player.y > tile.y + 16? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_y]
+        ld      a, [hvar_wall_collision_source_y]
         ld      c, a
         ld      a, b
         add     16
@@ -243,7 +243,7 @@ r9_WallCollisionCheckRight:
 
 ;;; Player.x < tile.x? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_x]
+        ld      a, [hvar_wall_collision_source_x]
         add     8
         cp      c
         pop     bc
@@ -251,7 +251,7 @@ r9_WallCollisionCheckRight:
 
 ;;; Player.x > tile.x + 16? Then no collision
         push    bc
-        ld      a, [var_wall_collision_source_x]
+        ld      a, [hvar_wall_collision_source_x]
         add     8
         ld      b, a
         ld      a, c
@@ -260,9 +260,9 @@ r9_WallCollisionCheckRight:
         pop     bc
         jr      C, .false
 
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         or      COLLISION_RIGHT
-        ld      [var_wall_collision_result], a
+        ld      [hvar_wall_collision_result], a
 .false:
         ret
 
@@ -270,12 +270,12 @@ r9_WallCollisionCheckRight:
 r9_WallCollisionTileCoord:
 ;;; return b - y
 ;;; return a - x
-        ld      a, [var_wall_collision_source_y]
+        ld      a, [hvar_wall_collision_source_y]
         swap    a               ; Tiles are 16x16, so divide player pos by 16
 	and     $0f             ; swap + mask == division by 16
         ld      b, a
 
-        ld      a, [var_wall_collision_source_x]
+        ld      a, [hvar_wall_collision_source_x]
         swap    a
         and     $0f
         ret
@@ -286,7 +286,7 @@ r9_WallCollisionCheck:
 ;;; square of 16x16 tiles for collisions.
 
         ld      a, 0
-        ld      [var_wall_collision_result], a
+        ld      [hvar_wall_collision_result], a
 
 	call    r9_WallCollisionTileCoord
 

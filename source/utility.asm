@@ -97,13 +97,13 @@ SystemReboot:
 
 ScheduleSleep:
 ;;; e - frames to sleep
-        ldh     a, [var_sleep_counter]
+        ldh     a, [hvar_sleep_counter]
         cp      e
         jr      C, .set
         ret
 .set:
         add     a, e
-        ldh     [var_sleep_counter], a
+        ldh     [hvar_sleep_counter], a
         ret
 
 
@@ -114,16 +114,16 @@ VBlankIntrWait:
 ;;; NOTE: We reset the vbl flag before the loop, in case our game logic ran
 ;;; slow, and we missed the vblank.
         ld      a, 0
-        ldh     [var_vbl_flag], a
+        ldh     [hvar_vbl_flag], a
 
 .loop:
         halt
         ;; The assembler inserts a nop here to fix a hardware bug.
-        ldh     a, [var_vbl_flag]
+        ldh     a, [hvar_vbl_flag]
         or      a
         jr      z, .loop
         xor     a
-        ldh     [var_vbl_flag], a
+        ldh     [hvar_vbl_flag], a
         ret
 
 
@@ -252,6 +252,23 @@ IntegerToString:
 .carry;
         dec     bc
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+SmallStrlen:
+;;; hl - text
+;;; return c - len
+        ld      c, 0
+.loop:
+        ld      a, [hl]
+        cp      0
+        ret     Z
+
+        inc     c
+        inc     hl
+        jr      .loop
 
 
 ;;; ----------------------------------------------------------------------------

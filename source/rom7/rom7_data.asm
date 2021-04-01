@@ -200,6 +200,8 @@ DB $FF,$FF,$3F,$3F,$7F,$7F,$7F,$7F
 DB $72,$72,$79,$79,$78,$78,$36,$36
 DB $FF,$FF,$F3,$F3,$BB,$BB,$7B,$7B
 DB $FB,$FB,$FB,$FB,$FB,$FB,$F3,$F3
+DB $FF,$FF,$FF,$FF,$BB,$FF,$83,$FF
+DB $AB,$FF,$83,$FF,$C7,$FF,$FF,$FF
 r7_OverlayTilesEnd::
 
 r7_BackgroundTiles::

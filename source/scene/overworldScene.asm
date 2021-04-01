@@ -188,7 +188,7 @@ OverworldSceneUpdateView:
 
 
 OverworldSceneUpdate:
-        ldh     a, [var_joypad_current]
+        ldh     a, [hvar_joypad_current]
         bit     PADB_SELECT, a
         jr      Z, .checkStart
 
@@ -388,6 +388,8 @@ OverworldSceneStartTransition:
 
 	call    EntityBufferReset
 
+        call    OverlayRepaintRow2
+
         ld      hl, var_map_slabs
         ld      bc, MAP_HEIGHT / 2
         ld      a, 0
@@ -397,7 +399,7 @@ OverworldSceneStartTransition:
         ld      de, var_player_struct
         call    EntityBufferEnqueue
 
-        ld      a, [var_joypad_raw]
+        ld      a, [hvar_joypad_raw]
         ld      [var_room_load_joypad_cache], a
         ret
 

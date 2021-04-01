@@ -59,7 +59,7 @@ InventorySceneEnter:
 ;;; ----------------------------------------------------------------------------
 
 InventorySceneUpdate:
-        ldh     a, [var_joypad_current]
+        ldh     a, [hvar_joypad_current]
         and     PADF_START | PADF_B
         jr      Z, .idle
 

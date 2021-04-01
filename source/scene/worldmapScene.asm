@@ -59,7 +59,7 @@ WorldmapSceneEnter:
 ;;; ----------------------------------------------------------------------------
 
 WorldmapSceneUpdate:
-        ldh     a, [var_joypad_current]
+        ldh     a, [hvar_joypad_current]
         bit     PADB_SELECT, a
         jr      Z, .idle
 

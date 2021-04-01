@@ -116,7 +116,7 @@ ENDM
 Vbl_isr:
         push    af
         ld      a, 1
-        ldh     [var_vbl_flag], a
+        ldh     [hvar_vbl_flag], a
         pop     af
         reti
 
@@ -179,7 +179,7 @@ Start:
 
 .gbcDetected:
         ld      a, 0
-        ldh     [agb_detected], a
+        ldh     [hvar_agb_detected], a
         ld      a, b
         cp      a, BOOTUP_B_AGB
         jr      NZ, .configure
@@ -247,7 +247,7 @@ Main:
 
         LONG_CALL r1_ReadKeys, 1
         ld      a, b
-        ldh     [var_joypad_raw], a
+        ldh     [hvar_joypad_raw], a
 
 
         ld      de, var_scene_update_fn ; \
@@ -260,11 +260,11 @@ Main:
 
 
 .sched_sleep:
-        ldh     a, [var_sleep_counter]
+        ldh     a, [hvar_sleep_counter]
         or      a
         jr      z, .vsync
         dec     a
-        ldh     [var_sleep_counter], a
+        ldh     [hvar_sleep_counter], a
         call    VBlankIntrWait
         jr      .sched_sleep
 
@@ -314,6 +314,9 @@ CreateWorld:
 
         ld      a, 1
         ld      [var_level], a
+
+        ld      a, 50
+        ld      [var_exp_to_next_level + 1], a
 
         SET_BANK 10
         RAM_BANK 1

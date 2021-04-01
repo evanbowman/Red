@@ -104,7 +104,7 @@ r1_GameboyColorNotDetected:
 
 r1_GameboyAdvanceDetected:
         ld      a, 1
-        ldh     [agb_detected], a
+        ldh     [hvar_agb_detected], a
 
 	ret
 

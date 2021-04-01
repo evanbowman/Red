@@ -83,7 +83,7 @@ RoomTransitionDone:
 
 ;;; In case we missed any key presses during the transition
         ld      a, [var_room_load_joypad_cache]
-        ld      [var_joypad_raw], a
+        ld      [hvar_joypad_raw], a
 
         LONG_CALL r1_LoadRoomEntities, 1
 

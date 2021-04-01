@@ -38,7 +38,7 @@
 
         SECTION "SLEEP_COUNTER", HRAM
 
-var_sleep_counter:     DS      1
+hvar_sleep_counter:     DS      1
 
 
 ;;; SECTION SLEEP_COUNTER
@@ -48,10 +48,10 @@ var_sleep_counter:     DS      1
 
         SECTION "JOYPAD_VARS", HRAM
 
-var_joypad_current:     DS      1       ; Edge triggered
-var_joypad_previous:    DS      1
-var_joypad_raw:         DS      1       ; Level triggered
-var_joypad_released:    DS      1       ; Edge triggered
+hvar_joypad_current:     DS      1       ; Edge triggered
+hvar_joypad_previous:    DS      1
+hvar_joypad_raw:         DS      1       ; Level triggered
+hvar_joypad_released:    DS      1       ; Edge triggered
 
 
 ;;; SECTION JOYPAD_VARS
@@ -61,7 +61,7 @@ var_joypad_released:    DS      1       ; Edge triggered
 
         SECTION "IRQ_VARIABLES", HRAM
 
-var_vbl_flag:   DS      1
+hvar_vbl_flag:   DS      1
 
 
 ;;; SECTION IRQ_VARIABLES
@@ -72,9 +72,9 @@ var_vbl_flag:   DS      1
         SECTION "MISC_HRAM", HRAM
 
 ;;; TODO: use unique color palettes for Gameboy Advance
-agb_detected:   DS      1
+hvar_agb_detected:   DS      1
 
-var_rand_state:     DS      2
+hvar_rand_state:     DS      2
 
 
 ;;; SECTION MISC_HRAM
@@ -85,11 +85,11 @@ var_rand_state:     DS      2
 
         SECTION "WALL_COLLISON_TEST_VARS", HRAM
 
-var_wall_collision_source_x: DS 1
-var_wall_collision_source_y: DS 1
+hvar_wall_collision_source_x: DS 1
+hvar_wall_collision_source_y: DS 1
 
 
-var_wall_collision_result:   DS 1
+hvar_wall_collision_result:   DS 1
 
 
 ;;; SECTION WALL_COLLISON_TEST_VARS

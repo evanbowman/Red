@@ -56,25 +56,25 @@ r9_PlayerTileCoord:
 
 r9_PlayerUpdateMovement:
         ld      a, [var_player_coord_x]
-        ld      [var_wall_collision_source_x], a
+        ld      [hvar_wall_collision_source_x], a
         ld      a, [var_player_coord_y]
-        ld      [var_wall_collision_source_y], a
+        ld      [hvar_wall_collision_source_y], a
         call    r9_WallCollisionCheck
 
 
 ;;; try walk left
-        ld      a, [var_wall_collision_result]  ; Load collision mask
+        ld      a, [hvar_wall_collision_result] ; Load collision mask
         and     COLLISION_LEFT
         ld      [var_player_spill2], a  ; Store part of mask in temp var
 
         ld      hl, var_player_coord_x
         ld      b, 0
 
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         and     PADF_DOWN | PADF_UP
         ld      c, a
 
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         and     PADF_LEFT
         ld      e, SPRID_PLAYER_WL
         call    r9_PlayerJoypadResponse
@@ -82,7 +82,7 @@ r9_PlayerUpdateMovement:
 
 
 ;;; try walk right
-        ld      a, [var_wall_collision_result]  ; Load collision mask
+        ld      a, [hvar_wall_collision_result] ; Load collision mask
         and     COLLISION_RIGHT
         ld      [var_player_spill2], a  ; Store part of mask in temp var
 
@@ -90,7 +90,7 @@ r9_PlayerUpdateMovement:
         ld      b, 1
 
         ;; c param is unchanged for this next call
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         and     PADF_RIGHT
         ld      e, SPRID_PLAYER_WR
         call    r9_PlayerJoypadResponse
@@ -98,18 +98,18 @@ r9_PlayerUpdateMovement:
 
 
 ;;; try walk down
-        ld      a, [var_wall_collision_result]  ; Load collision mask
+        ld      a, [hvar_wall_collision_result]  ; Load collision mask
         and     COLLISION_DOWN
         ld      [var_player_spill2], a  ; Store part of mask in temp var
 
 	ld      hl, var_player_coord_y
         ld      b, 1
 
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         and     PADF_LEFT | PADF_RIGHT
         ld      c, a
 
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
 	and     PADF_DOWN
         ld      e, SPRID_PLAYER_WD
         call    r9_PlayerJoypadResponse
@@ -117,14 +117,14 @@ r9_PlayerUpdateMovement:
 
 
 ;;; try walk up
-        ld      a, [var_wall_collision_result]  ; Load collision mask
+        ld      a, [hvar_wall_collision_result]  ; Load collision mask
         and     COLLISION_UP
         ld      [var_player_spill2], a  ; Store part of mask in temp var
 
 	ld      hl, var_player_coord_y
         ld      b, 0
 
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
 	and     PADF_UP
         ld      e, SPRID_PLAYER_WU
         call    r9_PlayerJoypadResponse
@@ -361,11 +361,11 @@ r9_PlayerUpdateImpl:
 
         call    r9_PlayerUpdateMovement
 
-        ldh     a, [var_joypad_released]
+        ldh     a, [hvar_joypad_released]
         and     PADF_DOWN
         jr      Z, .checkUpReleased
 
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         and     PADF_LEFT | PADF_RIGHT | PADF_UP
         jr      NZ, .checkUpReleased
 
@@ -379,11 +379,11 @@ r9_PlayerUpdateImpl:
         ld      [var_player_swap_spr], a
 
 .checkUpReleased:
-        ldh     a, [var_joypad_released]
+        ldh     a, [hvar_joypad_released]
         and     PADF_UP
         jr      Z, .checkLeftReleased
 
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         and     PADF_LEFT | PADF_RIGHT | PADF_DOWN
         jr      NZ, .checkLeftReleased
 
@@ -397,11 +397,11 @@ r9_PlayerUpdateImpl:
         ld      [var_player_swap_spr], a
 
 .checkLeftReleased:
-        ldh     a, [var_joypad_released]
+        ldh     a, [hvar_joypad_released]
         and     PADF_LEFT
         jr      Z, .checkRightReleased
 
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         and     PADF_UP | PADF_DOWN | PADF_RIGHT
         jr      NZ, .checkRightReleased
 
@@ -415,11 +415,11 @@ r9_PlayerUpdateImpl:
         ld      [var_player_swap_spr], a
 
 .checkRightReleased:
-        ldh     a, [var_joypad_released]
+        ldh     a, [hvar_joypad_released]
         and     PADF_RIGHT
         jr      Z, .animate
 
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         and     PADF_UP | PADF_DOWN | PADF_RIGHT
         jr      NZ, .animate
 
@@ -433,7 +433,7 @@ r9_PlayerUpdateImpl:
         ld      [var_player_swap_spr], a
 
 .animate:
-        ld      a, [var_joypad_raw]
+        ld      a, [hvar_joypad_raw]
         or      a
         jr      Z, .done
 
@@ -441,10 +441,10 @@ r9_PlayerUpdateImpl:
 
 	call    r9_PlayerAnimate
 
-        ldh     a, [var_joypad_current]
+        ldh     a, [hvar_joypad_current]
         bit     PADB_A, a
         jr      Z, .checkB
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         or      a
         jr      Z, .tryInteractEntities
         call    r9_PlayerTryInteract
@@ -495,7 +495,7 @@ r9_PlayerTryInteract:
         ret
 
 .tryInteractLeft:
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_LEFT
         jr      Z, .tryInteractEntities
 
@@ -507,7 +507,7 @@ r9_PlayerTryInteract:
         ret
 
 .tryInteractRight:
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_RIGHT
         jr      Z, .tryInteractEntities
 
@@ -519,7 +519,7 @@ r9_PlayerTryInteract:
         ret
 
 .tryInteractUp:
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_UP
         jr      Z, .tryInteractEntities
 
@@ -531,7 +531,7 @@ r9_PlayerTryInteract:
         ret
 
 .tryInteractDown:
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_DOWN
         jr      Z, .tryInteractEntities
 
@@ -571,7 +571,7 @@ r9_PlayerInteractTile:
 
 	ld      a, COLLECTIBLE_TILE_TEST
         cp      b               ; FIXME...
-        jr      NZ, .done
+        jr      NZ, .tryInteractEntities
 
         ld      hl, var_player_struct
         ld      de, PlayerUpdatePickupItem
@@ -580,8 +580,12 @@ r9_PlayerInteractTile:
         pop     de
 
         call    r9_PlayerPickupAnimationInit
+        ret
 
-.done:
+.tryInteractEntities:
+        call    r9_PlayerInteractBroadcast
+
+        pop     de
         ret
 
 
@@ -742,8 +746,14 @@ r9_CollectMapItem:
 
         call    r9_SetItemCollected
 
+        ld      hl, test_str
+        call    OverlayPutText
+
+
         ret
 
+test_str::
+DB      "got potato", 0
 
 ;;; ----------------------------------------------------------------------------
 
@@ -810,7 +820,7 @@ r9_PlayerAttackInit:
 
 
 r9_PlayerAttackSetFacing:
-        ld      a, [var_joypad_current]
+        ld      a, [hvar_joypad_current]
         bit     PADB_UP, a
         jr      NZ, .faceUp
         bit     PADB_DOWN, a
@@ -888,9 +898,9 @@ r9_PlayerKnifeAttackBroadcast:
 
 r9_PlayerAttackMovement:
         ld      a, [var_player_coord_x]
-        ld      [var_wall_collision_source_x], a
+        ld      [hvar_wall_collision_source_x], a
         ld      a, [var_player_coord_y]
-        ld      [var_wall_collision_source_y], a
+        ld      [hvar_wall_collision_source_y], a
         call    r9_WallCollisionCheck
 
         ld      a, [var_player_fb]
@@ -906,10 +916,10 @@ r9_PlayerAttackMovement:
         ret
 
 .checkMoveDown:
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         bit     PADB_DOWN, a
         jr      Z, .skipMoveDown
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_DOWN
         jr      NZ, .skipMoveDown
 
@@ -923,10 +933,10 @@ r9_PlayerAttackMovement:
 
 
 .checkMoveUp:
-	ld      a, [var_joypad_raw]
+	ld      a, [hvar_joypad_raw]
         bit     PADB_UP, a
         jr      Z, .skipMoveUp
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_UP
         jr      NZ, .skipMoveUp
 
@@ -940,10 +950,10 @@ r9_PlayerAttackMovement:
 
 
 .checkMoveRight:
-	ld      a, [var_joypad_raw]
+	ld      a, [hvar_joypad_raw]
         bit     PADB_RIGHT, a
         jr      Z, .skipMoveRight
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_RIGHT
         jr      NZ, .skipMoveRight
 
@@ -957,10 +967,10 @@ r9_PlayerAttackMovement:
 
 
 .checkMoveLeft:
-	ld      a, [var_joypad_raw]
+	ld      a, [hvar_joypad_raw]
         bit     PADB_LEFT, a
         jr      Z, .skipMoveLeft
-        ld      a, [var_wall_collision_result]
+        ld      a, [hvar_wall_collision_result]
         and     COLLISION_LEFT
         jr      NZ, .skipMoveLeft
 
@@ -1069,7 +1079,7 @@ r9_PlayerUpdateAttack1Impl:
         ret
 
 .checkBtn:
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         bit     PADB_B, a
 
         jr      NZ, .next
@@ -1125,7 +1135,7 @@ r9_PlayerUpdateAttack2Impl:
         ret
 
 .checkBtn:
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         bit     PADB_B, a
 
         jr      NZ, .next
@@ -1193,7 +1203,7 @@ r9_PlayerUpdateAttack3Impl:
 
 r9_PlayerAttackTryExit:
 ;;; de - potential resume dest
-        ld      a, [var_joypad_raw]
+        ld      a, [hvar_joypad_raw]
         bit     PADB_B, a
 
         jr      NZ, .resume

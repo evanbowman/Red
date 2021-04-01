@@ -158,7 +158,7 @@ UpdateStaminaBar:
 
 OverlayRow2Attrs::
 DB      $8b, $8b, $8b, $8b, $83, $8b, $8b, $8b, $8b, $8b, $8b, $8b, $83
-DB      $8b, $8b, $8b, $8b, $8b, $8b, $8b ; Whitespace, TODO...
+DB      $80, $80, $80, $80, $80, $80, $80 ; Whitespace, TODO...
 OverlayRow2AttrsEnd::
 
 
@@ -167,7 +167,136 @@ DB      "lv", 0
 
 
 OverlayRow2TempWhitespace::
-DB      "       ", 0
+DB      $00, $00, $00, $00, $00, $00, $00
+
+
+OverlayPutText:
+;;; hl - text
+        call    VBlankIntrWait
+
+        push    hl
+        call    SmallStrlen
+        pop     hl
+
+	push    hl
+        ld      hl, $9c20
+        ld      a, 20                   ; \
+        sub     c                       ; |
+        ld      c, a                    ; | Pad text with a margin
+        srl     c                       ; |
+        ld      b, 0                    ; |
+        add     hl, bc                  ; /
+        push    hl
+        pop     de
+
+        pop     hl
+
+
+        push    hl
+        push    de
+        ld      hl, $9c20
+        ld      bc, 20
+        ld      a, $32
+        call    Memset
+        pop     de
+        pop     hl
+
+        call    PutTextSimple
+
+
+        VIDEO_BANK 1
+
+        ld      hl, $9c20
+        ld      bc, 20
+        ld      a, $8b
+        call    Memset
+
+        VIDEO_BANK 0
+
+        ret
+
+
+
+;;; Intended to be called infrequently, as it needs to wait on a vblank.
+OverlayShowEnemyHealth:
+;;; a - enemy health
+	ld      e, a
+
+        call    VBlankIntrWait
+        ld      hl, $9c20
+        ld      a, $0f
+        ld      [hl+], a
+
+        ld      c, 1
+
+.loopFull:
+        ld      a, e
+        ld      e, 16
+        cp      e
+        ld      e, a
+        jr      C, .partial
+
+        ld      a, e
+        ld      e, 16
+        sub     e
+        ld      e, a
+
+        ld      a, $0a
+        ld      [hl+], a
+
+        inc     c
+
+        ld      a, 18
+        cp      c
+        jr      Z, .done
+        jr      .loopFull
+
+.partial:
+        ld      a, 2
+        srl     e
+        srl     e
+        srl     e
+        add     a, e
+        ld      [hl+], a
+
+        inc     c
+        ld      a, 17
+        cp      c
+        jr      Z, .done
+
+.empty:
+        ld      a, $02
+        ld      [hl+], a
+        inc     c
+        ld      a, 17
+        cp      c
+        jr      NZ, .empty
+
+
+.done:
+        ld      a, $0b
+        ld      [hl], a
+
+        VIDEO_BANK 1
+
+        ld      hl, $9c20
+        ld      bc, 20
+        ld      a, $80
+        call    Memset
+
+        VIDEO_BANK 0
+
+        ret
+
+
+OverlayRow2ResetVars:
+        ld      hl, OverlayRow2TempWhitespace
+        ld      de, $9c2d
+        ld      bc, 7
+        call    Memcpy
+
+        ret
+
 
 
 ;;; The second row of the overlay just stores some vars that don't change too
@@ -232,9 +361,7 @@ OverlayRepaintRow2:
         ld      de, $9c29
         call    PutTextSimple
 
-        ld      hl, OverlayRow2TempWhitespace
-        ld      de, $9c2d
-        call    PutTextSimple
+        call    OverlayRow2ResetVars
 
         ld      hl, $9c24
         ld      a, $0c

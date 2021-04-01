@@ -1280,14 +1280,14 @@ r8_InventoryMoveCursorUp:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryUpdate:
-        ldh     a, [var_joypad_current]
+        ldh     a, [hvar_joypad_current]
         bit     PADB_UP, a
         jr      Z, .checkA
 
         call    r8_InventoryMoveCursorUp
 
 .checkA:
-	ldh     a, [var_joypad_current]
+	ldh     a, [hvar_joypad_current]
         bit     PADB_A, a
         jr      Z, .checkDown
 
@@ -1295,21 +1295,21 @@ r8_InventoryUpdate:
         ret
 
 .checkDown:
-        ldh     a, [var_joypad_current]
+        ldh     a, [hvar_joypad_current]
         bit     PADB_DOWN, a
         jr      Z, .checkLeft
 
         call    r8_InventoryMoveCursorDown
 
 .checkLeft:
-        ldh     a, [var_joypad_current]
+        ldh     a, [hvar_joypad_current]
         bit     PADB_LEFT, a
         jr      Z, .checkRight
 
         call    r8_InventoryTabLeft
 
 .checkRight:
-        ldh     a, [var_joypad_current]
+        ldh     a, [hvar_joypad_current]
         bit     PADB_RIGHT, a
         jr      Z, .done
 

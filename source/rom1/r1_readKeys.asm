@@ -37,7 +37,7 @@ r1_ReadKeys:
 ; b - returns raw state
 ; c - returns debounced state (edge-triggered)
 ; d - trashed
-        ldh     a, [var_joypad_raw]
+        ldh     a, [hvar_joypad_raw]
         ld      d, a
 
         ld      a, $20                  ; read P15 - returns a, b, select, start
@@ -62,23 +62,23 @@ r1_ReadKeys:
         or      b                       ; combine P15 and P14 states in one byte
         ld      b, a                    ; store it
 
-        ldh     a, [var_joypad_previous]; this is when important part begins, load previous P15 & P14 state
+        ldh     a, [hvar_joypad_previous]; this is when important part begins, load previous P15 & P14 state
         xor     b                       ; result will be 0 if it's the same as current read
         and     b                       ; keep buttons that were pressed during this read only
-        ldh     [var_joypad_current], a ; store final result in variable and register
+        ldh     [hvar_joypad_current], a ; store final result in variable and register
         ld      c, a
         ld      a, b                    ; current P15 & P14 state will be previous in next read
-        ldh     [var_joypad_previous], a
+        ldh     [hvar_joypad_previous], a
 
         ld      a, $30                  ; reset rP1
         ldh     [rP1], a
 
         ld      a, b
-        ldh     [var_joypad_raw], a
+        ldh     [hvar_joypad_raw], a
 
         cpl                             ; cpl of current == not pressed keys
         and     d                       ; and with prev keys == released
-        ldh     [var_joypad_released], a
+        ldh     [hvar_joypad_released], a
         ret
 
 
