@@ -75,7 +75,7 @@ WorldmapSceneUpdate:
 
         call    OverworldSceneInitOverlayVRam
 
-        call    InitOverlayRow2
+        call    OverlayRepaintRow2
 
 	ld      de, WorldmapSceneFadeOutVBlank
         call    SceneSetVBlankFn

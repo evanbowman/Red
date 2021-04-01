@@ -205,28 +205,53 @@ MemmoveLeft:
 ;;; ----------------------------------------------------------------------------
 
 
-IntToString:
-;;; hl - int
-;;; de - buffer in which to store string
-        ld	bc, -100
-	call	.num1
-	ld	c, -10
-	call	.num1
-	ld	c, b
-.num1:
-        ld	a, 47           ; '0' - 1
-        push    hl
-.num2:
-        inc	a
-	add	hl, bc
+IntegerToString:
+;;; hl - integer
+;;; de - dest string buffer
+;;; return de - pointer to beginning of string in buffer
+        call    .impl
+        ld      a, 0
+        ld      [de], a         ; Add null terminator
+        ret
 
-	jr	c, .num2
-        pop     hl
-.here:
+.impl:
+;;; hl - integer
+;;; de - dest string buffer
+        ld      bc, -10000
+        call    .one
+        ld      bc, -1000
+        call    .one
+        ld      bc, -100
+        call    .one
+        ld      bc, -10
+        call    .one
+        ld      c, -1
+.one
+        ld      a, "0"-1
+.two
+        inc     a
+        add     hl, bc
+        jr      c, .two
+        push    bc
+        push    af
+        ld      a, b
+        cpl
+        ld      b, a
+        ld      a, c
+        cpl
+        ld      c, a
+        inc     bc
+        call    c, .carry
+        pop     af
+        add     hl, bc
+        pop     bc
+        ld      [de], a
+        inc     de
+        ret
 
-	ld	[de], a
-	inc	de
-	ret
+.carry;
+        dec     bc
+        ret
 
 
 ;;; ----------------------------------------------------------------------------

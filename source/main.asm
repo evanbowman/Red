@@ -227,13 +227,7 @@ Main:
 
         call    LoadFont
 
-        call    InitOverlayRow2
-
         call    LcdOn
-
-        ld      hl, 999
-        ld      de, var_temp_string
-        call    IntToString
 
         ei
 
@@ -317,6 +311,9 @@ Main:
 CreateWorld:
         call    VBlankIntrWait
         call    LcdOff
+
+        ld      a, 1
+        ld      [var_level], a
 
         SET_BANK 10
         RAM_BANK 1

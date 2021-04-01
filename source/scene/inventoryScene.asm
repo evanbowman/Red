@@ -79,7 +79,7 @@ InventorySceneUpdate:
 
         call    ShowOverlay
 
-        call    InitOverlayRow2
+        call    OverlayRepaintRow2
 
         call    DrawEntities
 

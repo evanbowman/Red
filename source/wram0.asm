@@ -69,6 +69,12 @@ INVENTORY_COUNT EQU 14
 var_inventory:  DS      ITEM_SIZE * (INVENTORY_COUNT - 1)
 var_inventory_last_item:        DS      ITEM_SIZE
 
+
+var_level:              DS      1
+var_exp:                DS      2
+var_exp_to_next_level:  DS      2
+
+
 PERSISTENT_STATE_DATA_END:
 
 
@@ -310,7 +316,10 @@ var_misc_data_union:
 var_temp_hitbox1:       DS      4
 var_temp_hitbox2:       DS      4
 	NEXTU
-var_temp_string:        DS      16
+;;; Intended to be used for integer->string conversions
+var_temp_str1:          DS      6 ; Max 16 bit value needs 5 places, plus null
+var_temp_str2:          DS      6
+var_temp_str3:          DS      6
         NEXTU
         ENDU
 var_misc_data_union_end:

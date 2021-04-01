@@ -124,6 +124,7 @@ OverworldSceneEnter:
         ld      de, OverworldSceneFadeInVBlank
         call    SceneSetVBlankFn
 
+        call    OverlayRepaintRow2
 
         ret
 

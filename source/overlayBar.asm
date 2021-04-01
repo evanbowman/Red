@@ -155,33 +155,94 @@ UpdateStaminaBar:
 
 ;;; ----------------------------------------------------------------------------
 
-test_string2:
-        DB      "lv01 000/124         ", 0
+
+OverlayRow2Attrs::
+DB      $8b, $8b, $8b, $8b, $83, $8b, $8b, $8b, $8b, $8b, $8b, $8b, $83
+DB      $8b, $8b, $8b, $8b, $8b, $8b, $8b ; Whitespace, TODO...
+OverlayRow2AttrsEnd::
 
 
-InitOverlayRow2:
-        ld      hl, test_string2
+level_str::
+DB      "lv", 0
+
+
+OverlayRow2TempWhitespace::
+DB      "       ", 0
+
+
+;;; The second row of the overlay just stores some vars that don't change too
+;;; frequently (level, exp, etc...), so I haven't optimized this code much.
+OverlayRepaintRow2:
+        ld      a, [var_level]
+        ld      h, 0
+        ld      l, a
+        ld      de, var_temp_str1
+        call    IntegerToString
+
+
+        ld      a, [var_exp]
+        ld      h, a
+        ld      a, [var_exp + 1]
+        ld      l, a
+        ld      de, var_temp_str2
+        call    IntegerToString
+
+
+        ld      a, [var_exp_to_next_level]
+        ld      h, a
+        ld      a, [var_exp_to_next_level + 1]
+        ld      l, a
+        ld      de, var_temp_str3
+        call    IntegerToString
+
+
+	call    VBlankIntrWait  ; Just to be safe. Again, this code rarely runs.
+
+        VIDEO_BANK 1
+        ld      hl, OverlayRow2Attrs
         ld      de, $9c20
-        ld      b, $8b
-        call    PutText
+        ld      bc, OverlayRow2AttrsEnd - OverlayRow2Attrs
+        call    Memcpy
+        VIDEO_BANK 0
+
+        ld      hl, $9c28       ; \
+        ld      a, $7e          ; | Slash separator in exp fraction
+        ld      [hl], a         ; /
+
+        ld      de, $9c20
+        ld      hl, level_str
+        call    PutTextSimple
+
+        ld      hl, var_temp_str1
+        inc     hl
+        inc     hl
+        inc     hl
+        ld      de, $9c22
+        call    PutTextSimple
+
+        ld      hl, var_temp_str2
+        inc     hl
+        inc     hl
+        ld      de, $9c25
+        call    PutTextSimple
+
+        ld      hl, var_temp_str3
+        inc     hl
+        inc     hl
+        ld      de, $9c29
+        call    PutTextSimple
+
+        ld      hl, OverlayRow2TempWhitespace
+        ld      de, $9c2d
+        call    PutTextSimple
 
         ld      hl, $9c24
         ld      a, $0c
         ld      [hl], a
 
-        VIDEO_BANK 1
-        ld      a, $83
-        ld      [hl], a
-        VIDEO_BANK 0
-
         ld      a, $0c
         ld      hl, $9c2c
         ld      [hl], a
-
-        VIDEO_BANK 1
-        ld      a, $83
-        ld      [hl], a
-        VIDEO_BANK 0
 
         ret
 

@@ -861,6 +861,28 @@ PutText:
 
 ;;; ----------------------------------------------------------------------------
 
+
+PutTextSimple:
+;;; hl - text
+;;; de - screen ptr
+;;; return de - updated screen ptr
+.loop:
+        ld      a, [hl+]
+        cp      0
+	jr      Z, .done
+
+        call    AsciiToGlyph
+        ld      [de], a
+
+        inc     de
+
+        jr      .loop
+.done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 LcdOff:
         ld      a, 0
 	ld	[rLCDC], a
