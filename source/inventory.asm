@@ -177,9 +177,33 @@ InventoryConsumeItem:
 
 ;;; ----------------------------------------------------------------------------
 
-InventoryCompact:
-;;; TODO: we erase items from the inventory by replacing them with a null
-;;; sentinel value. Now, we want to shift everything over to fill the gaps.
+InventoryIsFull:
+;;; trashes hl, c
+;;; return a - true / false
+        ld      hl, var_inventory
+        ld      c, 0
+.loop:
+        ld      a, INVENTORY_COUNT
+        cp      c
+        jr      Z, .full
+
+        ld      a, [hl]
+        or      a
+        jr      NZ, .next
+
+        jr      .hasSlots
+.next:
+        inc     hl
+        inc     hl
+        inc     c
+        jr      .loop
+
+.hasSlots:
+        ld      a, 0
+        ret
+
+.full:
+        ld      a, 1
         ret
 
 

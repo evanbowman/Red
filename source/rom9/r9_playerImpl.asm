@@ -714,6 +714,12 @@ r9_CollectMapItem:
         cp      b
         jr      NZ, .waitLoop
 
+
+        call    InventoryIsFull
+        or      a
+        jr      NZ, .failed
+
+
         ld      a, [var_collect_item_xy]
         and     $0f
         ld      d, a
@@ -749,8 +755,17 @@ r9_CollectMapItem:
         ld      hl, test_str
         call    OverlayPutText
 
-
         ret
+
+.failed:
+        ld      hl, inventory_full_str
+        call    OverlayPutText
+        ret
+
+
+inventory_full_str::
+DB      "inventory full", 0
+
 
 test_str::
 DB      "got potato", 0
