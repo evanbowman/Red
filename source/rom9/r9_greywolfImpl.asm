@@ -992,6 +992,9 @@ r9_GreywolfUpdateDyingImpl:
         ld      c, 0
         call    FixnumAdd
 
+        ld      hl, 10
+        call    AddExp
+
         ret
 
 
