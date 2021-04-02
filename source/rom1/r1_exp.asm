@@ -33,6 +33,47 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+;;; ----------------------------------------------------------------------------
+
+
+r1_ExpDoLevelup:
+	ld      a, [var_exp_to_next_level]      ; \
+        cpl                                     ; |
+        ld      h, a                            ; |
+        ld      a, [var_exp_to_next_level + 1]  ; | Load negative levelup exp
+        cpl                                     ; |
+        ld      l, a                            ; |
+        inc     hl                              ; /
+
+        ld      a, [var_exp]            ; \
+        ld      b, a                    ; | Load exp
+        ld      a, [var_exp + 1]        ; |
+        ld      c, a                    ; /
+
+        add     hl, bc                  ; Subtract
+
+        ld      a, h
+        ld      [var_exp], a
+        ld      a, l
+        ld      [var_exp + 1], a
+
+        ld      a, [var_level]
+        ld      b, 99
+        cp      b
+        jr      Z, .levelMaxed
+
+        inc     a
+        ld      [var_level], a
+
+        call    r1_SetLevelupExp
+        ret
+
+.levelMaxed:
+        ret
+
+;;; ----------------------------------------------------------------------------
+
+
 r1_SetLevelupExp:
         ld      a, [var_level]
         ld      b, a

@@ -76,6 +76,8 @@ hvar_agb_detected:   DS      1
 
 hvar_rand_state:     DS      2
 
+hvar_exp_changed_flag:          DS      1
+hvar_exp_levelup_ready_flag:    DS      1
 
 ;;; SECTION MISC_HRAM
 

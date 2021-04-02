@@ -188,6 +188,39 @@ OverworldSceneUpdateView:
 
 
 OverworldSceneUpdate:
+
+.checkLevelup:
+	ldh     a, [hvar_exp_levelup_ready_flag]
+        or      a
+        jr      Z, .checkExpChanged
+
+        xor     a
+        ldh     [hvar_exp_levelup_ready_flag], a
+        ldh     [hvar_exp_changed_flag], a
+
+        LONG_CALL r1_ExpDoLevelup, 1
+        call    OverlayRepaintRow2
+
+        ld      e, 60
+	call    ScheduleSleep
+
+        ;; TODO: play a jingle, go to levelup scene
+
+        ret
+
+.checkExpChanged:
+        ldh     a, [hvar_exp_changed_flag]
+        or      a
+        jr      Z, .checkSelect
+
+        xor     a
+        ldh     [hvar_exp_changed_flag], a
+
+	call    OverlayRepaintRow2
+
+        ret
+
+.checkSelect:
         ldh     a, [hvar_joypad_current]
         bit     PADB_SELECT, a
         jr      Z, .checkStart
@@ -197,11 +230,11 @@ OverworldSceneUpdate:
 
         ld      de, VoidVBlankFn
         call    SceneSetVBlankFn
-        jr      .updateEntities
+        ret
 
 .checkStart:
         bit     PADB_START, a
-        jr      Z, .checkA
+        jr      Z, .updateEntities
 
 	ld      a, 0
         ld      [var_inventory_scene_cooking_tab_avail], a
@@ -210,14 +243,7 @@ OverworldSceneUpdate:
 
         ld      de, InventorySceneEnter
         call    SceneSetUpdateFn
-        jr      .updateEntities
-
-.checkA:
-        bit     PADB_A, a
-        jr      Z, .updateEntities
-
-;;; TODO...
-
+        ret
 
 .updateEntities:
 

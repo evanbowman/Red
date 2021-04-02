@@ -323,10 +323,6 @@ CreateWorld:
 
 	LONG_CALL r1_SetLevelupExp, 1
 
-        ld      a, c
-        ld      [var_exp_to_next_level + 1], a
-        ld      a, b
-        ld      [var_exp_to_next_level], a
 
         SET_BANK 10
         RAM_BANK 1
@@ -473,6 +469,7 @@ MapSpriteBlock:
         INCLUDE "utility.asm"
         INCLUDE "fixnum.asm"
         INCLUDE "map.asm"
+        INCLUDE "exp.asm"
         INCLUDE "video.asm"
         INCLUDE "damage.asm"
         INCLUDE "rand.asm"

@@ -467,6 +467,7 @@ r9_PlayerUpdateImpl:
 
 
 r9_PlayerTryInteract:
+
         ;; Yeah, this is lazy, but it only runs when we press a button and we're
         ;; colliding with something, so it's not worth optimizing this part of
         ;; the code, especially when we have tons of slack space in this rom

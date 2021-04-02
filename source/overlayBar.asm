@@ -302,6 +302,8 @@ OverlayRow2ResetVars:
 ;;; The second row of the overlay just stores some vars that don't change too
 ;;; frequently (level, exp, etc...), so I haven't optimized this code much.
 OverlayRepaintRow2:
+
+.retry:
         ld      a, [var_level]
         ld      h, 0
         ld      l, a
