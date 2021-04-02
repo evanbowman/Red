@@ -69,6 +69,8 @@ InventorySceneUpdate:
         call    VBlankIntrWait
         call    BlackScreenExcludeOverlay
 
+        call    SoundSync
+
         call    VBlankIntrWait
         ld      a, 136
         ld      [rWY], a
@@ -88,6 +90,8 @@ InventorySceneUpdate:
 
         ld      de, VoidUpdateFn
         call    SceneSetUpdateFn
+
+        call    SoundSync
 
         ret
 
@@ -131,7 +135,9 @@ InventorySceneFadeinVBlank:
         ld      c, 255
         call    BlackScreenExcludeOverlay
 
+        call    SoundPause      ;FIXME
         LONG_CALL r8_InventoryOpen, 8
+        call    SoundResume
         ret
 
 .continue:

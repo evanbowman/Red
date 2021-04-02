@@ -79,6 +79,11 @@ hvar_rand_state:     DS      2
 hvar_exp_changed_flag:          DS      1
 hvar_exp_levelup_ready_flag:    DS      1
 
+
+;;; LONG_CALL sets the currently executing rombank, for a few cases where we
+;;; need to know what the current bank is, when calling into other sections.
+hvar_current_rombank:           DS      1
+
 ;;; SECTION MISC_HRAM
 
 

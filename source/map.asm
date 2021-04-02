@@ -151,7 +151,7 @@ MapLoad2__rom0_only:
         ld      hl, .roomDataBankTab    ; \
         add     de                      ; | Set bank where we'll look for the
         ld      a, [hl]                 ; | map data.
-        ld      [rROMB0], a             ; /
+        SET_BANK_FROM_A                 ; /
 
         sla     e                       ; Two bytes per pointer in roomdata lut
 .here:

@@ -213,6 +213,8 @@ OverlayPutText:
 
         VIDEO_BANK 0
 
+        call    SoundSync       ; Because we manually called VBlankIntrWait
+
         ret
 
 
@@ -285,6 +287,8 @@ OverlayShowEnemyHealth:
         call    Memset
 
         VIDEO_BANK 0
+
+        call    SoundSync       ; Because we manually called VblankIntrWait
 
         ret
 

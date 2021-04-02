@@ -51,7 +51,8 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
         INCLUDE "message.inc"
 
 
-;;; NOTE: LONG_CALL does not restore the current rom bank
+;;; NOTE: LONG_CALL does not restore the current rom bank. This macro should
+;;; only be used in ROM0 code.
 LONG_CALL: MACRO
         ld      a, \2
         ld      hl, \1
@@ -66,6 +67,14 @@ ENDM
 
 SET_BANK: MACRO
         ld      a, \1
+        ldh     [hvar_current_rombank], a
+        ld      [rROMB0], a
+ENDM
+
+
+SET_BANK_FROM_A: MACRO
+;;; Assumes that the desired bank num is loaded into register a.
+        ldh     [hvar_current_rombank], a
         ld      [rROMB0], a
 ENDM
 
@@ -96,7 +105,7 @@ ENDM
 ;; ############################################################################
 
         SECTION "RESTART_VECTOR_08",ROM0[$0008]
-        ld      [rROMB0], a
+        SET_BANK_FROM_A
         jp      hl
 
 
@@ -239,7 +248,6 @@ Main:
         ld      de, VoidVBlankFn
         call    SceneSetVBlankFn
 
-
         ld      hl, 256
         ld      b, 13
         ld      c, 9
@@ -247,6 +255,14 @@ Main:
 .test:
 
         call    CreateWorld
+
+        ld      de, song_data
+        ld      bc, BANK(song_data)
+        ld      a, $05
+        call    gbt_play
+        ld      a, 1
+        call    gbt_loop
+
 
 .loop:
         call    GetRandom
@@ -264,6 +280,8 @@ Main:
         ld      l, a                    ; /
         INVOKE_HL                       ; Jump to scene update code
 
+        call    gbt_update ; Update player
+
 
 .sched_sleep:
         ldh     a, [hvar_sleep_counter]
@@ -272,6 +290,7 @@ Main:
         dec     a
         ldh     [hvar_sleep_counter], a
         call    VBlankIntrWait
+        call    SoundSync
         jr      .sched_sleep
 
 
@@ -416,7 +435,7 @@ MapSpriteBlock:
         ld      d, a            ; save a in d for later use
 
         add     SPRITESHEET1_ROM_BANK ; Add calculated offset to base bank
-        ld      [rROMB0], a     ; set rom bank
+        SET_BANK_FROM_A         ; set rom bank
 
 
         swap    d               ; \
@@ -447,6 +466,63 @@ MapSpriteBlock:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+SoundPause:
+        push    hl
+        push    de
+        push    bc
+        ld      a, 0
+        call    gbt_pause
+        pop     bc
+        pop     de
+        pop     hl
+
+        ldh     a, [hvar_current_rombank]
+        ld      [rROMB0], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+SoundResume:
+	push    hl
+        push    de
+        push    bc
+        ld      a, 1
+        call    gbt_pause
+        pop     bc
+        pop     de
+        pop     hl
+
+        ldh     a, [hvar_current_rombank]
+        ld      [rROMB0], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+SoundSync:
+        push    hl
+        push    de
+        push    bc
+        call    gbt_update
+        pop     bc
+        pop     de
+        pop     hl
+
+        ldh     a, [hvar_current_rombank]
+        ld      [rROMB0], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 
 
 ;;; I ran into issues where I see illegal instruction errors when separating
@@ -491,6 +567,8 @@ MapSpriteBlock:
         INCLUDE "rom9_code.asm"
         INCLUDE "rom10_map_data.asm"
         INCLUDE "rom11_data.asm"
+
+        INCLUDE "external/song.asm"
 
 
 ;;; SECTION START

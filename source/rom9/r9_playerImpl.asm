@@ -707,8 +707,10 @@ r9_SetItemCollected:
 
 
 r9_CollectMapItem:
+        call    VBlankIntrWait
         ld      b, 7
 .waitLoop:
+        call    SoundSync
         call    VBlankIntrWait
         dec     b
         ld      a, 0

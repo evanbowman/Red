@@ -66,6 +66,8 @@ WorldmapSceneUpdate:
         ld      a, 255
         ld      [var_scene_counter], a
 
+        call    SoundSync
+
         call    VBlankIntrWait
 ;;; i.e. Hide all tiles onscreen
         call    TanScreen
@@ -105,7 +107,9 @@ WorldmapSceneFadeinVBlank:
 
         call    TanScreen
 
+        call    SoundPause      ;FIXME
         LONG_CALL r1_WorldMapShow, 1
+        call    SoundResume
 
         ret
 

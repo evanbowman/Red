@@ -33,6 +33,13 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+;;; TODO: Loading the inventory takes a lot of time, and in many places I'm
+;;; manually calling VBlankIntrWait, which was fine at the time, but now
+;;; that I'm working on adding sound, and the sound driver needs to be
+;;; updated once per frame, now I realize that I've made a lot of work
+;;; for myself.
+
+
 ;;; Column 0: item, columns 1-3: dependency set.
 r8_InventoryCraftingRecipes::
 DB      ITEM_BUNDLE,    ITEM_STICK,     ITEM_STICK,     ITEM_STICK
@@ -1285,6 +1292,7 @@ r8_InventoryUpdate:
         jr      Z, .checkA
 
         call    r8_InventoryMoveCursorUp
+	ret
 
 .checkA:
 	ldh     a, [hvar_joypad_current]
@@ -1300,6 +1308,7 @@ r8_InventoryUpdate:
         jr      Z, .checkLeft
 
         call    r8_InventoryMoveCursorDown
+	ret
 
 .checkLeft:
         ldh     a, [hvar_joypad_current]
@@ -1307,6 +1316,7 @@ r8_InventoryUpdate:
         jr      Z, .checkRight
 
         call    r8_InventoryTabLeft
+	ret
 
 .checkRight:
         ldh     a, [hvar_joypad_current]
@@ -1314,6 +1324,7 @@ r8_InventoryUpdate:
         jr      Z, .done
 
         call    r8_InventoryTabRight
+        ret
 
 .done:
         ret
