@@ -449,8 +449,11 @@ MapSpriteBlock:
 ;;; ----------------------------------------------------------------------------
 
 
-;;; I ran into issues where the I see illegal instruction errors when separating
-;;; my source code into different sections.
+;;; I ran into issues where I see illegal instruction errors when separating
+;;; my rom0 source code into different sections. Generally, each ROM bank
+;;; consists of a single section.
+
+        ;; ROM0 Code
         INCLUDE "animation.asm"
         INCLUDE "entity.asm"
         INCLUDE "bonfire.asm"
@@ -474,6 +477,11 @@ MapSpriteBlock:
         INCLUDE "damage.asm"
         INCLUDE "rand.asm"
         INCLUDE "overlayBar.asm"
+
+        INCLUDE "external/gbt_player.asm"
+        INCLUDE "external/gbt_player_bank1.asm"
+
+        ;; ROMX Code and data
         INCLUDE "rom1_code.asm"
         INCLUDE "rom2_data.asm"
         INCLUDE "rom3_data.asm"
