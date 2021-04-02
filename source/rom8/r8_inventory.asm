@@ -478,16 +478,16 @@ r8_Mul16:
 ;;; bc - number
 ;;; trashes d
 ;;; result in bc
-        ld      a, c
+        swap    b
+        ld      a, b
         and     $f0
-        swap    a
-        ld      d, a
+        ld      b, a
 
-        ld      a, b
+        ld      a, c
         swap    a
-        and     $f0
-        or      d
-        ld      a, b
+        and     $0f
+        or      b
+        ld      b, a
 
         ld      a, c
         swap    a
