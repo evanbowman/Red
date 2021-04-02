@@ -151,6 +151,9 @@ EntryPoint:
 ;;; ----------------------------------------------------------------------------
 
 
+DB      "Copyright Evan Bowman 2021", 0
+
+
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ;;;
 ;;;
@@ -239,16 +242,13 @@ Main:
         ld      de, VoidVBlankFn
         call    SceneSetVBlankFn
 
-
-        ld      hl, 256
-        ld      b, 13
-        ld      c, 9
-        call    CalculateDamage
-.test:
+	call    SoundInit
 
         call    CreateWorld
 
 .loop:
+        call    SoundSync
+
         call    GetRandom
 
         LONG_CALL r1_ReadKeys, 1
@@ -264,13 +264,13 @@ Main:
         ld      l, a                    ; /
         INVOKE_HL                       ; Jump to scene update code
 
-
 .sched_sleep:
         ldh     a, [hvar_sleep_counter]
         or      a
         jr      z, .vsync
         dec     a
         ldh     [hvar_sleep_counter], a
+	call    SoundSync
         call    VBlankIntrWait
         jr      .sched_sleep
 
@@ -450,7 +450,8 @@ MapSpriteBlock:
 
 
 ;;; I ran into issues where the I see illegal instruction errors when separating
-;;; my source code into different sections.
+;;; my WRAM0 source code into different sections. Maybe someday I'll actually
+;;; fix the underlying problem, but I'd rather be working on my game.
         INCLUDE "animation.asm"
         INCLUDE "entity.asm"
         INCLUDE "bonfire.asm"
@@ -474,6 +475,14 @@ MapSpriteBlock:
         INCLUDE "damage.asm"
         INCLUDE "rand.asm"
         INCLUDE "overlayBar.asm"
+        INCLUDE "sound.asm"
+
+;;; SoundSystem library.
+        INCLUDE "external/SoundSystem.asm"
+
+        INCLUDE "musicdata.asm"
+
+;;; ROMX Code.
         INCLUDE "rom1_code.asm"
         INCLUDE "rom2_data.asm"
         INCLUDE "rom3_data.asm"
