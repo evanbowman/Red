@@ -240,6 +240,12 @@ Main:
         call    SceneSetVBlankFn
 
 
+        ld      hl, 256
+        ld      b, 13
+        ld      c, 9
+        call    CalculateDamage
+.test:
+
         call    CreateWorld
 
 .loop:
@@ -315,8 +321,12 @@ CreateWorld:
         ld      a, 1
         ld      [var_level], a
 
-        ld      a, 50
+	LONG_CALL r1_SetLevelupExp, 1
+
+        ld      a, c
         ld      [var_exp_to_next_level + 1], a
+        ld      a, b
+        ld      [var_exp_to_next_level], a
 
         SET_BANK 10
         RAM_BANK 1
@@ -464,6 +474,7 @@ MapSpriteBlock:
         INCLUDE "fixnum.asm"
         INCLUDE "map.asm"
         INCLUDE "video.asm"
+        INCLUDE "damage.asm"
         INCLUDE "rand.asm"
         INCLUDE "overlayBar.asm"
         INCLUDE "rom1_code.asm"

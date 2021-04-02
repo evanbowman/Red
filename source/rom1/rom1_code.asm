@@ -48,6 +48,8 @@ SECTION "ROM1_CODE", ROMX, BANK[1]
         INCLUDE "r1_mapFunctions.asm"
         INCLUDE "r1_inventory.asm"
         INCLUDE "r1_entityConstructors.asm"
+        INCLUDE "r1_exp.asm"
+
 
 ;;; ----------------------------------------------------------------------------
 
