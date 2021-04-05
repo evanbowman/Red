@@ -49,6 +49,7 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
         INCLUDE "item.inc"
         INCLUDE "room.inc"
         INCLUDE "message.inc"
+        INCLUDE "combat.inc"
 
 
 ;;; NOTE: LONG_CALL does not restore the current rom bank
@@ -239,12 +240,6 @@ Main:
         ld      de, VoidVBlankFn
         call    SceneSetVBlankFn
 
-
-        ld      hl, 256
-        ld      b, 13
-        ld      c, 9
-        call    CalculateDamage
-.test:
 
         call    CreateWorld
 

@@ -46,6 +46,7 @@ GREYWOLF_VAR_REPEAT_STUNS  EQU 8
 GREYWOLF_VAR_MAX           EQU 14
 
 
+
 ;;; Make sure vars fit within available entity slack space.
 STATIC_ASSERT((GREYWOLF_VAR_MAX + 1) <= (32 - ENTITY_SIZE))
 

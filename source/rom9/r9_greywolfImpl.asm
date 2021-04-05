@@ -52,7 +52,7 @@ r9_GreywolfIdleTryAttack:
 	ld      a, [var_player_coord_x]
         call    r9_absdiff
         ld      b, a
-        ld      a, 16
+        ld      a, 24
         cp      b
         jr      C, .skip
 
@@ -61,7 +61,7 @@ r9_GreywolfIdleTryAttack:
         ld      b, c
         call    r9_absdiff
         ld      b, a
-        ld      a, 16
+        ld      a, 24
         cp      b
         jr      C, .skip
 
@@ -722,9 +722,17 @@ r9_GreywolfOnMessage:
 	ld      d, 50
         call    r9_GreywolfSetKnockback
 
-        ld      b, 20
-        ld      c, 0
+
+        push    hl
+        ld      hl, DAGGER_BASE_DAMAGE
+        ld      a, [var_level]
+        ld      b, a
+        ld      c, GREYWOLF_DEFENSE_LEVEL
+        call    CalculateDamage
+        call    FormatDamage
+        pop     hl
         call    r9_GreywolfDepleteStamina
+
 
         call    r9_GreywolfResetCounter
 

@@ -275,15 +275,15 @@ r9_PlayerJoypadResponse:
 
         jr      NZ, .moveDiagonalRev
         ld      b, 1
-        ld      c, 40
+        ld      c, 64
         jr      .moveRev
 .moveDiagonalRev:
         ld      b, 0
-        ld      c, 206
+        ld      c, 224
 .moveRev:
 
         ld      b, 1
-        ld      c, 40
+        ld      c, 64
         call    FixnumSub
         pop     bc
 	jr      .done

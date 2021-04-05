@@ -166,12 +166,25 @@ CalculateDamage:
 ;;; ----------------------------------------------------------------------------
 
 
-;;; Puts damage in the correct parts of registers b and c so that it can be
-;;; used with the Fixnum routines.
 FormatDamage:
 ;;; hl - damage
 ;;; bc - result
-;;; TODO...
+	ld      a, l
+        swap    a
+        and     $f0
+        ld      c, a
+
+        ld      a, l
+        swap    a
+        and     $0f
+        ld      b, a
+
+        ld      a, h
+        and     $0f
+        swap    a
+        or      b
+        ld      b, a
+
         ret
 
 
