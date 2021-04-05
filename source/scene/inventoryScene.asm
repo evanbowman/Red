@@ -92,7 +92,7 @@ InventorySceneUpdate:
         ret
 
 .idle:
-        LONG_CALL r8_InventoryUpdate, 8
+        LONG_CALL r8_InventoryUpdate
 
         ret
 
@@ -131,7 +131,7 @@ InventorySceneFadeinVBlank:
         ld      c, 255
         call    BlackScreenExcludeOverlay
 
-        LONG_CALL r8_InventoryOpen, 8
+        LONG_CALL r8_InventoryOpen
         ret
 
 .continue:

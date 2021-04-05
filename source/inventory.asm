@@ -52,16 +52,35 @@ InventoryGetItem:
 ;;; ----------------------------------------------------------------------------
 
 InventoryRemoveItem:
-;;; b - slot
+;;; c - slot
 ;;; trashes hl
         ld      hl, var_inventory
-        ld      c, b
-        sla     c
+
         ld      b, 0
+        sla     c               ; two bytes per item
+
         add     hl, bc
-        ld      [hl], b
+
+        ld      a, (INVENTORY_COUNT - 1) * ITEM_SIZE
+        sub     c
+	ld      c, a
+
+        or      a
+        jr      Z, .removeLastEntry
+
+	ld      d, h
+        ld      e, l
+
+        inc     hl              ; memmove source at next item index
         inc     hl
-        ld      [hl], b
+
+        call    MemmoveLeft
+
+.removeLastEntry:
+        ld      hl, var_inventory_last_item
+        ld      a, 0
+        ld      [hl], a
+
         ret
 
 
@@ -134,45 +153,20 @@ InventoryConsumeItem:
 .loop:
         ld      a, INVENTORY_COUNT
         cp      c
-        jr      Z, .done
+        ret     Z
 
         ld      a, [hl]
         cp      b
         jr      NZ, .next
 
-	push    hl
-        pop     de              ; copy old hl to de
-
-        ld      b, 0
-        sla     c               ; two bytes per item
-
-        ld      a, (INVENTORY_COUNT - 1) * ITEM_SIZE
-        sub     c
-
-        ld      c, a
-        or      a
-        jr      Z, .removeLastEntry
-
-
-        inc     hl              ; memmove source at next item index
-        inc     hl
-
-        call    MemmoveLeft
-
-.removeLastEntry:
-        ld      hl, var_inventory_last_item
-        ld      a, 0
-        ld      [hl], a
-
-        jr      .done
+        call    InventoryRemoveItem
+        ret
 
 .next:
         inc     hl
         inc     hl
         inc     c
         jr      .loop
-.done:
-        ret
 
 
 ;;; ----------------------------------------------------------------------------

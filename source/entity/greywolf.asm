@@ -56,7 +56,7 @@ STATIC_ASSERT((GREYWOLF_VAR_MAX + 1) <= (32 - ENTITY_SIZE))
 
 GreywolfUpdate:
 ;;; bc - self
-        LONG_CALL r9_GreywolfUpdateIdleImpl, 9
+        LONG_CALL r9_GreywolfUpdateIdleImpl
         jp      EntityUpdateLoopResume
 
 
@@ -65,13 +65,13 @@ GreywolfUpdate:
 
 GreywolfUpdateRunSeekX:
 ;;; bc - self
-        LONG_CALL r9_GreywolfUpdateRunXImpl, 9
+        LONG_CALL r9_GreywolfUpdateRunXImpl
         jp      EntityUpdateLoopResume
 
 
 GreywolfUpdateRunSeekY:
 ;;; bc - self
-        LONG_CALL r9_GreywolfUpdateRunYImpl, 9
+        LONG_CALL r9_GreywolfUpdateRunYImpl
         jp      EntityUpdateLoopResume
 
 
@@ -80,7 +80,7 @@ GreywolfUpdateRunSeekY:
 
 GreywolfUpdateStunned:
 ;;; bc - self
-        LONG_CALL r9_GreywolfUpdateStunnedImpl, 9
+        LONG_CALL r9_GreywolfUpdateStunnedImpl
         jp      EntityUpdateLoopResume
 
 
@@ -89,7 +89,7 @@ GreywolfUpdateStunned:
 
 GreywolfUpdateAttacking:
 ;;; bc - self
-        LONG_CALL r9_GreywolfUpdateAttackingImpl, 9
+        LONG_CALL r9_GreywolfUpdateAttackingImpl
         jp      EntityUpdateLoopResume
 
 
@@ -123,7 +123,7 @@ GreywolfUpdatePause:
 
 GreywolfUpdateDying:
 ;;; bc - self
-        LONG_CALL r9_GreywolfUpdateDyingImpl, 9
+        LONG_CALL r9_GreywolfUpdateDyingImpl
         jp      EntityUpdateLoopResume
 
 

@@ -138,7 +138,7 @@ MapLoad2__rom0_only:
         ld      b, a
         ld      a, [var_room_y]
         ld      c, a
-        LONG_CALL r1_LoadRoom, 1
+        LONG_CALL r1_LoadRoom
 
         ld      a, [hl+]                ; \ Load adjacency mask from room data
         and     $0f                     ; /
@@ -176,7 +176,7 @@ MapLoad2__rom0_only:
         ;; bank 1 to do whatever other loading or level generation that we want
         ;; to do.
 
-        LONG_CALL r1_InitializeRoom, 1
+        LONG_CALL r1_InitializeRoom
 
         ret
 

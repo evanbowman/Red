@@ -198,7 +198,7 @@ OverworldSceneUpdate:
         ldh     [hvar_exp_levelup_ready_flag], a
         ldh     [hvar_exp_changed_flag], a
 
-        LONG_CALL r1_ExpDoLevelup, 1
+        LONG_CALL r1_ExpDoLevelup
         call    OverlayRepaintRow2
 
         ld      e, 60
@@ -435,8 +435,8 @@ OverworldSceneTryRoomTransition:
         cp      246
         jr      C, .tryUpTransition
 
-        LONG_CALL r1_StoreRoomEntities, 1
-        LONG_CALL r1_StoreCollectibles, 1
+        LONG_CALL r1_StoreRoomEntities
+        LONG_CALL r1_StoreCollectibles
 
 	ld      a, [var_room_y]
         inc     a
@@ -453,7 +453,7 @@ OverworldSceneTryRoomTransition:
         ld      a, 0
         ld      [var_room_load_counter], a
         ld      c, a
-        LONG_CALL r1_MapExpandRow, 1
+        LONG_CALL r1_MapExpandRow
 
         ret
 
@@ -465,8 +465,8 @@ OverworldSceneTryRoomTransition:
         cp      b
         jr      C, .tryRightTransition
 
-        LONG_CALL r1_StoreRoomEntities, 1
-        LONG_CALL r1_StoreCollectibles, 1
+        LONG_CALL r1_StoreRoomEntities
+        LONG_CALL r1_StoreCollectibles
 
 	ld      a, [var_room_y]
         dec     a
@@ -483,7 +483,7 @@ OverworldSceneTryRoomTransition:
         ld      a, 31
         ld      [var_room_load_counter], a
         ld      c, a
-        LONG_CALL r1_MapExpandRow, 1
+        LONG_CALL r1_MapExpandRow
 
         ret
 
@@ -492,8 +492,8 @@ OverworldSceneTryRoomTransition:
         cp      246
         jr      C, .tryLeftTransition
 
-        LONG_CALL r1_StoreRoomEntities, 1
-        LONG_CALL r1_StoreCollectibles, 1
+        LONG_CALL r1_StoreRoomEntities
+        LONG_CALL r1_StoreCollectibles
 
 	ld      a, [var_room_x]
         inc     a
@@ -510,7 +510,7 @@ OverworldSceneTryRoomTransition:
         ld      a, 0
         ld      [var_room_load_counter], a
         ld      c, a
-        LONG_CALL r1_MapExpandColumn, 1
+        LONG_CALL r1_MapExpandColumn
 
         ret
 
@@ -521,8 +521,8 @@ OverworldSceneTryRoomTransition:
         cp      b
         jr      C, .done
 
-        LONG_CALL r1_StoreRoomEntities, 1
-        LONG_CALL r1_StoreCollectibles, 1
+        LONG_CALL r1_StoreRoomEntities
+        LONG_CALL r1_StoreCollectibles
 
 	ld      a, [var_room_x]
         dec     a
@@ -539,7 +539,7 @@ OverworldSceneTryRoomTransition:
         ld      a, 31
         ld      [var_room_load_counter], a
         ld      c, a
-        LONG_CALL r1_MapExpandColumn, 1
+        LONG_CALL r1_MapExpandColumn
 
 .done:
         ret

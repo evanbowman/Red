@@ -603,27 +603,23 @@ r8_InventoryUseItem:
         call    r8_InventoryAdjustOffset
 
         ld      b, a
-        push    af
         call    InventoryGetItem
 
         ld      c, b
         ld      b, 0
+        sla     c
 
         ld      hl, .useItemHandlers
         add     bc
 
-        ld      b, [hl]
-        inc     hl
         ld      c, [hl]
+        inc     hl
+        ld      b, [hl]
 
         push    bc              ; \ bc -> hl
         pop     hl              ; /
 
         INVOKE_HL
-
-        pop     af
-
-	call    InventoryConsumeItem
 
         call    r8_InventoryInitText
         call    r8_InventoryUpdateImage
@@ -647,6 +643,10 @@ DW      .voidItemHandler
 STATIC_ASSERT((.useItemHandlersEnd - .useItemHandlers) / 2 == ITEM_COUNT)
 
 .voidItemHandler:
+        ld      a, [var_inventory_scene_selected_row]
+        call    r8_InventoryAdjustOffset
+        ld      c, a
+	call    InventoryRemoveItem
         ret
 
 

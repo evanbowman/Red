@@ -105,7 +105,7 @@ WorldmapSceneFadeinVBlank:
 
         call    TanScreen
 
-        LONG_CALL r1_WorldMapShow, 1
+        LONG_CALL r1_WorldMapShow
 
         ret
 

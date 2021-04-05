@@ -52,9 +52,10 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
         INCLUDE "combat.inc"
 
 
+
 ;;; NOTE: LONG_CALL does not restore the current rom bank
 LONG_CALL: MACRO
-        ld      a, \2
+        ld      a, BANK(\1)
         ld      hl, \1
         rst     $08
 ENDM
@@ -110,7 +111,7 @@ ENDM
 ;;; ############################################################################
 
         SECTION "RESTART_VECTOR_38",ROM0[$0038]
-        LONG_CALL r1_fatalError, 1
+        LONG_CALL r1_fatalError
 
 
 ;; #############################################################################
@@ -178,7 +179,7 @@ Start:
         di
         call    LcdOff
         call    LoadFont
-	LONG_CALL r1_GameboyColorNotDetected, 1
+	LONG_CALL r1_GameboyColorNotDetected
 
 ;;; TODO: Display some text to indicate that the game requires a gbc. There's no
 ;;; need to waste space in bank zero for this stuff, though.
@@ -192,12 +193,12 @@ Start:
         jr      NZ, .configure
 
 .agbDetected:
-        LONG_CALL r1_GameboyAdvanceDetected, 1
+        LONG_CALL r1_GameboyAdvanceDetected
 
 
 .configure:
-        LONG_CALL r1_SetCpuFast, 1
-        LONG_CALL r1_VBlankPoll, 1         ; Wait for vbl before disabling lcd.
+        LONG_CALL r1_SetCpuFast
+        LONG_CALL r1_VBlankPoll            ; Wait for vbl before disabling lcd.
 
         call    LcdOff
 
@@ -212,7 +213,7 @@ Start:
 	ld	[rSVBK], a
 	ld	[rRP], a
 
-        LONG_CALL r1_InitRam, 1
+        LONG_CALL r1_InitRam
 
         jr      Main
 
@@ -228,9 +229,9 @@ Main:
         ld      [var_overlay_y_offset], a
         ld      [rWY], a
 
-        LONG_CALL r1_SetCgbColorProfile, 1
+        LONG_CALL r1_SetCgbColorProfile
 
-        LONG_CALL r1_CopyDMARoutine, 1
+        LONG_CALL r1_CopyDMARoutine
 
         call    LoadFont
 
@@ -252,7 +253,7 @@ Main:
 .loop:
         call    GetRandom
 
-        LONG_CALL r1_ReadKeys, 1
+        LONG_CALL r1_ReadKeys
         ld      a, b
         ldh     [hvar_joypad_raw], a
 
@@ -322,7 +323,7 @@ CreateWorld:
         ld      a, 1
         ld      [var_level], a
 
-	LONG_CALL r1_SetLevelupExp, 1
+	LONG_CALL r1_SetLevelupExp
 
 
         SET_BANK 10
@@ -337,11 +338,11 @@ CreateWorld:
 
         call    LcdOn
 
-        LONG_CALL r1_PlayerNew, 1
+        LONG_CALL r1_PlayerNew
 
-        LONG_CALL r1_LoadRoomEntities, 1
+        LONG_CALL r1_LoadRoomEntities
 
-	LONG_CALL r1_SetRoomVisited, 1
+	LONG_CALL r1_SetRoomVisited
 
 ;;; Add a bunch of items, for debugging the inventory.
         ld      b, ITEM_DAGGER

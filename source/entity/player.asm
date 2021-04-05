@@ -50,7 +50,7 @@
 
 PlayerUpdate:
         ;; Moved to rom bank 9 to save space.
-        LONG_CALL r9_PlayerUpdateImpl, 9
+        LONG_CALL r9_PlayerUpdateImpl
         jp      EntityUpdateLoopResume
 
 
@@ -58,7 +58,7 @@ PlayerUpdate:
 
 
 PlayerUpdatePickupItem:
-        LONG_CALL r9_PlayerUpdatePickupItemImpl, 9
+        LONG_CALL r9_PlayerUpdatePickupItemImpl
         jp      EntityUpdateLoopResume
 
 
@@ -66,7 +66,7 @@ PlayerUpdatePickupItem:
 
 
 PlayerUpdateAttack1:
-        LONG_CALL r9_PlayerUpdateAttack1Impl, 9
+        LONG_CALL r9_PlayerUpdateAttack1Impl
         jp      EntityUpdateLoopResume
 
 
@@ -74,7 +74,7 @@ PlayerUpdateAttack1:
 
 
 PlayerUpdateAttack2:
-        LONG_CALL r9_PlayerUpdateAttack2Impl, 9
+        LONG_CALL r9_PlayerUpdateAttack2Impl
         jp      EntityUpdateLoopResume
 
 
@@ -82,7 +82,7 @@ PlayerUpdateAttack2:
 
 
 PlayerUpdateAttack3:
-        LONG_CALL r9_PlayerUpdateAttack3Impl, 9
+        LONG_CALL r9_PlayerUpdateAttack3Impl
         jp      EntityUpdateLoopResume
 
 
@@ -90,7 +90,7 @@ PlayerUpdateAttack3:
 
 
 PlayerAttack1Exit:
-        LONG_CALL r9_PlayerAttack1ExitImpl, 9
+        LONG_CALL r9_PlayerAttack1ExitImpl
         jp      EntityUpdateLoopResume
 
 
@@ -98,7 +98,7 @@ PlayerAttack1Exit:
 
 
 PlayerAttack2Exit:
-        LONG_CALL r9_PlayerAttack2ExitImpl, 9
+        LONG_CALL r9_PlayerAttack2ExitImpl
         jp      EntityUpdateLoopResume
 
 
@@ -106,7 +106,7 @@ PlayerAttack2Exit:
 
 
 PlayerAttack3Exit:
-        LONG_CALL r9_PlayerAttack3ExitImpl, 9
+        LONG_CALL r9_PlayerAttack3ExitImpl
         jp      EntityUpdateLoopResume
 
 

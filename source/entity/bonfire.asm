@@ -46,7 +46,7 @@
 
 BonfireUpdate:
 ;;; bc - self
-        LONG_CALL r9_BonfireUpdateImpl, 9
+        LONG_CALL r9_BonfireUpdateImpl
 
         jp      EntityUpdateLoopResume
 
