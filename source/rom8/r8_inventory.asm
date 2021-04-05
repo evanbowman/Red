@@ -598,6 +598,70 @@ r8_Mul64:
 ;;; ----------------------------------------------------------------------------
 
 
+ITEM_CATEGORY_EQUIPMENT EQU 0
+ITEM_CATEGORY_FOOD      EQU 1
+ITEM_CATEGORY_MISC      EQU 2
+
+
+r8_ItemDescs::
+.none:
+DB      ITEM_CATEGORY_MISC,      $00, $00, $00
+
+.wolfPelt:
+DB      ITEM_CATEGORY_MISC,      $00, $00, $00
+
+.dagger:
+DB      ITEM_CATEGORY_EQUIPMENT, $00, $00, $00
+
+.rawMeat:
+DB      ITEM_CATEGORY_FOOD,        6, $00, $00
+
+.stick:
+DB      ITEM_CATEGORY_MISC,      $00, $00, $00
+
+.kebab:
+DB      ITEM_CATEGORY_FOOD,      110, $00, $00
+
+.turnip:
+DB      ITEM_CATEGORY_FOOD,        2, $00, $00
+
+.potato:
+DB      ITEM_CATEGORY_FOOD,        6, $00, $00
+
+.broth:
+DB      ITEM_CATEGORY_FOOD,       30, $00, $00
+
+.soup:
+DB      ITEM_CATEGORY_FOOD,       70, $00, $00
+
+.stew:
+DB      ITEM_CATEGORY_FOOD,      $00, $00, $00
+
+.bundle:
+DB      ITEM_CATEGORY_MISC,      $00, $00, $00
+
+r8_ItemDescsEnd::
+STATIC_ASSERT((r8_ItemDescsEnd - r8_ItemDescs) / 4 == ITEM_COUNT)
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r8_GetItemDesc:
+;;; c - item type
+;;; trashes bc, hl
+        ld      b, 0
+        sla     c
+        sla     c
+
+        ld      hl, r8_ItemDescs
+        add     bc
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r8_InventoryUseItem:
         ld      a, [var_inventory_scene_selected_row]
         call    r8_InventoryAdjustOffset
@@ -606,43 +670,45 @@ r8_InventoryUseItem:
         call    InventoryGetItem
 
         ld      c, b
-        ld      b, 0
-        sla     c
+	call    r8_GetItemDesc
 
-        ld      hl, .useItemHandlers
-        add     bc
+        ld      a, [hl]
+        cp      ITEM_CATEGORY_EQUIPMENT
+        jr      Z, .useEquipmentItem
+        cp      ITEM_CATEGORY_FOOD
+        jr      Z, .useFoodItem
 
-        ld      c, [hl]
+.useMiscItem:
+        ;; TODO...
+        ret
+
+.useFoodItem:
         inc     hl
-        ld      b, [hl]
+        ld      b, [hl]         ; Amount of health to restore
+        ld      c, 0
 
-        push    bc              ; \ bc -> hl
-        pop     hl              ; /
+        ld      hl, var_player_stamina
+        call    FixnumAddClamped
 
-        INVOKE_HL
+        call    UpdateStaminaBar
+        call    VBlankIntrWait  ; FIXME...
+        call    ShowOverlay
+
+        call    r8_RemoveSelectedItem
 
         call    r8_InventoryInitText
         call    r8_InventoryUpdateImage
-
         ret
 
-.useItemHandlers::
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-DW      .voidItemHandler
-.useItemHandlersEnd::
-STATIC_ASSERT((.useItemHandlersEnd - .useItemHandlers) / 2 == ITEM_COUNT)
+.useEquipmentItem:
+        ;; TODO...
+        ret
 
-.voidItemHandler:
+
+;;; ----------------------------------------------------------------------------
+
+
+r8_RemoveSelectedItem:
         ld      a, [var_inventory_scene_selected_row]
         call    r8_InventoryAdjustOffset
         ld      c, a

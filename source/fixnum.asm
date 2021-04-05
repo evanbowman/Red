@@ -71,6 +71,38 @@ FixnumInit:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+
+FixnumAddClamped:
+;;; hl - address of number
+;;; b - small unit
+;;; c - fractional unit
+;;; destroys de, hl, bc, a
+        ld      d, [hl]
+        push    hl
+        push    de
+        call    FixnumAdd
+        pop     de
+        pop     hl
+
+        ld      a, [hl]         ; \ If current health is less than new health,
+        cp      d               ; / we wrapped around, clamp to max small value.
+        jr      C, .clamp
+	ret
+
+.clamp:
+        ld      a, 255
+        ld      [hl+], a
+        ld      a, 0
+        ld      [hl+], a
+        ld      [hl+], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 ;;; Interprets the decimal bits and the middle bits of a fixnum as a 16 bit
 ;;; integer, adds them, and increments the high bits upon overflow.
 FixnumAdd:
