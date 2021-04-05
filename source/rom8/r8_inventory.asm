@@ -36,8 +36,6 @@
 ;;; Column 0: item, columns 1-3: dependency set.
 r8_InventoryCraftingRecipes::
 DB      ITEM_BUNDLE,    ITEM_STICK,     ITEM_STICK,     ITEM_STICK
-DB      ITEM_FIREWOOD,  ITEM_BUNDLE,    ITEM_BUNDLE,    ITEM_BUNDLE
-DB      ITEM_RAW_MEAT,  ITEM_MORSEL,    ITEM_MORSEL,    ITEM_MORSEL
 ;;; Last row must be empty:
 DB      ITEM_NONE,      ITEM_NONE,      ITEM_NONE,      ITEM_NONE
 r8_InventoryCraftingRecipesEnd::
@@ -599,6 +597,62 @@ r8_Mul64:
 
 ;;; ----------------------------------------------------------------------------
 
+
+r8_InventoryUseItem:
+        ld      a, [var_inventory_scene_selected_row]
+        call    r8_InventoryAdjustOffset
+
+        ld      b, a
+        push    af
+        call    InventoryGetItem
+
+        ld      c, b
+        ld      b, 0
+
+        ld      hl, .useItemHandlers
+        add     bc
+
+        ld      b, [hl]
+        inc     hl
+        ld      c, [hl]
+
+        push    bc              ; \ bc -> hl
+        pop     hl              ; /
+
+        INVOKE_HL
+
+        pop     af
+
+	call    InventoryConsumeItem
+
+        call    r8_InventoryInitText
+        call    r8_InventoryUpdateImage
+
+        ret
+
+.useItemHandlers::
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+DW      .voidItemHandler
+.useItemHandlersEnd::
+STATIC_ASSERT((.useItemHandlersEnd - .useItemHandlers) / 2 == ITEM_COUNT)
+
+.voidItemHandler:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r8_InventoryAPressed:
         ld      a, [var_inventory_scene_tab]
         cp      INVENTORY_TAB_ITEMS
@@ -608,6 +662,7 @@ r8_InventoryAPressed:
         cp      INVENTORY_TAB_COOK
         jr      Z, .craft
 .items:
+        call    r8_InventoryUseItem
         ret
 .craft:
         call    r8_InventoryCraftItem
@@ -1627,7 +1682,9 @@ DB      "potato         ", 0
 DB      "broth          ", 0
 DB      "soup           ", 0
 DB      "stew           ", 0
+DB      "bundle         ", 0
 r8_InventoryItemTextTableEnd::
+STATIC_ASSERT((r8_InventoryItemTextTableEnd - r8_InventoryItemTextTable) / 16 == ITEM_COUNT)
 
 
 r8_InventoryTabItemsText::
@@ -1704,7 +1761,20 @@ DB $83, $84, $84, $83
 DB $83, $85, $84, $83
 DB $86, $86, $86, $86
 .soupEnd::
+.stew::
+DB $83, $83, $83, $83           ; TODO
+DB $83, $84, $84, $83
+DB $83, $85, $84, $83
+DB $86, $86, $86, $86
+.stewEnd::
+.bundle::
+DB $83, $83, $83, $83           ; TODO
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+.bundleEnd::
 r8_InventoryItemAttributesEnd::
+STATIC_ASSERT((r8_InventoryItemAttributesEnd - r8_InventoryItemAttributes) / 16 == ITEM_COUNT)
 
 
 
@@ -1812,7 +1882,28 @@ DB $ad,$24, $ff,$7f, $7d,$35, $9f,$63,
 DB $fa,$46, $81,$20, $ad,$24, $9f,$63,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 .soupEnd::
+.stew::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04, ; TODO
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $ad,$24, $7d,$35, $9f,$63,
+DB $ad,$24, $6e,$1e, $7d,$35, $9f,$63,
+DB $ad,$24, $ff,$7f, $7d,$35, $9f,$63,
+DB $fa,$46, $81,$20, $ad,$24, $9f,$63,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.stewEnd::
+.bundle::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04, ; TODO
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $ad,$24, $7d,$35, $9f,$63,
+DB $ad,$24, $6e,$1e, $7d,$35, $9f,$63,
+DB $ad,$24, $ff,$7f, $7d,$35, $9f,$63,
+DB $fa,$46, $81,$20, $ad,$24, $9f,$63,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.bundleEnd::
 r8_InventoryItemPalettesEnd::
+STATIC_ASSERT((r8_InventoryItemPalettesEnd - r8_InventoryItemPalettes) / 64 == ITEM_COUNT)
 
 
 align 8                         ; Required alignment for dma copies
@@ -2157,4 +2248,73 @@ DB $00,$FF,$00,$FF,$00,$F0,$00,$00
 DB $00,$FC,$00,$F8,$00,$F0,$00,$E0
 DB $00,$C0,$00,$00,$00,$00,$00,$00
 .soupEnd::
+.stew::
+DB $00,$00,$00,$00,$00,$00,$00,$00 ; TODO...
+DB $00,$00,$00,$00,$00,$00,$00,$01
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$1F,$07,$F8
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$F8,$E0,$1F
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$80
+DB $00,$0F,$07,$18,$0F,$30,$0B,$73
+DB $1F,$EF,$3F,$DF,$3F,$DF,$3F,$FF
+DB $00,$00,$1F,$1F,$FF,$FF,$FF,$FF
+DB $FF,$9D,$FF,$0F,$FF,$07,$FF,$CF
+DB $00,$03,$F0,$F0,$FF,$FF,$FF,$FF
+DB $FF,$F1,$FF,$E0,$FF,$E0,$FF,$C1
+DB $00,$F0,$C0,$18,$F0,$0C,$D0,$CA
+DB $F8,$F5,$FC,$F9,$FC,$FB,$F8,$FB
+DB $3E,$FF,$1F,$FF,$8F,$7F,$C1,$3F
+DB $F0,$0F,$FC,$03,$7F,$00,$7F,$00
+DB $FF,$FF,$FF,$FD,$FF,$F7,$FF,$FF
+DB $1F,$FF,$00,$FF,$00,$3F,$00,$00
+DB $FF,$FF,$FF,$FF,$FF,$9F,$FF,$FF
+DB $F8,$FF,$00,$FF,$00,$DC,$00,$20
+DB $FC,$FF,$F8,$FF,$F1,$FE,$83,$FC
+DB $0F,$F0,$3F,$C0,$FE,$00,$FE,$00
+DB $40,$3F,$60,$1F,$30,$0F,$18,$07
+DB $0C,$03,$03,$00,$00,$00,$00,$00
+DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $00,$FF,$00,$FF,$70,$0F,$00,$00
+DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
+DB $00,$FF,$00,$FF,$00,$F0,$00,$00
+DB $00,$FC,$00,$F8,$00,$F0,$00,$E0
+DB $00,$C0,$00,$00,$00,$00,$00,$00
+.stewEnd::
+.bundle::
+DB $00,$00,$00,$00,$00,$00,$00,$00 ; TODO...
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$01
+DB $00,$03,$00,$03,$00,$07,$00,$0F
+DB $00,$00,$30,$40,$78,$80,$78,$80
+DB $78,$80,$00,$F8,$00,$E0,$00,$C0
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$01,$00,$03,$00,$07
+DB $00,$1F,$00,$3F,$00,$7E,$00,$FC
+DB $00,$F8,$00,$F0,$00,$E0,$00,$C0
+DB $00,$80,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$01,$00,$03,$00,$07,$00,$0F
+DB $00,$07,$00,$1F,$00,$3F,$00,$7E
+DB $00,$FC,$00,$F0,$00,$E0,$00,$C0
+DB $00,$80,$00,$80,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$1F,$00,$3E,$40,$7C,$40,$78
+DB $70,$70,$00,$00,$00,$00,$00,$00
+DB $00,$80,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+.bundleEnd::
 r8_InventoryItemIconsEnd::
+STATIC_ASSERT((r8_InventoryItemIconsEnd - r8_InventoryItemIcons) / 256 == ITEM_COUNT)

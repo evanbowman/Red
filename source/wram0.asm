@@ -361,5 +361,7 @@ STACK_END EQU (STACK_BEGIN - STACK_SIZE) + 1
 
 __stack:   DS      STACK_SIZE
 
+STATIC_ASSERT(STACK_SIZE % 2 == 0)
+
 
 ;;; ############################################################################

@@ -181,3 +181,9 @@ r1_Smoothstep:
         ret
 
 ;;; ----------------------------------------------------------------------------
+
+
+r1_fatalError:
+        ;; TODO: show error message
+        call    SystemReboot
+        ret
