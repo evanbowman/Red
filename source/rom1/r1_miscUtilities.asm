@@ -184,6 +184,30 @@ r1_Smoothstep:
 
 
 r1_fatalError:
-        ;; TODO: show error message
+        ld      hl, sp+0        ; Store old stack pointer.
+
+        ;; We don't know if the fatal error may have resulted from a stack
+        ;; overflow, so we should reset the stack pointer before calling any
+        ;; functions.
+        ld      sp, STACK_BEGIN
+
+        ;; TODO: show a bunch of stats and an error screen. Include:
+        ;; 1) Stack pointer
+        ;; 2) Register contents
+        ;; 3) Some of the stack
+
+        di
+
+
+        ei
+
+        push    hl
+
+
+
+
+
+        pop     hl
+
         call    SystemReboot
         ret
