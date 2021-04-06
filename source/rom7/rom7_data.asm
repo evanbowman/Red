@@ -172,8 +172,8 @@ r7_OverlayTiles::
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 ;;;
-DB $FF,$FF,$FF,$FF,$EF,$FF,$EF,$FF
-DB $83,$FF,$EF,$FF,$EF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$93,$FF,$83,$FF
+DB $83,$FF,$C7,$FF,$EF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$7F

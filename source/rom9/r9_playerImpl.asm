@@ -1379,13 +1379,14 @@ r9_PlayerKnifeAttackPopulateHitbox:
         ;; jr      Z, .up
 
         ld      a, [var_player_coord_x]
+        add     4
         ld      b, a
         ld      [hl+], a
         ld      a, [var_player_coord_y]
         ld      c, a
         ld      [hl+], a
 
-        ld      a, 32
+        ld      a, 24
         add     b
         ld      [hl+], a
         ld      a, 32
