@@ -279,6 +279,7 @@ var_room_load_counter:        DS      1
 var_room_load_parity:         DS      1
 var_room_load_orientation:    DS      1
 var_room_load_joypad_cache:   DS      1
+
 var_room_load_slab:           DS      32
 var_room_load_colors:         DS      32
         NEXTU

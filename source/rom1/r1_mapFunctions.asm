@@ -97,6 +97,13 @@ r1_MapExpandRow:
         cp      16
         jr      NZ, .copy
 
+        ;; TODO: actually populate the colors based on the tiles
+        ld      hl, var_room_load_colors
+        ld      bc, 32
+        ld      a, 2
+        call    Memset
+
+
         ret
 
 ;;; ----------------------------------------------------------------------------
@@ -120,41 +127,23 @@ r1_MapShowRow:
 
         ;; Now, hl contains pointer to correct row in vram
 
-        ld      de, var_room_load_slab
+        push    hl
+        pop     de
+        push    de
 
-        ld      b, 0
+        ld      hl, var_room_load_slab
+
 .copy:
-        ld      a, [de]
-        ld      [hl], a
-        inc     de
+        ld      bc, 32
+        call    Memcpy
 
-        ld	a, 1                    ; \
-	ld	[rVBK], a               ; |
-        ld      a, 2                    ; | Set Palette
-        ld      [hl], a                 ; |
-        ld      a, 0                    ; |
-	ld	[rVBK], a               ; /
+        pop     de
 
-        inc     hl
-
-        ld      a, [de]
-        ld      [hl], a
-
-        ld	a, 1                    ; \
-	ld	[rVBK], a               ; |
-        ld      a, 2                    ; | Set Palette
-        ld      [hl], a                 ; |
-        ld      a, 0                    ; |
-	ld	[rVBK], a               ; /
-
-        inc     hl
-
-        inc     de
-
-        inc     b
-        ld      a, b
-        cp      16
-        jr      NZ, .copy
+        VIDEO_BANK 1
+        ld      bc, 32
+        ld      hl, var_room_load_colors
+        call    Memcpy
+        VIDEO_BANK 0
 
         ret
 
@@ -230,6 +219,13 @@ r1_MapExpandColumn:
         cp      16
         jr      NZ, .copy
 
+
+        ;; TODO: actually populate the colors based on the tiles
+        ld      hl, var_room_load_colors
+        ld      bc, 32
+        ld      a, 2
+        call    Memset
+
         ret
 
 
@@ -244,51 +240,274 @@ r1_MapShowColumn:
         ld      e, c                    ; | Jump to proper column
         add     hl, de                  ; /
 
-        ld      de, var_room_load_slab
+        ld      de, 32
 
-        ld      b, 0
-.copy:
-        ld      a, [de]
+        ;; Intentionally unrolled. We aren't in rom0, so who cares about
+        ;; space :3
+
+        push    hl
+
+        ld      a, [var_room_load_slab+0]
         ld      [hl], a
+        add     hl, de                  ; Jump down a full row in vram
 
-        inc     de
-
-        ld	a, 1                    ; \
-	ld	[rVBK], a               ; |
-        ld      a, 2                    ; | Set Palette
-        ld      [hl], a                 ; |
-        ld      a, 0                    ; |
-	ld	[rVBK], a               ; /
-
-
-        push    de                      ; \
-        ld      e, 32                   ; |
-	ld      d, 0                    ; | Jump down a full row in vram
-        add     hl, de                  ; |
-        pop     de                      ; /
-
-        ld      a, [de]
+        ld      a, [var_room_load_slab+1]
         ld      [hl], a
+        add     hl, de
 
-        inc     de
+        ld      a, [var_room_load_slab+2]
+        ld      [hl], a
+        add     hl, de
 
-        ld	a, 1                    ; \
-	ld	[rVBK], a               ; |
-        ld      a, 2                    ; | Set Palette
-        ld      [hl], a                 ; |
-        ld      a, 0                    ; |
-	ld	[rVBK], a               ; /
+        ld      a, [var_room_load_slab+3]
+        ld      [hl], a
+        add     hl, de
 
-        push    de                      ; \
-        ld      e, 32                   ; |
-	ld      d, 0                    ; | Jump down a full row in vram
-        add     hl, de                  ; |
-        pop     de                      ; /
+        ld      a, [var_room_load_slab+4]
+        ld      [hl], a
+        add     hl, de
 
-        inc     b
-        ld      a, b
-        cp      16
-        jr      NZ, .copy
+        ld      a, [var_room_load_slab+5]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+6]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+7]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+8]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+9]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+10]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+11]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+12]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+13]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+14]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+15]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+16]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+17]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+18]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+19]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+20]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+21]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+22]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+23]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+24]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+25]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+26]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+27]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+28]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+29]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+30]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_slab+31]
+        ld      [hl], a
+        add     hl, de
+
+        pop     hl
+
+        VIDEO_BANK 1
+
+        ld      a, [var_room_load_colors+0]
+        ld      [hl], a
+        add     hl, de                  ; Jump down a full row in vram
+
+        ld      a, [var_room_load_colors+1]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+2]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+3]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+4]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+5]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+6]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+7]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+8]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+9]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+10]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+11]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+12]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+13]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+14]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+15]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+16]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+17]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+18]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+19]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+20]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+21]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+22]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+23]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+24]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+25]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+26]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+27]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+28]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+29]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+30]
+        ld      [hl], a
+        add     hl, de
+
+        ld      a, [var_room_load_colors+31]
+        ld      [hl], a
+        add     hl, de
+
+        VIDEO_BANK 0
 
         ret
 
