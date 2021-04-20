@@ -915,7 +915,7 @@ r1_InitializeRoom:
         jr      Z, .outer_loop_step
 
         ld      a, [de]
-        cp      COLLECTIBLE_TILE_TEST
+        call    IsTileCollectible
         jr      NZ, .next
 
         ld      a, b            ; \ Because rooms are 16x16, this is sufficent

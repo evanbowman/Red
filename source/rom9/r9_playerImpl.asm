@@ -33,7 +33,10 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-WALL_TILES_END  EQU     16
+WALL_TILES_END  EQU     17
+EMPTY_TILE      EQU     18
+EMPTY_TILE_ADDR EQU     $d8
+
 
 
 r9_PlayerTileCoord:
@@ -570,8 +573,8 @@ r9_PlayerInteractTile:
         ld      hl, var_map_info
         call    MapGetTile
 
-	ld      a, COLLECTIBLE_TILE_TEST
-        cp      b               ; FIXME...
+        ld      a, b
+        call    IsTileCollectible
         jr      NZ, .tryInteractEntities
 
         ld      hl, var_player_struct
@@ -676,6 +679,7 @@ r9_PlayerUpdatePickupItemImpl:
 ;;; ----------------------------------------------------------------------------
 
 r9_SetItemCollected:
+;;; no arguments
         ld      b, 0
         ld      hl, var_map_collectibles
 .loop:
@@ -700,6 +704,38 @@ r9_SetItemCollected:
         jr      .loop
 .endLoop:
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+got_potato_str::
+DB      "got potato", 0
+got_stick_str::
+DB      "got stick", 0
+
+
+r9_PlayerAddItemToInventory:
+        ld      a, b
+        cp      15
+        jr      Z, .potato
+        cp      16
+        jr      Z, .stick
+        ret
+
+.potato:
+        ld      b, ITEM_POTATO
+        call    InventoryAddItem
+        ld      hl, got_potato_str
+        call    OverlayPutText
+        ret
+
+.stick:
+        ld      b, ITEM_STICK
+        call    InventoryAddItem
+        ld      hl, got_stick_str
+        call    OverlayPutText
         ret
 
 
@@ -734,7 +770,7 @@ r9_CollectMapItem:
         sla     a                       ; 2x2 background meta tiles
         sla     d                       ;
 
-        ld      e, $d4                  ; TODO: Define constant for this empty tile
+        ld      e, EMPTY_TILE_ADDR
         ld      c, 2
 
         call    SetBackgroundTile16x16
@@ -742,19 +778,23 @@ r9_CollectMapItem:
 	pop     de                      ; \ Restore coordinate
         pop     af                      ; /
 
-        ld      hl, var_map_info
         ld      b, d                    ; Pass y in reg b
+
+        push    af
+        push    bc
+        ld      hl, var_map_info
+        call    MapGetTile
+
+        call    r9_PlayerAddItemToInventory
+
+        pop     bc
+        pop     af
+
+        ld      hl, var_map_info
         ld      d, 18                   ; TODO: Define constant for this empty tile
         call    MapSetTile
 
-
-        ld      b, ITEM_POTATO          ; Fixme!
-        call    InventoryAddItem
-
         call    r9_SetItemCollected
-
-        ld      hl, test_str
-        call    OverlayPutText
 
         ret
 
@@ -767,9 +807,6 @@ r9_CollectMapItem:
 inventory_full_str::
 DB      "inventory full", 0
 
-
-test_str::
-DB      "got potato", 0
 
 ;;; ----------------------------------------------------------------------------
 

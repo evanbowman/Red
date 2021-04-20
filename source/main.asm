@@ -367,38 +367,10 @@ CreateWorld:
 
 	LONG_CALL r1_SetRoomVisited
 
-;;; Add a bunch of items, for debugging the inventory.
         ld      b, ITEM_DAGGER
         call    InventoryAddItem
 
-        ld      b, ITEM_STICK
-        call    InventoryAddItem
-
-        ld      b, ITEM_STICK
-        call    InventoryAddItem
-
-        ld      b, ITEM_TURNIP
-        call    InventoryAddItem
-
-        ld      b, ITEM_TURNIP
-        call    InventoryAddItem
-
-        ld      b, ITEM_TURNIP
-        call    InventoryAddItem
-
-        ld      b, ITEM_RAW_MEAT
-        call    InventoryAddItem
-
-        ld      b, ITEM_POTATO
-        call    InventoryAddItem
-
-        ld      b, ITEM_POTATO
-        call    InventoryAddItem
-
-        ld      b, ITEM_POTATO
-        call    InventoryAddItem
-
-        ld      b, ITEM_RAW_MEAT
+	ld      b, ITEM_BUNDLE
         call    InventoryAddItem
 
         ret
