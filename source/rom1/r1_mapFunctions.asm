@@ -56,6 +56,8 @@ r1_MapExpandRow:
         ld      d, h
         ld      e, l
 
+        push    de
+
         ld      hl, var_room_load_slab
 
         ld      b, 0
@@ -97,14 +99,67 @@ r1_MapExpandRow:
         cp      16
         jr      NZ, .copy
 
-        ;; TODO: actually populate the colors based on the tiles
-        ld      hl, var_room_load_colors
-        ld      bc, 32
-        ld      a, 2
-        call    Memset
 
+        pop     de
+        ld      hl, var_room_load_colors
+
+        ld      b, 0
+
+.prepColors:
+        ld      a, [de]
+        call    r1_SetTileColor
+
+        inc     hl
+        ld      a, [de]
+        call    r1_SetTileColor
+
+        inc     hl
+        inc     de
+
+        inc     b
+        ld      a, b
+        cp      16
+        jr      NZ, .prepColors
 
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r1_SetTileColor:
+;;; a - tile
+;;; hl - dest
+;;; trashes a
+.check_cliff_tile:
+        cp      a, 17
+        jr      NZ, .check_water_tile1
+
+        ld      a, 4
+        ld      [hl], a
+        ret
+
+.check_water_tile1:
+        cp      a, 18
+        jr      NZ, .check_water_tile2
+
+        ld      a, 5
+        ld      [hl], a
+        ret
+
+.check_water_tile2:
+        cp      a, 19
+        jr      NZ, .regular_tile
+
+        ld      a, 5
+        ld      [hl], a
+        ret
+
+.regular_tile:
+        ld      a, 2
+        ld      [hl], a
+        ret
+
 
 ;;; ----------------------------------------------------------------------------
 
@@ -172,6 +227,8 @@ r1_MapExpandColumn:
         ld      d, h
         ld      e, l
 
+        push    de
+
         ld      hl, var_room_load_slab
 
         ld      b, 0
@@ -220,11 +277,34 @@ r1_MapExpandColumn:
         jr      NZ, .copy
 
 
-        ;; TODO: actually populate the colors based on the tiles
+
+        pop     de
         ld      hl, var_room_load_colors
-        ld      bc, 32
-        ld      a, 2
-        call    Memset
+
+        ld      b, 0
+
+.prepColors:
+        ld      a, [de]
+        call    r1_SetTileColor
+
+        inc     hl
+        ld      a, [de]
+        call    r1_SetTileColor
+
+        inc     hl
+
+        push    hl                      ; \
+        ld      l, 16                   ; |
+        ld      h, 0                    ; |
+        add     hl, de                  ; | Jump to next row in tile map
+        ld      d, h                    ; |
+        ld      e, l                    ; |
+        pop     hl                      ; /
+
+        inc     b
+        ld      a, b
+        cp      16
+        jr      NZ, .prepColors
 
         ret
 
@@ -931,7 +1011,7 @@ r1_InitializeRoom:
         or      a
         jr      NZ, .next
 
-        ld      a, 18
+        ld      a, EMPTY_TILE
         ld      [de], a
 
 .next:

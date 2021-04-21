@@ -33,9 +33,9 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-WALL_TILES_END  EQU     17
-EMPTY_TILE      EQU     18
-EMPTY_TILE_ADDR EQU     $d8
+WALL_TILES_END  EQU     20
+EMPTY_TILE      EQU     21
+EMPTY_TILE_ADDR EQU     $e4
 
 
 
@@ -718,9 +718,9 @@ DB      "got stick", 0
 
 r9_PlayerAddItemToInventory:
         ld      a, b
-        cp      15
+        cp      COLLECTIBLE_TILE_POTATO
         jr      Z, .potato
-        cp      16
+        cp      COLLECTIBLE_TILE_STICK
         jr      Z, .stick
         ret
 
@@ -791,7 +791,7 @@ r9_CollectMapItem:
         pop     af
 
         ld      hl, var_map_info
-        ld      d, 18                   ; TODO: Define constant for this empty tile
+        ld      d, EMPTY_TILE
         call    MapSetTile
 
         call    r9_SetItemCollected
