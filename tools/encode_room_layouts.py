@@ -7,7 +7,7 @@ this_script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 def item_tile_is_collectible(t):
-    return t == 15
+    return t == 15 or t == 16
 
 
 

@@ -38,8 +38,15 @@
         SECTION "WRAM2_UNUSED", WRAMX, BANK[2]
 
 
-;;; TODO...
-var_wram2_TODO:   DS      1
+COLLECTIBLES_PER_ROOM   EQU     7
+BYTES_PER_COLLECTIBLE   EQU     2
+
+ROOM_COLLECTIBLES_ARRAY_SIZE    EQU     COLLECTIBLES_PER_ROOM * BYTES_PER_COLLECTIBLE
+
+
+wram2_var_collectibles::
+DS      WORLD_ROOM_COUNT * ROOM_COLLECTIBLES_ARRAY_SIZE
+wram2_var_collectibles_end::
 
 
 ;;; ############################################################################

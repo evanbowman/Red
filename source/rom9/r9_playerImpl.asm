@@ -678,37 +678,6 @@ r9_PlayerUpdatePickupItemImpl:
 
 ;;; ----------------------------------------------------------------------------
 
-r9_SetItemCollected:
-;;; no arguments
-        ld      b, 0
-        ld      hl, var_map_collectibles
-.loop:
-        ld      a, 8
-        cp      b
-        jr      Z, .endLoop
-
-        ld      a, [var_collect_item_xy]
-        ld      c, [hl]
-        cp      c
-        jr      NZ, .next
-
-        inc     hl
-        ld      a, 0
-        ld      [hl], a
-        jr      .endLoop
-
-.next:
-        inc     b
-        inc     hl
-        inc     hl
-        jr      .loop
-.endLoop:
-
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
 
 got_potato_str::
 DB      "got potato", 0
@@ -794,7 +763,7 @@ r9_CollectMapItem:
         ld      d, EMPTY_TILE
         call    MapSetTile
 
-        call    r9_SetItemCollected
+        call    CollectibleItemErase
 
         ret
 

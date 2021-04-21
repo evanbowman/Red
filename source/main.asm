@@ -356,7 +356,14 @@ CreateWorld:
         ld      de, wram1_var_world_map_info
         call    Memcpy
 
+        RAM_BANK 2
+        ld      hl, r10_DefaultCollectibles
+        ld      bc, r10_DefaultCollectiblesEnd - r10_DefaultCollectibles
+        ld      de, wram2_var_collectibles
+        call    Memcpy
+
         call    MapLoad2__rom0_only
+
         call    MapShow
 
         call    LcdOn
@@ -471,6 +478,8 @@ MapSpriteBlock:
         INCLUDE "damage.asm"
         INCLUDE "rand.asm"
         INCLUDE "overlayBar.asm"
+        INCLUDE "math.asm"
+        INCLUDE "collectible.asm"
         INCLUDE "rom1_code.asm"
         INCLUDE "rom2_data.asm"
         INCLUDE "rom3_data.asm"

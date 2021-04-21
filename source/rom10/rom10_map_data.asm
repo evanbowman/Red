@@ -43,6 +43,11 @@ r10_DefaultMap1::
         INCLUDE "default_map.asm"
 r10_DefaultMap1End::
 
+r10_DefaultCollectibles::
+        INCLUDE "default_collectibles.asm"
+r10_DefaultCollectiblesEnd::
+
+
         INCLUDE "r10_maps_d.asm"
         INCLUDE "r10_maps_u.asm"
         INCLUDE "r10_maps_du.asm"
