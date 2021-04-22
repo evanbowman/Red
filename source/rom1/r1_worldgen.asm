@@ -38,6 +38,10 @@
 
 r1_WorldGen:
 ;;; Generate two main paths to the destination.
+
+        ld      a, ROOM_B3_PROXIMAL_PATH
+        ld      [var_worldgen_path_flags], a
+
         ld      a, $ff / 2 - 28
         ld      [var_worldgen_path_w], a
 
@@ -48,6 +52,65 @@ r1_WorldGen:
 
         call    r1_WorldGen_RandomWalkProximalPath
 
+
+        ld      a, $ff / 2
+        ld      [var_worldgen_path_w], a
+
+        call    r1_WorldGen_RandomWalkDiagonalPath
+
+        ld      a, $ff / 2 - 40
+        ld      [var_worldgen_path_w], a
+
+        call    r1_WorldGen_RandomWalkDiagonalPath
+
+        ld      a, $ff / 2 + 40
+        ld      [var_worldgen_path_w], a
+
+        call    r1_WorldGen_RandomWalkDiagonalPath
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_WalkUp:
+        ld      a, [var_worldgen_curr_y]
+        dec     a
+        ld      [var_worldgen_curr_y], a
+
+        ld      c, a
+
+        RAM_BANK 1
+
+        ld      a, [var_worldgen_curr_x]
+        ld      b, a
+
+        call    r1_LoadRoom
+
+        ld      a, [hl]
+        or      ROOM_VISITED | ROOM_CONNECTED_D
+        ld      [hl+], a
+        inc     hl
+
+        ld      a, [var_worldgen_path_flags]
+        ld      b, [hl]
+        or      b
+        ld      [hl], a
+
+        ld      a, [var_worldgen_prev_y]
+        ld      c, a
+        ld      a, [var_worldgen_prev_x]
+        ld      b, a
+
+        call    r1_LoadRoom
+
+        ld      a, [hl]
+        or      ROOM_CONNECTED_U
+        ld      [hl], a
+
+
+        ld      a, [var_worldgen_curr_y]
+        ld      [var_worldgen_prev_y], a
 
         ret
 
@@ -70,8 +133,13 @@ r1_WorldGen_WalkDown:
 
         ld      a, [hl]
         or      ROOM_VISITED | ROOM_CONNECTED_U
-        ld      [hl], a
+        ld      [hl+], a
+        inc     hl
 
+        ld      a, [var_worldgen_path_flags]
+        ld      b, [hl]
+        or      b
+        ld      [hl], a
 
         ld      a, [var_worldgen_prev_y]
         ld      c, a
@@ -87,6 +155,49 @@ r1_WorldGen_WalkDown:
 
         ld      a, [var_worldgen_curr_y]
         ld      [var_worldgen_prev_y], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_WalkLeft:
+        ld      a, [var_worldgen_curr_x]
+        dec     a
+        ld      [var_worldgen_curr_x], a
+
+        ld      b, a
+
+        RAM_BANK 1
+
+        ld      a, [var_worldgen_curr_y]
+        ld      c, a
+
+        call    r1_LoadRoom
+
+        ld      a, [hl]
+        or      ROOM_VISITED | ROOM_CONNECTED_R
+        ld      [hl+], a
+        inc     hl
+
+        ld      a, [var_worldgen_path_flags]
+        ld      b, [hl]
+        or      b
+        ld      [hl], a
+
+        ld      a, [var_worldgen_prev_y]
+        ld      c, a
+        ld      a, [var_worldgen_prev_x]
+        ld      b, a
+
+        call    r1_LoadRoom
+
+        ld      a, [hl]
+        or      ROOM_CONNECTED_L
+        ld      [hl], a
+
+        ld      a, [var_worldgen_curr_x]
+        ld      [var_worldgen_prev_x], a
 
         ret
 
@@ -109,8 +220,13 @@ r1_WorldGen_WalkRight:
 
         ld      a, [hl]
         or      ROOM_VISITED | ROOM_CONNECTED_L
-        ld      [hl], a
+        ld      [hl+], a
+        inc     hl
 
+        ld      a, [var_worldgen_path_flags]
+        ld      b, [hl]
+        or      b
+        ld      [hl], a
 
         ld      a, [var_worldgen_prev_y]
         ld      c, a
@@ -154,14 +270,50 @@ r1_WorldGen_RandomWalkProximalPath:
         cp      b
 
         jr      C, .moveRight
+	jr      .moveDown
+
+.moveUp:
+        call    r1_WorldGen_WalkUp
+        jr      .cond
+
+.moveLeft:
+        call    r1_WorldGen_WalkLeft
+        jr      .cond
 
 
 .moveDown:
+        ld      a, [var_worldgen_curr_y]
+        or      a
+        jr      Z, .skip1
+
+        call    GetRandom
+        ld      a, h
+        cp      $ff / 4
+        jr      C, .backtrackUp
+        jr      .skip1
+.backtrackUp:
+        call    r1_WorldGen_WalkUp
+        jr      .cond
+.skip1:
         call    r1_WorldGen_WalkDown
         jr      .cond
 
 
+
 .moveRight:
+        ld      a, [var_worldgen_curr_x]
+        or      a
+        jr      Z, .skip2
+
+        call    GetRandom
+        ld      a, h
+        cp      $ff / 4
+        jr      C, .backtrackLeft
+        jr      .skip2
+.backtrackLeft:
+        call    r1_WorldGen_WalkLeft
+        jr      .cond
+.skip2:
         call    r1_WorldGen_WalkRight
 
 .cond:
@@ -190,6 +342,68 @@ r1_WorldGen_RandomWalkProximalPath:
         jr      .moveRightOnly
 .mr_done:
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r1_WorldGen_RandomWalkDiagonalPath:
+        ld      a, 0
+        ld      [var_worldgen_curr_x], a
+        ld      [var_worldgen_prev_x], a
+
+        ld      a, 15
+        ld      [var_worldgen_curr_y], a
+        ld      [var_worldgen_prev_y], a
+
+.loop:
+        ld      a, [var_worldgen_curr_x]
+        cp      17
+        jr      Z, .moveUpOnly
+
+        ld      a, [var_worldgen_curr_y]
+        cp      0
+        jr      Z, .moveRightOnly
+
+        call    GetRandom
+        ld      a, [var_worldgen_path_w]
+        ld      b, a
+        ld      a, h
+        cp      b
+
+        jr      C, .moveRight
+
+
+.moveUp:
+        call    r1_WorldGen_WalkUp
+        jr      .cond
+
+
+.moveRight:
+        call    r1_WorldGen_WalkRight
+
+.cond:
+        jr      .loop
+
+        ret
+
+
+.moveUpOnly:
+        ld      a, [var_worldgen_curr_y]
+        cp      0
+        ret     Z
+
+        call    r1_WorldGen_WalkUp
+        jr      .moveUpOnly
+
+
+.moveRightOnly:
+        ld      a, [var_worldgen_curr_x]
+        cp      17
+        ret     Z
+
+        call    r1_WorldGen_WalkRight
+        jr      .moveRightOnly
 
 
 ;;; ----------------------------------------------------------------------------

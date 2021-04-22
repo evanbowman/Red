@@ -33,8 +33,8 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-WALL_TILES_END  EQU     20
-EMPTY_TILE      EQU     21
+WALL_TILES_END  EQU     56
+EMPTY_TILE      EQU     58
 EMPTY_TILE_ADDR EQU     $e4
 
 

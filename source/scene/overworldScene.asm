@@ -90,6 +90,13 @@ OverworldSceneLoadTiles:
         ld      de, $8800
         call    VramSafeMemcpy
 
+        VIDEO_BANK 1
+        ld      hl, r7_BackgroundTiles2
+        ld      bc, r7_BackgroundTiles2End - r7_BackgroundTiles2
+        ld      de, $8800
+        call    VramSafeMemcpy
+        VIDEO_BANK 0
+
         ld      hl, r7_SpriteDropShadow
         ld      bc, r7_SpriteDropShadowEnd - r7_SpriteDropShadow
         ld      de, $87c0

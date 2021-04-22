@@ -67,9 +67,14 @@ r1_MapExpandRow:
         ld      a, [de]
         jr      Z, .evenParity
 
+        cp      28
+        jr      C, .skip1
+        sub     32
+.skip1:
 
         sla     a                       ; \ Four tiles per metatile in vram,
         sla     a                       ; / so multiply by four
+
         add     $90                     ; $90 is the first map tile in vram
 
         ;; For odd parity, skip to the next two vram indices
@@ -78,6 +83,13 @@ r1_MapExpandRow:
         jr      .meta
 
 .evenParity:
+
+	cp      28
+        jr      C, .skip2
+        sub     32
+.skip2:
+
+
         sla     a                       ; \ Four tiles per metatile in vram,
         sla     a                       ; / so multiply by four
         add     $90                     ; $90 is the first map tile in vram
@@ -131,6 +143,18 @@ r1_SetTileColor:
 ;;; a - tile
 ;;; hl - dest
 ;;; trashes a
+        push    af
+        call    .check_cliff_tile
+        pop     af
+
+        cp      a, 28
+        ret     C
+
+        ld      a, [hl]         ; \ If our tile is greater than a certain
+        or      $08             ; | number, then we need to tell the hardware
+        ld      [hl], a         ; / to look for the tile in vram bank 2.
+        ret
+
 .check_cliff_tile:
         cp      a, 17
         jr      NZ, .check_cliff_tile2
@@ -140,7 +164,7 @@ r1_SetTileColor:
         ret
 
 .check_cliff_tile2:
-        cp      a, 23
+        cp      a, 59
         jr      NZ, .check_water_tile1
 
         ld      a, 5
@@ -164,10 +188,18 @@ r1_SetTileColor:
         ret
 
 .check_bridge_tile:
-        cp      a, 22
-        jr      NZ, .regular_tile
+        cp      a, 58
+        jr      NZ, .check_bridge_tile_edge
 
         ld      a, 6
+        ld      [hl], a
+        ret
+
+.check_bridge_tile_edge:
+        cp      a, 20
+        jr      NZ, .regular_tile
+
+        ld      a, 5
         ld      [hl], a
         ret
 
@@ -254,6 +286,11 @@ r1_MapExpandColumn:
         ld      a, [de]
         jr      Z, .evenParity
 
+        cp      28                      ; \ For high tile indices, the tiles
+        jr      C, .skip1               ; | will be in a different vram bank.
+        sub     32                      ; | Fixup the indices by subtracting
+.skip1:                                 ; / 32.
+
         sla     a                       ; \ Four tiles per metatile in vram,
         sla     a                       ; / so multiply by four
         add     $90                     ; $90 is the first map tile in vram
@@ -262,6 +299,11 @@ r1_MapExpandColumn:
         jr      .meta
 
 .evenParity:
+
+        cp      28                      ; \ For high tile indices, the tiles
+        jr      C, .skip2               ; | will be in a different vram bank.
+        sub     32                      ; | Fixup the indices by subtracting
+.skip2:                                 ; / 32.
 
         sla     a
         sla     a
