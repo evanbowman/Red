@@ -331,6 +331,12 @@ var_temp_str3:          DS      6
         ENDU
 var_misc_data_union_end:
 
+var_worldgen_curr_x:    DS      1
+var_worldgen_curr_y:    DS      1
+var_worldgen_prev_x:    DS      1
+var_worldgen_prev_y:    DS      1
+var_worldgen_path_w:    DS      1
+
 
 ;;; ############################################################################
 

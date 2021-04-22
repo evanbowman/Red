@@ -340,6 +340,16 @@ Main:
 
 
 CreateWorld:
+        ;; FIXME: this is just for testing purposes. In practice, we would have
+        ;; a title screen, where we'd be running the rng.
+.srand:
+        call    GetRandom
+
+        LONG_CALL r1_ReadKeys
+        bit     PADB_START, b
+        jr      Z, .srand
+
+
         call    VBlankIntrWait
         call    LcdOff
 
@@ -348,7 +358,6 @@ CreateWorld:
 
 	LONG_CALL r1_SetLevelupExp
 
-
         SET_BANK 10
         RAM_BANK 1
         ld      hl, r10_DefaultMap1
@@ -356,11 +365,13 @@ CreateWorld:
         ld      de, wram1_var_world_map_info
         call    Memcpy
 
-        RAM_BANK 2
-        ld      hl, r10_DefaultCollectibles
-        ld      bc, r10_DefaultCollectiblesEnd - r10_DefaultCollectibles
-        ld      de, wram2_var_collectibles
-        call    Memcpy
+	LONG_CALL r1_WorldGen
+
+        ;; RAM_BANK 2
+        ;; ld      hl, r10_DefaultCollectibles
+        ;; ld      bc, r10_DefaultCollectiblesEnd - r10_DefaultCollectibles
+        ;; ld      de, wram2_var_collectibles
+        ;; call    Memcpy
 
         call    MapLoad2__rom0_only
 

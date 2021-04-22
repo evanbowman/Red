@@ -31,3 +31,165 @@
 ;;; POSSIBILITY OF SUCH DAMAGE.
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen:
+;;; Generate two main paths to the destination.
+        ld      a, $ff / 2 - 28
+        ld      [var_worldgen_path_w], a
+
+        call    r1_WorldGen_RandomWalkProximalPath
+
+        ld      a, $ff / 2 + 28
+        ld      [var_worldgen_path_w], a
+
+        call    r1_WorldGen_RandomWalkProximalPath
+
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_WalkDown:
+        ld      a, [var_worldgen_curr_y]
+        inc     a
+        ld      [var_worldgen_curr_y], a
+
+        ld      c, a
+
+        RAM_BANK 1
+
+        ld      a, [var_worldgen_curr_x]
+        ld      b, a
+
+        call    r1_LoadRoom
+
+        ld      a, [hl]
+        or      ROOM_VISITED | ROOM_CONNECTED_U
+        ld      [hl], a
+
+
+        ld      a, [var_worldgen_prev_y]
+        ld      c, a
+        ld      a, [var_worldgen_prev_x]
+        ld      b, a
+
+        call    r1_LoadRoom
+
+        ld      a, [hl]
+        or      ROOM_CONNECTED_D
+        ld      [hl], a
+
+
+        ld      a, [var_worldgen_curr_y]
+        ld      [var_worldgen_prev_y], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_WalkRight:
+        ld      a, [var_worldgen_curr_x]
+        inc     a
+        ld      [var_worldgen_curr_x], a
+
+        ld      b, a
+
+        RAM_BANK 1
+
+        ld      a, [var_worldgen_curr_y]
+        ld      c, a
+
+        call    r1_LoadRoom
+
+        ld      a, [hl]
+        or      ROOM_VISITED | ROOM_CONNECTED_L
+        ld      [hl], a
+
+
+        ld      a, [var_worldgen_prev_y]
+        ld      c, a
+        ld      a, [var_worldgen_prev_x]
+        ld      b, a
+
+        call    r1_LoadRoom
+
+        ld      a, [hl]
+        or      ROOM_CONNECTED_R
+        ld      [hl], a
+
+        ld      a, [var_worldgen_curr_x]
+        ld      [var_worldgen_prev_x], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_RandomWalkProximalPath:
+        ld      a, 0
+        ld      [var_worldgen_curr_x], a
+        ld      [var_worldgen_curr_y], a
+        ld      [var_worldgen_prev_x], a
+        ld      [var_worldgen_prev_y], a
+
+.loop:
+        ld      a, [var_worldgen_curr_x]
+        cp      17
+        jr      Z, .moveDownOnly
+
+        ld      a, [var_worldgen_curr_y]
+        cp      15
+        jr      Z, .moveRightOnly
+
+        call    GetRandom
+        ld      a, [var_worldgen_path_w]
+        ld      b, a
+        ld      a, h
+        cp      b
+
+        jr      C, .moveRight
+
+
+.moveDown:
+        call    r1_WorldGen_WalkDown
+        jr      .cond
+
+
+.moveRight:
+        call    r1_WorldGen_WalkRight
+
+.cond:
+        jr      .loop
+
+        ret
+
+
+.moveDownOnly:
+        ld      a, [var_worldgen_curr_y]
+        cp      15
+        jr      Z, .md_done
+
+        call    r1_WorldGen_WalkDown
+        jr      .moveDownOnly
+
+.md_done:
+        ret
+
+.moveRightOnly:
+        ld      a, [var_worldgen_curr_x]
+        cp      17
+        jr      Z, .mr_done
+
+        call    r1_WorldGen_WalkRight
+        jr      .moveRightOnly
+.mr_done:
+        ret
+
+
+;;; ----------------------------------------------------------------------------

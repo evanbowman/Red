@@ -6,7 +6,7 @@
         "connections": {
             "right": false,
             "left": false,
-            "down": true,
+            "down": false,
             "up": false
         },
         "variant": 0,
@@ -29,10 +29,10 @@
         "x": 0,
         "y": 1,
         "connections": {
-            "right": true,
-            "left": true,
-            "down": true,
-            "up": true
+            "right": false,
+            "left": false,
+            "down": false,
+            "up": false
         },
         "variant": 0,
         "entities": [
@@ -50,57 +50,5 @@
                 "y": 10
             }
         ]
-    },
-    {
-        "x": 1,
-        "y": 1,
-        "connections": {
-            "right": false,
-            "left": true,
-            "down": false,
-            "up": false
-        },
-        "variant": 0,
-        "entities": [],
-        "collectibles": []
-    },
-    {
-        "x": 0,
-        "y": 2,
-        "connections": {
-            "right": false,
-            "left": false,
-            "down": true,
-            "up": true
-        },
-        "variant": 1,
-        "entities": [
-            {
-                "type": 3,
-                "x": 6,
-                "y": 5
-            }
-
-        ],
-        "collectibles": []
-    },
-    {
-        "x": 5,
-        "y": 5,
-        "connections": {
-            "right": false,
-            "left": false,
-            "down": false,
-            "up": true
-        },
-        "variant": 0,
-        "entities": [
-            {
-                "type": 1,
-                "x": 5,
-                "y": 5
-            }
-        ],
-        "collectibles": []
     }
 ]
