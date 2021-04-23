@@ -183,7 +183,6 @@ ENTITY_SIZE EQU var_player_struct_end - var_player_struct
 
 
 ;;; Just a scratch variable that simplifies other code.
-var_player_spill1:      DS      1
 var_player_spill2:      DS      1
 
 
@@ -286,6 +285,14 @@ var_inventory_scene_selected_row:       DS      1
 var_inventory_scene_page:               DS      1
 
 CRAFTABLE_ITEMS_COUNT   EQU     32
+
+
+var_water_anim:
+var_water_anim_timer:   DS      1
+var_water_anim_idx:     DS      1
+var_water_anim_changed: DS      1
+
+
 
 ;;; FIXME: This currently just stores item ids, but it needs to instead store
 ;;; pointers into the recipe table, for items that can be crafted in different

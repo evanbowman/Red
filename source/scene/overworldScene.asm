@@ -299,6 +299,7 @@ EntityUpdateLoopResume:
 ;;; intentional fallthrough
 EntityUpdateLoopDone:
 
+        call    OverworldSceneAnimateWater
 
 ;;; If it wasn't for view scrolling, the update and draw stuff could be done in
 ;;; the same loop.
@@ -408,7 +409,50 @@ OverworldSceneOnVBlank:
         ld      a, [var_player_stamina]
         ld      [var_stamina_last_val], a
 
+        ;; Now, technically, doing this copy here could starve sprite anims,
+        ;; which need to run within the vblank window. But, the water anim runs
+        ;; at a slow framerate, so the copies don't happen too often (once
+        ;; every 12 frames at most).
+        ld      a, [var_water_anim_changed]
+        or      a
+        call    NZ, VBlankCopyWaterTextures
+
 	call    VBlankCopySpriteTextures
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+VBlankCopyWaterTextures:
+        ld      a, 0
+        ld      [var_water_anim_changed], a
+
+        SET_BANK 7
+
+	ld      hl, r7_BackgroundTilesWaterAnim
+
+        ld      a, [var_water_anim_idx]
+        ld      b, a
+        ld      c, 0
+        add     hl, bc
+
+
+        ld      de, $8D80       ; Address of water tiles in VRAM
+        ld      b, 15           ; tiles-to-copy - 1
+        call GDMABlockCopy
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+OverworldSceneAnimateWater:
+        ld      hl, var_water_anim
+        ld      c, 13
+        ld      d, 3
+        call    AnimationAdvance
+	ld      [var_water_anim_changed], a
         ret
 
 
@@ -434,6 +478,12 @@ OverworldSceneStartTransition:
 
         ld      a, [hvar_joypad_raw]
         ld      [var_room_load_joypad_cache], a
+
+        ld      a, 0
+        ld      [var_water_anim_timer], a
+        ld      [var_water_anim_idx], a
+        ld      [var_water_anim_changed], a
+
         ret
 
 

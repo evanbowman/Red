@@ -57,7 +57,7 @@ GDMABlockCopy:
         ld      a, e
         ldh     [rHDMA4], a             ; HDMA destination low
 
-        ld      a, b                    ; transfer length = 5 (64 bytes)
+        ld      a, b
         ldh     [rHDMA5], a             ; start DMA transfer
         ret
 

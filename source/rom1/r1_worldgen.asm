@@ -37,7 +37,10 @@
 ;;; ----------------------------------------------------------------------------
 
 r1_WorldGen:
-;;; Generate two main paths to the destination.
+        ld      hl, wram1_var_world_map_info
+        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
+        ld      a, 0
+        call    Memset
 
         ld      a, ROOM_B3_PROXIMAL_PATH
         ld      [var_worldgen_path_flags], a
@@ -90,14 +93,11 @@ r1_WorldGen:
         jr      .expand
 
 .done:
+        call    r1_WorldGen_AssignVariants
+
         ret
 
 .retry:
-        ld      hl, wram1_var_world_map_info
-        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
-        ld      a, 0
-        call    Memset
-
         jr      r1_WorldGen
 
 
@@ -590,6 +590,63 @@ r1_GetRandomRoom:
         push    bc
         call    r1_LoadRoom
         pop     bc
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_AssignVariants:
+;;; trashes most registers
+;;; result in de
+        ld      b, 0
+        ld      c, 0
+
+        call    r1_LoadRoom             ; rooms pointer in hl
+
+        ld      de, 0                   ; Accumulator
+
+        ld      a, 0
+        ld      [hvar_temp_loop_counter1], a
+
+.outer_loop:
+        ld      a, 0
+        ld      [hvar_temp_loop_counter2], a
+
+.inner_loop:
+        ld      a, [hl]                 ; \
+        and     ROOM_B1_CONNECTIONS     ; | If room disconnected, then don't inc
+        or      a                       ; | accumulator.
+        jr      Z, .skip                ; /
+
+
+        push    hl
+        call    GetRandom
+        ld      a, l
+        and     1
+        pop     hl
+
+        inc     hl
+        ld      [hl], a
+        dec     hl
+
+
+.skip:
+        ld      bc, ROOM_DESC_SIZE      ; \ Go to next room in array.
+        add     hl, bc                  ; /
+
+
+        ld      a, [hvar_temp_loop_counter2]
+        inc     a
+        ld      [hvar_temp_loop_counter2], a
+        cp      WORLD_MAP_WIDTH
+        jr      NZ, .inner_loop
+
+        ld      a, [hvar_temp_loop_counter1]
+        inc     a
+        ld      [hvar_temp_loop_counter1], a
+        cp      WORLD_MAP_HEIGHT
+        jr      NZ, .outer_loop
+
         ret
 
 
