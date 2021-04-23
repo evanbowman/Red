@@ -79,6 +79,10 @@ hvar_rand_state:     DS      2
 hvar_exp_changed_flag:          DS      1
 hvar_exp_levelup_ready_flag:    DS      1
 
+
+hvar_temp_loop_counter1:         DS      1
+hvar_temp_loop_counter2:         DS      1
+
 ;;; SECTION MISC_HRAM
 
 

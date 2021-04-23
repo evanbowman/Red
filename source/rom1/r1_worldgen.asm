@@ -68,6 +68,82 @@ r1_WorldGen:
 
         call    r1_WorldGen_RandomWalkDiagonalPath
 
+.expand:
+        call    r1_WorldGen_CountConnectedRooms
+
+        ld      a, d
+        or      a
+        jr      NZ, .done
+
+        ld      a, e            ; \ If the generated map so far is really small,
+        cp      110             ; | try again.
+        jr      C, .retry       ; /
+
+	ld      a, 200
+        cp      e
+        jr      C, .done
+
+        ;; If the generated room, so far, is smaller than 200 rooms, generate
+        ;; some more, by various methods.
+
+        call    r1_GenerateRandomBacktrackPath
+        jr      .expand
+
+.done:
+        ret
+
+.retry:
+        ld      hl, wram1_var_world_map_info
+        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
+        ld      a, 0
+        call    Memset
+
+        jr      r1_WorldGen
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_CountConnectedRooms:
+;;; trashes most registers
+;;; result in de
+        ld      b, 0
+        ld      c, 0
+
+        call    r1_LoadRoom             ; rooms pointer in hl
+
+        ld      de, 0                   ; Accumulator
+
+        ld      a, 0
+        ld      [hvar_temp_loop_counter1], a
+
+.outer_loop:
+        ld      a, 0
+        ld      [hvar_temp_loop_counter2], a
+
+.inner_loop:
+        ld      a, [hl]                 ; \
+        and     ROOM_B1_CONNECTIONS     ; | If room disconnected, then don't inc
+        or      a                       ; | accumulator.
+        jr      Z, .skip                ; /
+
+        inc     de
+.skip:
+        ld      bc, ROOM_DESC_SIZE      ; \ Go to next room in array.
+        add     hl, bc                  ; /
+
+
+        ld      a, [hvar_temp_loop_counter2]
+        inc     a
+        ld      [hvar_temp_loop_counter2], a
+        cp      WORLD_MAP_WIDTH
+        jr      NZ, .inner_loop
+
+        ld      a, [hvar_temp_loop_counter1]
+        inc     a
+        ld      [hvar_temp_loop_counter1], a
+        cp      WORLD_MAP_HEIGHT
+        jr      NZ, .outer_loop
+
         ret
 
 
@@ -88,7 +164,7 @@ r1_WorldGen_WalkUp:
         call    r1_LoadRoom
 
         ld      a, [hl]
-        or      ROOM_VISITED | ROOM_CONNECTED_D
+        or      ROOM_CONNECTED_D
         ld      [hl+], a
         inc     hl
 
@@ -132,7 +208,7 @@ r1_WorldGen_WalkDown:
         call    r1_LoadRoom
 
         ld      a, [hl]
-        or      ROOM_VISITED | ROOM_CONNECTED_U
+        or      ROOM_CONNECTED_U
         ld      [hl+], a
         inc     hl
 
@@ -176,7 +252,7 @@ r1_WorldGen_WalkLeft:
         call    r1_LoadRoom
 
         ld      a, [hl]
-        or      ROOM_VISITED | ROOM_CONNECTED_R
+        or      ROOM_CONNECTED_R
         ld      [hl+], a
         inc     hl
 
@@ -219,7 +295,7 @@ r1_WorldGen_WalkRight:
         call    r1_LoadRoom
 
         ld      a, [hl]
-        or      ROOM_VISITED | ROOM_CONNECTED_L
+        or      ROOM_CONNECTED_L
         ld      [hl+], a
         inc     hl
 
@@ -404,6 +480,117 @@ r1_WorldGen_RandomWalkDiagonalPath:
 
         call    r1_WorldGen_WalkRight
         jr      .moveRightOnly
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_GenerateRandomBacktrackPath:
+        call    r1_GetRandomRoom
+
+        ld      a, [hl]
+        and     ROOM_B1_CONNECTIONS
+        or      a
+        jr      NZ, r1_GenerateRandomBacktrackPath
+
+        ld      a, b
+        ld      [var_worldgen_curr_x], a
+        ld      [var_worldgen_prev_x], a
+
+        ld      a, c
+        ld      [var_worldgen_curr_y], a
+        ld      [var_worldgen_prev_y], a
+
+        ld      a, 0
+        ld      [var_worldgen_path_flags], a
+
+.loop:
+        ld      a, [var_worldgen_curr_x]
+        ld      b, a
+        ld      a, [var_worldgen_curr_y]
+        ld      c, a
+        call    r1_LoadRoom
+        inc     hl
+        inc     hl
+        ld      a, [hl]
+        and     ROOM_B3_PROXIMAL_PATH
+        or      a
+        ret     NZ
+
+
+        ld      a, [var_worldgen_curr_x]
+        cp      0
+        jr      Z, .moveUpOnly
+
+        ld      a, [var_worldgen_curr_y]
+        cp      0
+        jr      Z, .moveLeftOnly
+
+        call    GetRandom
+        ld      b, $ff / 2
+        ld      a, h
+        cp      b
+
+        jr      C, .moveLeft
+
+
+.moveUp:
+        call    r1_WorldGen_WalkUp
+        jr      .cond
+
+
+.moveLeft:
+        call    r1_WorldGen_WalkLeft
+
+.cond:
+        jr      .loop
+
+        ret
+
+
+.moveUpOnly:
+        ld      a, [var_worldgen_curr_y]
+        cp      0
+        ret     Z
+
+        call    r1_WorldGen_WalkUp
+        jr      .moveUpOnly
+
+
+.moveLeftOnly:
+        ld      a, [var_worldgen_curr_x]
+        cp      0
+        ret     Z
+
+        call    r1_WorldGen_WalkLeft
+        jr      .moveLeftOnly
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_GetRandomRoom:
+;;; trashes a bunch of registers
+;;; room in hl
+;;; b - room x coord
+;;; c - room y coord
+        call    GetRandom
+        ld      a, l
+        and     15              ; l % 16
+        ld      b, a
+
+        ;; FIXME: we need to do a mod 18, but that's difficult, so we
+        ;; technically are excluding the last two columns of rooms from our
+        ;; selection.
+
+
+        call    GetRandom
+        ld      a, l
+        and     15              ; l % 16 (world map height)
+        ld      c, a
+
+        push    bc
+        call    r1_LoadRoom
+        pop     bc
+        ret
 
 
 ;;; ----------------------------------------------------------------------------

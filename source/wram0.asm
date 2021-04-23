@@ -337,6 +337,7 @@ var_worldgen_prev_x:    DS      1
 var_worldgen_prev_y:    DS      1
 var_worldgen_path_w:    DS      1
 var_worldgen_path_flags:DS      1
+var_worldgen_remaining: DS      1
 
 
 ;;; ############################################################################

@@ -358,20 +358,9 @@ CreateWorld:
 
 	LONG_CALL r1_SetLevelupExp
 
-        SET_BANK 10
         RAM_BANK 1
-        ld      hl, r10_DefaultMap1
-        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
-        ld      de, wram1_var_world_map_info
-        call    Memcpy
 
 	LONG_CALL r1_WorldGen
-
-        ;; RAM_BANK 2
-        ;; ld      hl, r10_DefaultCollectibles
-        ;; ld      bc, r10_DefaultCollectiblesEnd - r10_DefaultCollectibles
-        ;; ld      de, wram2_var_collectibles
-        ;; call    Memcpy
 
         call    MapLoad2__rom0_only
 
