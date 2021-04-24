@@ -286,14 +286,6 @@ var_inventory_scene_page:               DS      1
 
 CRAFTABLE_ITEMS_COUNT   EQU     32
 
-
-var_water_anim:
-var_water_anim_timer:   DS      1
-var_water_anim_idx:     DS      1
-var_water_anim_changed: DS      1
-
-
-
 ;;; FIXME: This currently just stores item ids, but it needs to instead store
 ;;; pointers into the recipe table, for items that can be crafted in different
 ;;; ways (different sets of dependencies).
@@ -305,6 +297,13 @@ var_crafting_dependency_set_end:
         NEXTU
         ENDU
 var_scene_union_end:
+
+
+var_water_anim:
+var_water_anim_timer:   DS      1
+var_water_anim_idx:     DS      1
+var_water_anim_changed: DS      1
+
 
 
 INVENTORY_TAB_ITEMS     EQU     0

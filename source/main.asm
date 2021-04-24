@@ -351,7 +351,6 @@ CreateWorld:
 
 
         call    VBlankIntrWait
-        call    LcdOff
 
         ld      a, 1
         ld      [var_level], a
@@ -365,8 +364,6 @@ CreateWorld:
         call    MapLoad2__rom0_only
 
         call    MapShow
-
-        call    LcdOn
 
         LONG_CALL r1_PlayerNew
 

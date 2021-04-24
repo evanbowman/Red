@@ -656,16 +656,18 @@ r1_WorldGen_AssignVariants:
 
 r1_WorldGen_InitOrigin:
         ld      b, 0
-        ld      c, 1
+        ld      c, 0
         call    r1_LoadRoom
 
+        ld      a, 0
+
         inc     hl
-        inc     hl
+        ld      [hl+], a
         inc     hl
 
         ld      a, ENTITY_TYPE_BONFIRE
         ld      [hl+], a
-        ld      a, $a5
+        ld      a, $76
         ld      [hl], a
         ret
 

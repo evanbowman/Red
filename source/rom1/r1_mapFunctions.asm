@@ -197,11 +197,20 @@ r1_SetTileColor:
 
 .check_bridge_tile_edge:
         cp      a, 20
-        jr      NZ, .regular_tile
+        jr      NZ, .check_rock_tile
 
         ld      a, 5
         ld      [hl], a
         ret
+
+.check_rock_tile:
+        cp      a, 21
+        jr      NZ, .regular_tile
+
+        ld      a, 4
+        ld      [hl], a
+        ret
+
 
 .regular_tile:
         ld      a, 2

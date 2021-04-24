@@ -61,51 +61,26 @@ IsTileCollectible:
 ;;; Copy map from wram to vram
 MapShow:
         ld      c, 0
-        ld      hl, var_map_info
-
-.outerLoop:
-	ld      b, 0
-        ld      a, 16           ; map height
-        cp      c
-        jr      Z, .done
-
-.innerLoop:
-        ld      a, 16           ; map width
-        cp      b
-        jr      Z, .outerLoopInc
-
+.loop:
+        ;; All of the levels are typically loaded incrementally as the screen
+        ;; scrolls, with the exception of the first room, which we need to
+        ;; load all at once. But, we just build this on top of the incremental
+        ;; loading code.
         push    bc
-
-        ld      d, c
-        sla     d
-
-        ld      a, [hl]
-        sla     a
-        sla     a
-        ld      e, $90
-        add     e
-        ld      e, a
-
-        ld      c, 2
-
-        ld      a, b
-	sla     a
-
-        push    hl
-        call    SetBackgroundTile16x16
-        pop     hl
-
+        call    r1_MapExpandRow
         pop     bc
 
-        inc     b
-        inc     hl
-	jr      .innerLoop
+        call    VBlankIntrWait          ; r1_MapShowRow writes to vram.
 
-.outerLoopInc:
-	inc     c
-        jr      .outerLoop
+        push    bc
+        call    r1_MapShowRow
+        pop     bc
 
-.done:
+        inc     c
+        ld      a, c
+        cp      32
+        jr      NZ, .loop
+
         ret
 
 

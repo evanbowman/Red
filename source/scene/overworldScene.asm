@@ -434,12 +434,15 @@ VBlankCopyWaterTextures:
 
         ld      a, [var_water_anim_idx]
         ld      b, a
-        ld      c, 0
+        ld      c, a
+        swap    c
+        sla     c               ; FIXME: this x64 will break with more than 4 keyframes
+        sla     c
         add     hl, bc
 
 
         ld      de, $8D40       ; Address of water tiles in VRAM
-        ld      b, 15           ; tiles-to-copy - 1
+        ld      b, 19           ; tiles-to-copy - 1
         call GDMABlockCopy
 
         ret

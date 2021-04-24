@@ -747,6 +747,7 @@ DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
 DB $00,$FF,$00,$FF,$00,$FF,$00,$0F
 DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
 DB $00,$FF,$00,$FF,$00,$FF,$00,$FC
+
 DB $00,$10,$00,$FF,$E0,$1F,$F0,$0F
 DB $FF,$00,$FF,$00,$FF,$00,$E7,$18
 DB $00,$1F,$01,$FE,$03,$FC,$3F,$C0
@@ -755,6 +756,7 @@ DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$CF,$30,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
@@ -763,6 +765,7 @@ DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $E7,$18,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$F0,$FF,$E0,$FF,$E0,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -771,6 +774,18 @@ DB $C0,$FF,$C0,$FF,$C0,$DF,$00,$3F
 DB $00,$FF,$E0,$1F,$F8,$07,$FF,$00
 DB $03,$FF,$03,$FB,$00,$FC,$00,$FF
 DB $00,$FF,$07,$F8,$1F,$E0,$FF,$00
+
+DB $FF,$FF,$FF,$FF,$FE,$FE,$FC,$FC
+DB $F8,$F9,$F8,$FF,$F0,$F7,$F8,$FF
+DB $FF,$FF,$FF,$FF,$1F,$1F,$07,$E7
+DB $03,$F3,$01,$F9,$01,$F9,$01,$F9
+DB $90,$97,$B2,$B3,$FE,$FE,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FD,$FD,$FF,$FF
+DB $03,$F3,$03,$C3,$C7,$C7,$1F,$1F
+DB $7F,$7F,$FF,$FF,$FF,$FF,$FF,$FF
+
+
+
 DB $00,$00,$FF,$00,$FC,$03,$F0,$0F
 DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
 DB $00,$00,$FF,$00,$3F,$C0,$1E,$E1
@@ -779,6 +794,7 @@ DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
 DB $00,$FF,$00,$FF,$00,$FF,$00,$1F
 DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
 DB $00,$FF,$00,$FF,$00,$FF,$00,$F8
+
 DB $00,$F0,$00,$FF,$80,$7F,$E0,$1F
 DB $FF,$00,$FF,$00,$FF,$00,$C3,$3C
 DB $00,$00,$00,$FF,$01,$FE,$1F,$E0
@@ -787,6 +803,7 @@ DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$87,$78,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FE,$01,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
@@ -795,6 +812,7 @@ DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $C3,$3C,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$F0,$FF,$E0,$FF,$E0,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -803,6 +821,18 @@ DB $C0,$FF,$C0,$DF,$80,$BF,$00,$3F
 DB $00,$FF,$C0,$3F,$F0,$0F,$FF,$00
 DB $03,$FF,$03,$FF,$03,$FB,$00,$FC
 DB $00,$FF,$03,$FC,$0F,$F0,$FF,$00
+
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FC,$FC
+DB $F0,$F1,$E0,$E7,$E0,$E7,$E8,$EF
+DB $FF,$FF,$FF,$FF,$8F,$8F,$07,$E7
+DB $03,$F3,$03,$FB,$03,$FB,$03,$FB
+DB $F0,$F7,$BA,$BB,$7E,$7E,$FF,$FF
+DB $FF,$FF,$FE,$FE,$FD,$FD,$F7,$F7
+DB $03,$FB,$03,$E3,$CF,$CF,$0F,$0F
+DB $1F,$1F,$FF,$FF,$FF,$FF,$FF,$FF
+
+
+
 DB $00,$00,$FF,$00,$FC,$03,$F0,$0F
 DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
 DB $00,$00,$FF,$00,$3F,$C0,$1E,$E1
@@ -811,6 +841,7 @@ DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
 DB $00,$FF,$00,$FF,$00,$FF,$00,$1C
 DB $00,$FF,$00,$FF,$00,$FF,$00,$FF
 DB $00,$FF,$00,$FF,$00,$FF,$00,$10
+
 DB $00,$E0,$00,$FF,$C0,$3F,$F0,$0F
 DB $FF,$00,$FF,$00,$FF,$00,$E3,$1C
 DB $00,$3F,$00,$FF,$01,$FE,$3F,$C0
@@ -819,6 +850,7 @@ DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$8F,$70,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FE,$01,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
@@ -827,6 +859,7 @@ DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $E3,$1C,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
 DB $FF,$00,$FF,$00,$FF,$00,$FF,$00
+
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$F0,$FF,$E0,$FF,$E0,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -835,6 +868,16 @@ DB $C0,$FF,$C0,$FF,$C0,$DF,$00,$3F
 DB $00,$FF,$C0,$3F,$F8,$07,$FF,$00
 DB $03,$FF,$03,$FB,$01,$FD,$00,$FC
 DB $00,$FF,$03,$FC,$1F,$E0,$FF,$00
+
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FE,$FE
+DB $FC,$FD,$F8,$FF,$F0,$F7,$F8,$FF
+DB $FF,$FF,$FF,$FF,$07,$07,$03,$E3
+DB $01,$F1,$01,$F9,$01,$F9,$01,$F9
+DB $F0,$F7,$F2,$F3,$FE,$FE,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $01,$F9,$03,$F3,$C7,$C7,$9F,$9F
+DB $7F,$7F,$FF,$FF,$FF,$FF,$FF,$FF
+
 r7_BackgroundTilesWaterAnimEnd::
 
 
