@@ -95,6 +95,8 @@ r1_WorldGen:
 .done:
         call    r1_WorldGen_AssignVariants
 
+        call    r1_WorldGen_InitOrigin
+
         ret
 
 .retry:
@@ -647,6 +649,24 @@ r1_WorldGen_AssignVariants:
         cp      WORLD_MAP_HEIGHT
         jr      NZ, .outer_loop
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_InitOrigin:
+        ld      b, 0
+        ld      c, 1
+        call    r1_LoadRoom
+
+        inc     hl
+        inc     hl
+        inc     hl
+
+        ld      a, ENTITY_TYPE_BONFIRE
+        ld      [hl+], a
+        ld      a, $a5
+        ld      [hl], a
         ret
 
 
