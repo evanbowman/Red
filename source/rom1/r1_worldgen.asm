@@ -654,6 +654,41 @@ r1_WorldGen_AssignVariants:
 
 ;;; ----------------------------------------------------------------------------
 
+r1_WorldGen_PlaceCollectibleInRoom:
+;;; b - room x
+;;; c - room y
+;;; a - collectible
+        push    af
+
+        ld      a, b
+        ld      [var_worldgen_curr_x], a
+        ld      a, c
+        ld      [var_worldgen_curr_y], a
+
+        ld      a, 1            ; our bank 1, to return to
+        call    FindEmptyTileInRoom
+
+        push    bc
+        ld      a, [var_worldgen_curr_x]
+        ld      b, a
+        ld      a, [var_worldgen_curr_y]
+        ld      c, a
+        call    __CollectiblesLoad
+        pop     bc
+
+        ld      a, 0            ; \
+        or      b               ; |
+        swap    c               ; | Store x,y in collectible struct
+        or      c               ; |
+        ld      [hl+], a        ; /
+
+        pop     af
+        ld      [hl], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r1_WorldGen_InitOrigin:
         ld      b, 0
         ld      c, 0
@@ -669,6 +704,13 @@ r1_WorldGen_InitOrigin:
         ld      [hl+], a
         ld      a, $76
         ld      [hl], a
+
+
+        ld      b, 0
+        ld      c, 0
+        ld      a, COLLECTIBLE_TILE_POTATO
+        call    r1_WorldGen_PlaceCollectibleInRoom
+
         ret
 
 

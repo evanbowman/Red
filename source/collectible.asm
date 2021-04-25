@@ -33,15 +33,35 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+;;; ----------------------------------------------------------------------------
+
 CollectiblesLoad:
 ;;; no arguments
 ;;; returns a pointer to an array of collectible items
 ;;; sets ram bank to 2
 ;;; trashes hl, bc
-        RAM_BANK 2
+        ld      a, [var_room_x]
+        ld      b, a
 
         ld      a, [var_room_y]
         ld      c, a
+
+        call    __CollectiblesLoad
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+__CollectiblesLoad:
+;;; b - x
+;;; c - y
+;;; returns a pointer to an array of collectible items
+;;; sets ram bank to 2
+;;; trashes hl, bc
+        RAM_BANK 2
+
+        push    bc
 
         ;; hl = y * 18 * 2(bytes per collectible) * 7(collectibles per room)
         call    l16Mul18Fast    ; x18
@@ -55,11 +75,9 @@ CollectiblesLoad:
         add     hl, bc          ; |
         add     hl, bc          ; / x7 FIXME: quit being lazy
 
+        pop     bc
 
         push    hl
-
-        ld      a, [var_room_x]
-        ld      b, a
 
         ;; hl = x * 4
         ld      l, b
@@ -97,6 +115,7 @@ CollectibleItemErase:
         jr      Z, .endLoop
 
         ld      a, [var_collect_item_xy]
+        swap    a
         ld      c, [hl]
         cp      c
         jr      NZ, .next

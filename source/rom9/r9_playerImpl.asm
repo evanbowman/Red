@@ -35,7 +35,7 @@
 
 WALL_TILES_END  EQU     56
 EMPTY_TILE      EQU     58
-EMPTY_TILE_ADDR EQU     $e4
+EMPTY_TILE_ADDR EQU     $f4
 
 
 
@@ -740,7 +740,7 @@ r9_CollectMapItem:
         sla     d                       ;
 
         ld      e, EMPTY_TILE_ADDR
-        ld      c, 2
+        ld      c, $0a
 
         call    SetBackgroundTile16x16
 

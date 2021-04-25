@@ -120,14 +120,14 @@ MapSetTile:
 
 ;;; ----------------------------------------------------------------------------
 
-;;; Does a bunch of bank swapping, may only be called from rom0.
-MapLoad2__rom0_only:
+
+;;; May only be called from rom0, due to all of the bank swapping.
+GetRoomData__rom0_only:
+;;; b - room x
+;;; c - room y
+;;; return hl - pointer to room's tilemap
         RAM_BANK 1
 
-        ld      a, [var_room_x]
-        ld      b, a
-        ld      a, [var_room_y]
-        ld      c, a
         LONG_CALL r1_LoadRoom
 
         ld      a, [hl+]                ; \ Load adjacency mask from room data
@@ -144,7 +144,7 @@ MapLoad2__rom0_only:
         ld      [rROMB0], a             ; /
 
         sla     e                       ; Two bytes per pointer in roomdata lut
-.here:
+
         ld      hl, .roomDataLookupTab  ; \ Load pointer to room data array
         add     hl, de                  ; /
         ld      e, [hl]
@@ -157,18 +157,8 @@ MapLoad2__rom0_only:
                                         ; b is the higher byte, so implicit x256
         add     hl, bc
 
-.copy:
-        ld      bc, ROOM_DATA_SIZE
-        ld      de, var_map_info
-	call    Memcpy
-
-        ;; Now, the room data is sitting in RAM. We can safely call back into
-        ;; bank 1 to do whatever other loading or level generation that we want
-        ;; to do.
-
-        LONG_CALL r1_InitializeRoom
-
         ret
+
 
 .roomDataLookupTab::
 DW      r10_TEST_MAP_2
@@ -209,6 +199,96 @@ DB      10
 .roomDataBankTabEnd::
 
 
+;;; ----------------------------------------------------------------------------
 
+
+;;; Does a bunch of bank swapping, may only be called from rom0.
+MapLoad2__rom0_only:
+
+        ld      a, [var_room_x]
+        ld      b, a
+        ld      a, [var_room_y]
+        ld      c, a
+
+        call    GetRoomData__rom0_only
+
+.copy:
+        ld      bc, ROOM_DATA_SIZE
+        ld      de, var_map_info
+	call    Memcpy
+
+        ;; Now, the room data is sitting in RAM. We can safely call back into
+        ;; bank 1 to do whatever other loading or level generation that we want
+        ;; to do.
+
+        LONG_CALL r1_InitializeRoom
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+;;; This code is a bit complicated. Basically, we need to pass in the caller's
+;;; rom bank, so that we can safely return from this function call. The level
+;;; map data exists in a multitude of different rom banks, so we need to switch
+;;; the bank.
+FindEmptyTileInRoom:
+;;; b - room x
+;;; c - room y
+;;; a - caller's rom bank
+;;; return b - result
+
+        push    af
+
+        call    GetRoomData__rom0_only ; returns pointer to tiles in hl
+
+        ld      e, 0            ; retry counter
+
+.retry:
+        ld      a, 30
+        cp      e
+        jr      Z, .failed
+
+        push    hl
+
+        call    GetRandom       ; random junk in hl
+        ld      a, l
+        and     15              ; mod 16
+        ld      b, a
+
+        ld      a, h
+        and     15              ; mod 16
+        ld      c, a
+
+        pop     hl
+
+        ;; Now, we have random x,y coords, let's look into the map tile data,
+        ;; to see whether our random selection is an available map slot
+
+        push    bc
+        push    hl
+        call    MapGetTile
+        pop     hl
+
+	inc     e
+
+        ld      a, 57
+        cp      a, b
+
+        pop     bc
+
+        jr      NZ, .retry
+
+.done:
+        pop     af
+
+        ld      [rROMB0], a
+
+        ret
+
+
+.failed:
+        ld      bc, 0
+        jr      .done
 
 ;;; ----------------------------------------------------------------------------
