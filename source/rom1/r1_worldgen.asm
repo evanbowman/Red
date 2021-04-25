@@ -676,6 +676,7 @@ r1_WorldGen_PlaceCollectibleInRoom:
         call    __CollectiblesLoad
         pop     bc
 
+
         ld      a, 0            ; \
         or      b               ; |
         swap    c               ; | Store x,y in collectible struct
@@ -710,6 +711,12 @@ r1_WorldGen_InitOrigin:
         ld      c, 0
         ld      a, COLLECTIBLE_TILE_POTATO
         call    r1_WorldGen_PlaceCollectibleInRoom
+
+        ld      b, 0
+        ld      c, 1
+        ld      a, COLLECTIBLE_TILE_POTATO
+        call    r1_WorldGen_PlaceCollectibleInRoom
+
 
         ret
 

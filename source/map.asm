@@ -267,6 +267,8 @@ FindEmptyTileInRoom:
 
         push    bc
         push    hl
+        ld      a, b
+        ld      b, c
         call    MapGetTile
         pop     hl
 
