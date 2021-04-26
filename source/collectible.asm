@@ -136,3 +136,36 @@ CollectibleItemErase:
 
 
 ;;; ----------------------------------------------------------------------------
+
+CollectibleItemAdd:
+;;; hl - collectibles
+;;; a - item
+;;; c - xy
+        ld      b, 0
+
+        ld      d, a
+.loop:
+        ld      a, 7
+        cp      b
+        jr      Z, .endLoop
+
+        ld      a, [hl]
+        or      a
+        jr      NZ, .next
+
+        ld      [hl], c
+        inc     hl
+        ld      [hl], d
+        jr      .endLoop
+
+.next:
+        inc     b
+        inc     hl
+        inc     hl
+        jr      .loop
+.endLoop:
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------

@@ -1041,7 +1041,7 @@ r9_PlayerDepleteStamina:
 
 r9_PlayerWalkDepleteStamina:
 	ld      b, 0
-        ld      c, 10
+        ld      c, 6
         call    r9_PlayerDepleteStamina
         ret
 

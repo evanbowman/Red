@@ -97,10 +97,21 @@ r1_WorldGen:
 
         call    r1_WorldGen_InitOrigin
 
+        call    .initMetablocks
+
         ret
 
 .retry:
         jr      r1_WorldGen
+
+
+.initMetablocks:
+        ld      b, 0
+        ld      c, 0
+        ld      de, r1_Mbl_0_0_data
+        call    r1_WorldGen_InitMetablock
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -673,18 +684,20 @@ r1_WorldGen_PlaceCollectibleInRoom:
         ld      b, a
         ld      a, [var_worldgen_curr_y]
         ld      c, a
-        call    __CollectiblesLoad
+        call    __CollectiblesLoad ; collectible array in hl
         pop     bc
 
 
         ld      a, 0            ; \
         or      b               ; |
-        swap    c               ; | Store x,y in collectible struct
+        swap    c               ; | x,y in C.
         or      c               ; |
-        ld      [hl+], a        ; /
+        ld      c, a            ; /
 
-        pop     af
-        ld      [hl], a
+        pop     af              ; Item in a
+
+        call    CollectibleItemAdd
+
         ret
 
 
@@ -706,19 +719,188 @@ r1_WorldGen_InitOrigin:
         ld      a, $76
         ld      [hl], a
 
+        ;; ld      b, 0
+        ;; ld      c, 0
+        ;; ld      a, COLLECTIBLE_TILE_POTATO
+        ;; call    r1_WorldGen_PlaceCollectibleInRoom
 
-        ld      b, 0
-        ld      c, 0
-        ld      a, COLLECTIBLE_TILE_POTATO
-        call    r1_WorldGen_PlaceCollectibleInRoom
-
-        ld      b, 0
-        ld      c, 1
-        ld      a, COLLECTIBLE_TILE_POTATO
-        call    r1_WorldGen_PlaceCollectibleInRoom
-
+        ;; ld      b, 0
+        ;; ld      c, 1
+        ;; ld      a, COLLECTIBLE_TILE_POTATO
+        ;; call    r1_WorldGen_PlaceCollectibleInRoom
 
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_InitMetablock:
+;;; b - x
+;;; c - y
+;;; de - metablock data
+
+.collectibles_loop:
+	ld      a, [de]
+        inc     de
+        cp      COLLECTIBLE_TILE_NULL
+        jr      Z, .collectibles_loop_done
+
+.place_collectible:
+	push    de
+        push    bc
+
+        call    r1_WorldGen_PlaceCollectibleInBlock
+
+        pop     bc
+        pop     de
+        jr      .collectibles_loop
+
+.collectibles_loop_done:
+
+.entity_loop:
+        ld      a, [de]
+        inc     de
+        cp      ENTITY_TYPE_NULL
+        jr      Z, .entity_loop_done
+
+.place_entity:
+        push    de
+        push    bc
+
+
+
+        pop     bc
+        pop     de
+        jr      .entity_loop
+
+.entity_loop_done:
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_Choice6:
+;;; trashes a, hl
+;;; return number 0-5 in a
+        call    GetRandom
+        ld      a, h
+        cp      (1 * 255) / 6
+        jr      C, .zero
+        cp      (2 * 255) / 6
+        jr      C, .one
+        cp      (3 * 255) / 6
+        jr      C, .two
+        cp      (4 * 255) / 6
+        jr      C, .three
+        cp      (5 * 255) / 6
+        jr      C, .four
+.five:
+        ld      a, 5
+        ret
+.zero:
+        ld      a, 0
+        ret
+.one:
+        ld      a, 1
+        ret
+.two:
+        ld      a, 2
+        ret
+.three:
+        ld      a, 3
+        ret
+.four:
+        ld      a, 4
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldGen_PlaceCollectibleInBlock:
+;;; a - collectible tile
+;;; b - block x (fixme: ignored)
+;;; c - block y (fixme: ignored)
+        ld      d, a
+
+        call    GetRandom       ; \
+        ld      a, h            ; | In reg c: y value between 0-3. Blocks are
+        and     3               ; | 6x4.
+        ld      c, a            ; /
+
+        call    r1_Choice6      ; \ In reg b: x value between 0-5. Blocks are
+        ld      b, a            ; / 6x4.
+
+        ld      a, d
+        call    r1_WorldGen_PlaceCollectibleInRoom
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_Mbl_0_0_data:
+.collectibles:
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_POTATO
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_STICK
+DB      COLLECTIBLE_TILE_NULL
+.entities:
+DB      ENTITY_TYPE_GREYWOLF
+DB      ENTITY_TYPE_GREYWOLF
+DB      ENTITY_TYPE_GREYWOLF
+DB      ENTITY_TYPE_NULL
 
 
 ;;; ----------------------------------------------------------------------------

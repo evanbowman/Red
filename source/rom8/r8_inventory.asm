@@ -621,7 +621,7 @@ DB      ITEM_CATEGORY_FOOD,        6, $00, $00
 DB      ITEM_CATEGORY_MISC,      $00, $00, $00
 
 .kebab:
-DB      ITEM_CATEGORY_FOOD,      150, $00, $00
+DB      ITEM_CATEGORY_FOOD,      180, $00, $00
 
 .turnip:
 DB      ITEM_CATEGORY_FOOD,        2, $00, $00
@@ -630,10 +630,10 @@ DB      ITEM_CATEGORY_FOOD,        2, $00, $00
 DB      ITEM_CATEGORY_FOOD,        6, $00, $00
 
 .broth:
-DB      ITEM_CATEGORY_FOOD,       80, $00, $00
+DB      ITEM_CATEGORY_FOOD,       90, $00, $00
 
 .soup:
-DB      ITEM_CATEGORY_FOOD,      110, $00, $00
+DB      ITEM_CATEGORY_FOOD,      120, $00, $00
 
 .stew:
 DB      ITEM_CATEGORY_FOOD,      $00, $00, $00
