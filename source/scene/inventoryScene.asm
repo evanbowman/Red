@@ -57,12 +57,8 @@ InventorySceneEnter:
 
 
 ;;; ----------------------------------------------------------------------------
-
-InventorySceneUpdate:
-        ldh     a, [hvar_joypad_current]
-        and     PADF_START | PADF_B
-        jr      Z, .idle
-
+	
+InventorySceneExit:
         ld      a, 255
         ld      [var_scene_counter], a
 
@@ -88,6 +84,17 @@ InventorySceneUpdate:
 
         ld      de, VoidUpdateFn
         call    SceneSetUpdateFn
+        ret
+	
+
+;;; ----------------------------------------------------------------------------
+
+InventorySceneUpdate:
+        ldh     a, [hvar_joypad_current]
+        and     PADF_START | PADF_B
+        jr      Z, .idle
+
+        call    InventorySceneExit
 
         ret
 

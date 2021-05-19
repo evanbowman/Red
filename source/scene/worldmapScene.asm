@@ -59,12 +59,23 @@ WorldmapSceneEnter:
 ;;; ----------------------------------------------------------------------------
 
 WorldmapSceneUpdate:
+        LONG_CALL r1_WorldMapUpdateCursor
+
         ldh     a, [hvar_joypad_current]
         bit     PADB_SELECT, a
         jr      Z, .idle
 
         ld      a, 255
         ld      [var_scene_counter], a
+	
+;;; Clear out whatever objects might be in use by the world map
+        ld      hl, var_oam_back_buffer
+        ld      a, 0
+        ld      bc, OAM_SIZE * OAM_COUNT
+        call    Memset
+	
+
+        call    DrawEntities
 
         call    VBlankIntrWait
 ;;; i.e. Hide all tiles onscreen

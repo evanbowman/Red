@@ -879,11 +879,26 @@ r1_WorldMapShow:
 
         call    r1_WorldMapShowRooms
 
+
+        ;; We're going to display a cursor and stuff using oam, so we want to
+        ;; clear out the objects used by the overworld (i.e. we need to draw all
+        ;; of the entities when exiting the world map).
+        ld      hl, var_oam_back_buffer
+        ld      a, 0
+        ld      bc, OAM_SIZE * OAM_COUNT
+        call    Memset
+
+
         call    VBlankIntrWait
         ld      b, r1_WorldMapPalettesEnd - r1_WorldMapPalettes
         ld      hl, r1_WorldMapPalettes
         call    LoadBackgroundColors
+	;; We zeroed out the oam back buffer, now we want to copy it to vram.
+        ld      a, HIGH(var_oam_back_buffer)
+        call    hOAMDMA
 
+
+        ;; Set a few specific map tiles with custom graphics.
         ld      hl, $9E12
         ld      a, $09
         ld      [hl], a
@@ -896,10 +911,64 @@ r1_WorldMapShow:
         ld      a, $29
         ld      [hl], a
 
+
+        ;; now that we're done drawing the map, pop up the window so that it
+        ;; fills the whole screen.
         ld      a, 0
         ld      [rWY], a
 
+
+        ld      b, r1_WorldMapPalettesEnd - r1_WorldMapPalettes
+        ld      hl, r1_WorldMapPalettes
+        call    LoadObjectColors
+
         ret
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldMapUpdateCursor:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_UP, a
+        call    NZ, r1_WorldMapMoveCursorUp
+
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_DOWN, a
+        call    NZ, r1_WorldMapMoveCursorDown
+
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_LEFT, a
+        call    NZ, r1_WorldMapMoveCursorLeft
+
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_RIGHT, a
+        call    NZ, r1_WorldMapMoveCursorRight
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+	
+r1_WorldMapInitCursor:
+        ret
+
+
+r1_WorldMapMoveCursorUp:
+        call    r1_WorldMapInitCursor
+        ret
+
+
+r1_WorldMapMoveCursorDown:
+        call    r1_WorldMapInitCursor
+        ret
+	
+
+r1_WorldMapMoveCursorLeft:
+        call    r1_WorldMapInitCursor
+        ret	
+
+	
+r1_WorldMapMoveCursorRight:
+        call    r1_WorldMapInitCursor
+        ret	
 
 
 ;;; ---------------------------------------------------------------------------

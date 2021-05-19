@@ -674,6 +674,8 @@ r8_InventoryUseItem:
         ld      b, a
         call    InventoryGetItem
 
+        ld      d, b            ; Store item id in d
+
         ld      c, b
 	call    r8_GetItemDesc
 
@@ -682,10 +684,7 @@ r8_InventoryUseItem:
         jr      Z, .useEquipmentItem
         cp      ITEM_CATEGORY_FOOD
         jr      Z, .useFoodItem
-
-.useMiscItem:
-        ;; TODO...
-        ret
+	jr      .useMiscItem
 
 .useFoodItem:
         inc     hl
@@ -706,7 +705,22 @@ r8_InventoryUseItem:
         ret
 
 .useEquipmentItem:
-        ;; TODO...
+        ;; TODO... probably just equip the item...
+        ret
+
+.useMiscItem:
+        ;; item id in d. Now, for misc items, we want to perform some specific operation
+        ;; based on which item we have
+        ld      a, d
+        cp      ITEM_FIREWOOD
+        jr      Z, .useFirewoodItem
+
+        ret
+
+.useFirewoodItem:
+
+        ld      de, ConstructBonfireSceneEnter
+        call    SceneSetUpdateFn
         ret
 
 

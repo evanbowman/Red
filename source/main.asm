@@ -374,9 +374,6 @@ CreateWorld:
         ld      b, ITEM_DAGGER
         call    InventoryAddItem
 
-	ld      b, ITEM_BUNDLE
-        call    InventoryAddItem
-
         ret
 
 
@@ -465,6 +462,7 @@ MapSpriteBlock:
         INCLUDE "introCreditsScene.asm"
         INCLUDE "roomTransitionScene.asm"
         INCLUDE "worldmapScene.asm"
+        INCLUDE "constructBonfireScene.asm"
         INCLUDE "messageBus.asm"
         INCLUDE "slabTable.asm"
         INCLUDE "utility.asm"
