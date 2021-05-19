@@ -1040,8 +1040,9 @@ r9_PlayerDepleteStamina:
 
 
 r9_PlayerWalkDepleteStamina:
+        ;; TODO: Change the stamina depletion based on difficulty?
 	ld      b, 0
-        ld      c, 6
+        ld      c, 3
         call    r9_PlayerDepleteStamina
         ret
 
