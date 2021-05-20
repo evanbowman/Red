@@ -46,6 +46,15 @@
 WorldmapSceneEnter:
         ld      a, 0
         ld      [var_scene_counter], a
+        ld      [var_world_map_cursor_visible], a
+        ld      [var_world_map_cursor_tx], a
+        ld      [var_world_map_cursor_ty], a
+	
+        ld      a, [var_room_x]
+        ld      [var_world_map_cursor_x], a
+        ld      a, [var_room_y]
+        ld      [var_world_map_cursor_y], a
+
 
 	ld      de, VoidVBlankFn
         call    SceneSetUpdateFn
@@ -95,6 +104,28 @@ WorldmapSceneUpdate:
         call    SceneSetUpdateFn
 
 .idle:
+        ret
+	
+
+;;; ----------------------------------------------------------------------------
+	
+WorldMapSceneUpdateCursorRight:
+	LONG_CALL r1_WorldMapSceneUpdateCursorRightImpl
+        ret
+	
+
+WorldMapSceneUpdateCursorLeft:
+	LONG_CALL r1_WorldMapSceneUpdateCursorLeftImpl
+        ret
+
+
+WorldMapSceneUpdateCursorDown:
+	LONG_CALL r1_WorldMapSceneUpdateCursorDownImpl
+        ret
+
+	
+WorldMapSceneUpdateCursorUp:
+	LONG_CALL r1_WorldMapSceneUpdateCursorUpImpl
         ret
 
 

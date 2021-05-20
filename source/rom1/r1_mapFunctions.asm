@@ -838,7 +838,7 @@ r1_WorldMapInitBorder:
 
         ld      hl, $9c00       ; \
         ld      a, 0            ; | Zero out attribs for top row
-        ld      bc, 16          ; |
+        ld      bc, 20          ; |
         call    Memset          ; /
 
 
@@ -975,22 +975,63 @@ r1_WorldMapUpdateCursor:
 
 ;;; ----------------------------------------------------------------------------
 
-r1_WorldMapInitCursor:
+r1_WorldMapCursorRealX:
+        ld      a, [var_world_map_cursor_x]
+        sla     a               ; \
+        sla     a               ; | x * 8
+        sla     a               ; /
+        add     12
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldMapCursorRealY:
+        ld      a, [var_world_map_cursor_y]
+        sla     a
+        sla     a
+        sla     a
+        add     20
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldMapSetCursor:
         ld      l, 0
         call    OamLoad
-        ld      a, 20
+
+        call    r1_WorldMapCursorRealY
+        ld      b, a
+        ld      a, [var_world_map_cursor_ty]
+        add     b
         ld      [hl+], a        ; y
-        ld      a, 12
+
+        call    r1_WorldMapCursorRealX
+        ld      b, a
+        ld      a, [var_world_map_cursor_tx]
+        add     b
         ld      [hl+], a        ; x
+
         ld      a, 0
         ld      [hl+], a        ; tile
         ld      a, $08
         ld      [hl+], a        ; attr
+	
 
-        ld      a, 20
+        call    r1_WorldMapCursorRealY
+        ld      b, a
+        ld      a, [var_world_map_cursor_ty]
+        add     b
         ld      [hl+], a        ; y
-        ld      a, 20
+
+        call    r1_WorldMapCursorRealX
+        ld      b, a
+        ld      a, [var_world_map_cursor_tx]
+        add     b
+        add     8               ; +8 for the second 8x16 cursor object
         ld      [hl+], a        ; x
+
         ld      a, 2
         ld      [hl+], a        ; tile
         ld      a, $08
@@ -1002,28 +1043,194 @@ r1_WorldMapInitCursor:
 ;;; ----------------------------------------------------------------------------
 
 r1_WorldMapMoveCursorUp:
-        call    r1_WorldMapInitCursor
+        ld      a, [var_world_map_cursor_visible]
+        or      a
+        jr      Z, .skip
+
+        ld      a, [var_world_map_cursor_y]
+        cp      0
+        jr      Z, .skip
+
+        dec     a
+        ld      [var_world_map_cursor_y], a
+	
+        ld      a, 8
+        ld      [var_world_map_cursor_ty], a
+	
+        ld      de, WorldMapSceneUpdateCursorUp
+        call    SceneSetUpdateFn
+
+.skip:
+        ld      a, 1
+        ld      [var_world_map_cursor_visible], a
+        call    r1_WorldMapSetCursor
+        ret
+	
+
+r1_WorldMapSceneUpdateCursorUpImpl:
+        ld      a, [var_world_map_cursor_ty]
+        cp      0
+        jr      Z, .done
+	
+        dec     a
+        ld      [var_world_map_cursor_ty], a
+        
+        call    r1_WorldMapSetCursor
+        ret
+
+.done:
+        call    r1_WorldMapSetCursor
+
+	ld      de, WorldmapSceneUpdate
+        call    SceneSetUpdateFn
+
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 r1_WorldMapMoveCursorDown:
-        call    r1_WorldMapInitCursor
+        ld      a, [var_world_map_cursor_visible]
+        or      a
+        jr      Z, .skip
+	
+        ld      a, [var_world_map_cursor_y]
+        cp      15
+        jr      Z, .skip
+
+        ld      de, WorldMapSceneUpdateCursorDown
+        call    SceneSetUpdateFn
+
+.skip:
+        ld      a, 1
+        ld      [var_world_map_cursor_visible], a
+        call    r1_WorldMapSetCursor
+        ret
+	
+	
+
+r1_WorldMapSceneUpdateCursorDownImpl:
+        ld      a, [var_world_map_cursor_ty]
+        cp      8
+        jr      Z, .done
+	
+        inc     a
+        ld      [var_world_map_cursor_ty], a
+        
+        call    r1_WorldMapSetCursor
+        ret
+
+.done:
+        ld      a, [var_world_map_cursor_y]
+        inc     a
+        ld      [var_world_map_cursor_y], a
+	
+        ld      a, 0
+        ld      [var_world_map_cursor_ty], a
+
+        call    r1_WorldMapSetCursor
+
+	ld      de, WorldmapSceneUpdate
+        call    SceneSetUpdateFn
+
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 r1_WorldMapMoveCursorLeft:
-        call    r1_WorldMapInitCursor
+        ld      a, [var_world_map_cursor_visible]
+        or      a
+        jr      Z, .skip
+	
+        ld      a, [var_world_map_cursor_x]
+        cp      0
+        jr      Z, .skip
+
+        ld      a, [var_world_map_cursor_x]
+        dec     a
+        ld      [var_world_map_cursor_x], a
+	
+        ld      a, 8
+        ld      [var_world_map_cursor_tx], a
+	
+        ld      de, WorldMapSceneUpdateCursorLeft
+        call    SceneSetUpdateFn
+
+.skip:
+        ld      a, 1
+        ld      [var_world_map_cursor_visible], a
+        call    r1_WorldMapSetCursor
         ret
+	
+
+r1_WorldMapSceneUpdateCursorLeftImpl:
+        ld      a, [var_world_map_cursor_tx]
+        cp      0
+        jr      Z, .done
+	
+        dec     a
+        ld      [var_world_map_cursor_tx], a
+        
+        call    r1_WorldMapSetCursor
+        ret
+
+.done:
+        call    r1_WorldMapSetCursor
+
+	ld      de, WorldmapSceneUpdate
+        call    SceneSetUpdateFn
+
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------
 
 r1_WorldMapMoveCursorRight:
-        call    r1_WorldMapInitCursor
+        ld      a, [var_world_map_cursor_visible]
+        or      a
+        jr      Z, .skip
+	
+        ld      a, [var_world_map_cursor_x]
+        cp      17
+        jr      Z, .skip
+
+        ld      de, WorldMapSceneUpdateCursorRight
+        call    SceneSetUpdateFn
+
+.skip:
+        ld      a, 1
+        ld      [var_world_map_cursor_visible], a
+        call    r1_WorldMapSetCursor
+        ret
+	
+	
+
+r1_WorldMapSceneUpdateCursorRightImpl:
+        ld      a, [var_world_map_cursor_tx]
+        cp      8
+        jr      Z, .done
+	
+        inc     a
+        ld      [var_world_map_cursor_tx], a
+        
+        call    r1_WorldMapSetCursor
+        ret
+
+.done:
+        ld      a, [var_world_map_cursor_x]
+        inc     a
+        ld      [var_world_map_cursor_x], a
+	
+        ld      a, 0
+        ld      [var_world_map_cursor_tx], a
+
+        call    r1_WorldMapSetCursor
+
+	ld      de, WorldmapSceneUpdate
+        call    SceneSetUpdateFn
+
         ret
 
 

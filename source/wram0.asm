@@ -266,10 +266,16 @@ var_overlay_y_offset:         DS      1
 var_scene_update_fn:    DS      2
 var_scene_vblank_fn:    DS      2
 
+	
+var_scene_counter:      DS      1
 
 var_scene_union:
         UNION
-var_scene_counter:      DS      1
+var_world_map_cursor_x:       DS      1
+var_world_map_cursor_y:       DS      1
+var_world_map_cursor_tx:      DS      1
+var_world_map_cursor_ty:      DS      1
+var_world_map_cursor_visible: DS      1
         NEXTU
 ;;; Room loading vars
 var_room_load_counter:        DS      1
