@@ -49,7 +49,7 @@ WorldmapSceneEnter:
         ld      [var_world_map_cursor_visible], a
         ld      [var_world_map_cursor_tx], a
         ld      [var_world_map_cursor_ty], a
-	
+
         ld      a, [var_room_x]
         ld      [var_world_map_cursor_x], a
         ld      a, [var_room_y]
@@ -76,13 +76,13 @@ WorldmapSceneUpdate:
 
         ld      a, 255
         ld      [var_scene_counter], a
-	
+
 ;;; Clear out whatever objects might be in use by the world map
         ld      hl, var_oam_back_buffer
         ld      a, 0
         ld      bc, OAM_SIZE * OAM_COUNT
         call    Memset
-	
+
 
         call    DrawEntities
 
@@ -97,6 +97,13 @@ WorldmapSceneUpdate:
 
         call    OverlayRepaintRow2
 
+        VIDEO_BANK 1
+        ld      hl, $9e20
+        ld      a, $00
+        ld      bc, 20
+        call    Memset
+        VIDEO_BANK 0
+
 	ld      de, WorldmapSceneFadeOutVBlank
         call    SceneSetVBlankFn
 
@@ -105,14 +112,14 @@ WorldmapSceneUpdate:
 
 .idle:
         ret
-	
+
 
 ;;; ----------------------------------------------------------------------------
-	
+
 WorldMapSceneUpdateCursorRight:
 	LONG_CALL r1_WorldMapSceneUpdateCursorRightImpl
         ret
-	
+
 
 WorldMapSceneUpdateCursorLeft:
 	LONG_CALL r1_WorldMapSceneUpdateCursorLeftImpl
@@ -123,7 +130,7 @@ WorldMapSceneUpdateCursorDown:
 	LONG_CALL r1_WorldMapSceneUpdateCursorDownImpl
         ret
 
-	
+
 WorldMapSceneUpdateCursorUp:
 	LONG_CALL r1_WorldMapSceneUpdateCursorUpImpl
         ret
@@ -184,3 +191,13 @@ WorldmapSceneFadeOutVBlank:
         call    FadeToTan
 
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+WorldMapSceneDescribeRoomVBlank:
+	LONG_CALL r1_WorldMapDescribeRoomVBlankImpl
+        ret
+
+
+;;; ----------------------------------------------------------------------------

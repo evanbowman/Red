@@ -276,6 +276,7 @@ var_world_map_cursor_y:       DS      1
 var_world_map_cursor_tx:      DS      1
 var_world_map_cursor_ty:      DS      1
 var_world_map_cursor_visible: DS      1
+var_world_map_cursor_moving:  DS      1
         NEXTU
 ;;; Room loading vars
 var_room_load_counter:        DS      1

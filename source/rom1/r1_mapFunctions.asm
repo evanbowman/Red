@@ -664,7 +664,14 @@ r1_MapShowColumn:
 r1_WorldMapPalettes::
 DB $1B,$4B, $57,$32, $ed,$10, $02,$2c,
 DB $1B,$4B, $57,$32, $1f,$21, $02,$2c,
+DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
+DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
+DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
+DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
+DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
+DB $00,$00, $ff,$7f, $00,$00, $00,$00,
 r1_WorldMapPalettesEnd::
+
 
 r1_WorldMapObjectPalettes::
 DB $1B,$4B, $ff,$7f, $26,$65, $02,$2c,
@@ -955,6 +962,12 @@ r1_WorldMapShow:
 ;;; ----------------------------------------------------------------------------
 
 r1_WorldMapUpdateCursor:
+        ld      a, [var_world_map_cursor_moving]
+        or      a
+        ld      a, 0
+        ld      [var_world_map_cursor_moving], a
+        jr      NZ, .moving
+
         ldh     a, [hvar_joypad_current]
         bit     PADB_UP, a
         call    NZ, r1_WorldMapMoveCursorUp
@@ -970,6 +983,111 @@ r1_WorldMapUpdateCursor:
         ldh     a, [hvar_joypad_current]
         bit     PADB_RIGHT, a
         call    NZ, r1_WorldMapMoveCursorRight
+        ret
+
+.moving:
+        ldh     a, [hvar_joypad_raw]
+        bit     PADB_UP, a
+        call    NZ, r1_WorldMapMoveCursorUp
+
+        ldh     a, [hvar_joypad_raw]
+        bit     PADB_DOWN, a
+        call    NZ, r1_WorldMapMoveCursorDown
+
+        ldh     a, [hvar_joypad_raw]
+        bit     PADB_LEFT, a
+        call    NZ, r1_WorldMapMoveCursorLeft
+
+        ldh     a, [hvar_joypad_raw]
+        bit     PADB_RIGHT, a
+        call    NZ, r1_WorldMapMoveCursorRight
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldMapDescribeRoom:
+        ld      de, WorldMapSceneDescribeRoomVBlank
+        call    SceneSetVBlankFn
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldMapDescribeRoomVBlankImpl:
+        ld      de, VoidVBlankFn
+        call    SceneSetVBlankFn
+
+        VIDEO_BANK 1
+        ld      hl, $9e20
+        ld      a, $87
+        ld      bc, 20
+        call    Memset
+        VIDEO_BANK 0
+
+        ld      hl, $9e20
+        ld      a, 0
+        ld      bc, 20
+        call    Memset
+
+        ld      a, [var_world_map_cursor_x]
+        ld      b, a
+        ld      a, [var_world_map_cursor_y]
+        ld      c, a
+        call    r1_LoadRoom     ; room pointer in hl
+
+        RAM_BANK 1
+
+        inc     hl              ; \
+        inc     hl              ; | Skip over room header to get to object array
+        inc     hl              ; /
+
+        ld      bc, $9e20
+
+        ld      d, 0
+.loop:
+        ld      a, [hl+]
+        ;; TODO: check object type, print tile...
+
+        cp      0
+        jr      Z, .skip
+
+        add     $29             ; Index of first obj icon in vram
+        ld      [bc], a
+        inc     bc
+
+.skip:
+        inc     hl              ; skip over xy coord in entity desc
+
+        inc     d
+        ld      a, 5
+        cp      d
+        jr      NZ, .loop
+
+
+	;; Now, we want to render collectible items...
+
+        push    bc
+        ld      a, [var_world_map_cursor_x]
+        ld      b, a
+        ld      a, [var_world_map_cursor_y]
+        ld      c, a
+        call    __CollectiblesLoad ; pointer to collectibles in hl...
+        pop     bc
+
+
+        ld      d, 0
+.show_collectibles_loop:
+        inc     hl
+        ld      a, [hl+]
+;;; ...
+        inc     d
+        ld      a, 7
+        cp      d
+        jr      NZ, .show_collectibles_loop
+
+.here:
         ret
 
 
@@ -1017,7 +1135,7 @@ r1_WorldMapSetCursor:
         ld      [hl+], a        ; tile
         ld      a, $08
         ld      [hl+], a        ; attr
-	
+
 
         call    r1_WorldMapCursorRealY
         ld      b, a
@@ -1053,10 +1171,10 @@ r1_WorldMapMoveCursorUp:
 
         dec     a
         ld      [var_world_map_cursor_y], a
-	
+
         ld      a, 8
         ld      [var_world_map_cursor_ty], a
-	
+
         ld      de, WorldMapSceneUpdateCursorUp
         call    SceneSetUpdateFn
 
@@ -1064,27 +1182,58 @@ r1_WorldMapMoveCursorUp:
         ld      a, 1
         ld      [var_world_map_cursor_visible], a
         call    r1_WorldMapSetCursor
+
+        call    r1_WorldMapDescribeRoom
+
         ret
-	
+
 
 r1_WorldMapSceneUpdateCursorUpImpl:
+	ld      a, [var_world_map_cursor_moving]
+	ld      b, a
+
         ld      a, [var_world_map_cursor_ty]
         cp      0
         jr      Z, .done
-	
+
         dec     a
+	sub     b
         ld      [var_world_map_cursor_ty], a
-        
+
         call    r1_WorldMapSetCursor
         ret
 
 .done:
         call    r1_WorldMapSetCursor
 
+
+        ld      a, [var_world_map_cursor_y]
+        or      a
+        jr      Z, .skip
+
+        ldh     a, [hvar_joypad_raw]
+        bit     PADB_UP, a
+        jr      NZ, .continue
+
+.skip:
 	ld      de, WorldmapSceneUpdate
         call    SceneSetUpdateFn
+	call    r1_WorldMapDescribeRoom
 
         ret
+
+.continue:
+        ld      a, 1
+        ld      [var_world_map_cursor_moving], a
+
+        ld      a, [var_world_map_cursor_y]
+        dec     a
+        ld      [var_world_map_cursor_y], a
+
+        ld      a, 8
+        ld      [var_world_map_cursor_ty], a
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -1093,7 +1242,7 @@ r1_WorldMapMoveCursorDown:
         ld      a, [var_world_map_cursor_visible]
         or      a
         jr      Z, .skip
-	
+
         ld      a, [var_world_map_cursor_y]
         cp      15
         jr      Z, .skip
@@ -1105,18 +1254,24 @@ r1_WorldMapMoveCursorDown:
         ld      a, 1
         ld      [var_world_map_cursor_visible], a
         call    r1_WorldMapSetCursor
+
+        call    r1_WorldMapDescribeRoom
         ret
-	
-	
+
+
 
 r1_WorldMapSceneUpdateCursorDownImpl:
+	ld      a, [var_world_map_cursor_moving]
+	ld      b, a
+
         ld      a, [var_world_map_cursor_ty]
         cp      8
         jr      Z, .done
-	
+
         inc     a
+        add     b
         ld      [var_world_map_cursor_ty], a
-        
+
         call    r1_WorldMapSetCursor
         ret
 
@@ -1124,15 +1279,28 @@ r1_WorldMapSceneUpdateCursorDownImpl:
         ld      a, [var_world_map_cursor_y]
         inc     a
         ld      [var_world_map_cursor_y], a
-	
+
         ld      a, 0
         ld      [var_world_map_cursor_ty], a
 
         call    r1_WorldMapSetCursor
 
+        ld      a, [var_world_map_cursor_y]
+        cp      15
+        jr      Z, .skip
+
+        ldh     a, [hvar_joypad_raw]
+        bit     PADB_DOWN, a
+        jr      NZ, .continue
+.skip:
+
 	ld      de, WorldmapSceneUpdate
         call    SceneSetUpdateFn
+	call    r1_WorldMapDescribeRoom
 
+.continue:
+        ld      a, 1
+        ld      [var_world_map_cursor_moving], a
         ret
 
 
@@ -1142,7 +1310,7 @@ r1_WorldMapMoveCursorLeft:
         ld      a, [var_world_map_cursor_visible]
         or      a
         jr      Z, .skip
-	
+
         ld      a, [var_world_map_cursor_x]
         cp      0
         jr      Z, .skip
@@ -1150,10 +1318,10 @@ r1_WorldMapMoveCursorLeft:
         ld      a, [var_world_map_cursor_x]
         dec     a
         ld      [var_world_map_cursor_x], a
-	
+
         ld      a, 8
         ld      [var_world_map_cursor_tx], a
-	
+
         ld      de, WorldMapSceneUpdateCursorLeft
         call    SceneSetUpdateFn
 
@@ -1161,28 +1329,55 @@ r1_WorldMapMoveCursorLeft:
         ld      a, 1
         ld      [var_world_map_cursor_visible], a
         call    r1_WorldMapSetCursor
+
+        call    r1_WorldMapDescribeRoom
+
         ret
-	
+
 
 r1_WorldMapSceneUpdateCursorLeftImpl:
+	ld      a, [var_world_map_cursor_moving]
+	ld      b, a
+
         ld      a, [var_world_map_cursor_tx]
         cp      0
         jr      Z, .done
-	
+
         dec     a
+        sub     b
         ld      [var_world_map_cursor_tx], a
-        
+
         call    r1_WorldMapSetCursor
         ret
 
 .done:
         call    r1_WorldMapSetCursor
 
+        ld      a, [var_world_map_cursor_x]
+        or      a
+        jr      Z, .skip
+
+        ldh     a, [hvar_joypad_raw]
+        bit     PADB_LEFT, a
+        jr      NZ, .continue
+.skip:
+
 	ld      de, WorldmapSceneUpdate
         call    SceneSetUpdateFn
+	call    r1_WorldMapDescribeRoom
 
         ret
+.continue:
+        ld      a, 1
+        ld      [var_world_map_cursor_moving], a
 
+        ld      a, [var_world_map_cursor_x]
+        dec     a
+        ld      [var_world_map_cursor_x], a
+
+        ld      a, 8
+        ld      [var_world_map_cursor_tx], a
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -1191,7 +1386,7 @@ r1_WorldMapMoveCursorRight:
         ld      a, [var_world_map_cursor_visible]
         or      a
         jr      Z, .skip
-	
+
         ld      a, [var_world_map_cursor_x]
         cp      17
         jr      Z, .skip
@@ -1203,18 +1398,25 @@ r1_WorldMapMoveCursorRight:
         ld      a, 1
         ld      [var_world_map_cursor_visible], a
         call    r1_WorldMapSetCursor
+
+        call    r1_WorldMapDescribeRoom
+
         ret
-	
-	
+
+
 
 r1_WorldMapSceneUpdateCursorRightImpl:
+	ld      a, [var_world_map_cursor_moving]
+	ld      b, a
+
         ld      a, [var_world_map_cursor_tx]
         cp      8
         jr      Z, .done
-	
+
         inc     a
+        add     b
         ld      [var_world_map_cursor_tx], a
-        
+
         call    r1_WorldMapSetCursor
         ret
 
@@ -1222,14 +1424,30 @@ r1_WorldMapSceneUpdateCursorRightImpl:
         ld      a, [var_world_map_cursor_x]
         inc     a
         ld      [var_world_map_cursor_x], a
-	
+
         ld      a, 0
         ld      [var_world_map_cursor_tx], a
 
         call    r1_WorldMapSetCursor
 
+        ld      a, [var_world_map_cursor_x]
+        cp      17
+        jr      Z, .skip
+
+        ldh     a, [hvar_joypad_raw]
+        bit     PADB_RIGHT, a
+        jr      NZ, .continue
+.skip:
+
 	ld      de, WorldmapSceneUpdate
         call    SceneSetUpdateFn
+	call    r1_WorldMapDescribeRoom
+
+        ret
+
+.continue:
+        ld      a, 1
+        ld      [var_world_map_cursor_moving], a
 
         ret
 
@@ -1707,4 +1925,9 @@ DB $FF,$FF,$81,$81,$81,$81,$81,$99
 DB $81,$99,$81,$81,$81,$81,$FF,$FF
 DB $7E,$7E,$C3,$C3,$03,$03,$0E,$0E
 DB $18,$18,$00,$00,$18,$18,$00,$00
+.obj_icons::
+DB $FF,$FF,$FF,$EF,$FF,$E3,$FF,$F0
+DB $FF,$A0,$FF,$E4,$FF,$CD,$FF,$E3
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
 r1_WorldMapTilesEnd::
