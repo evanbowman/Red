@@ -374,9 +374,6 @@ CreateWorld:
         ld      b, ITEM_DAGGER
         call    InventoryAddItem
 
-        ld      b, ITEM_FIREWOOD
-        call    InventoryAddItem
-
         ret
 
 
