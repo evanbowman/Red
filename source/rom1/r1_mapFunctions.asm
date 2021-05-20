@@ -666,6 +666,10 @@ DB $1B,$4B, $57,$32, $ed,$10, $02,$2c,
 DB $1B,$4B, $57,$32, $1f,$21, $02,$2c,
 r1_WorldMapPalettesEnd::
 
+r1_WorldMapObjectPalettes::
+DB $1B,$4B, $ff,$7f, $26,$65, $02,$2c,
+r1_WorldMapObjectPalettesEnd::
+
 
 r1_WorldMapTemplateTop::
 DB $00, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05
@@ -690,6 +694,17 @@ DB $03, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04, $05, $04
 DB $05, $04, $05, $04, $02
 r1_WorldMapTemplateBottomEnd::
 
+
+r1_WorldMapObjectTextures::
+DB $FE,$00,$82,$7C,$BE,$40,$A0,$40
+DB $A0,$40,$A0,$40,$E0,$00,$00,$00
+DB $00,$00,$E0,$00,$A0,$40,$A0,$40
+DB $A0,$40,$BE,$40,$82,$7C,$FE,$00
+DB $7F,$00,$41,$3E,$7D,$02,$05,$02
+DB $05,$02,$05,$02,$07,$00,$00,$00
+DB $00,$00,$07,$00,$05,$02,$05,$02
+DB $05,$02,$7D,$02,$41,$3E,$7F,$00
+r1_WorldMapObjectTexturesEnd::
 
 
 
@@ -763,7 +778,7 @@ r1_WorldMapShowRooms:
 
         ld      a, 1
         ld	[rVBK], a
-        ld      a, $81                  ; palette 1, show over objects
+        ld      a, $01                  ; palette 1, show over objects
         ld      [de],  a
         ld      a, 0
         ld      [rVBK], a
@@ -804,15 +819,14 @@ r1_WorldMapInitBorder:
         ld      a, 1
         ld	[rVBK], a
 
-
         ld      hl, $9c20
 .loop:
-        ld      [hl], $80
+        ld      [hl], $00
 
         ld      bc, ($33 - $20)
         add     hl, bc
 
-        ld      [hl], $80
+        ld      [hl], $00
         ld      bc, ($40 - $33)
         add     hl, bc
 
@@ -821,6 +835,13 @@ r1_WorldMapInitBorder:
         cp      d
         jr      NZ, .loop
 
+
+        ld      hl, $9c00       ; \
+        ld      a, 0            ; | Zero out attribs for top row
+        ld      bc, 16          ; |
+        call    Memset          ; /
+
+
         ld      a, 0
         ld      [rVBK], a
 
@@ -828,6 +849,13 @@ r1_WorldMapInitBorder:
 
 
 r1_WorldMapShow:
+        VIDEO_BANK 1
+        ld      hl, r1_WorldMapObjectTextures
+        ld      bc, r1_WorldMapObjectTexturesEnd - r1_WorldMapObjectTextures
+        ld      de, $8000
+        call    VramSafeMemcpy
+        VIDEO_BANK 0
+
         ld      hl, r1_WorldMapTiles
         ld      bc, r1_WorldMapTilesEnd - r1_WorldMapTiles
         ld      de, $9000
@@ -918,8 +946,8 @@ r1_WorldMapShow:
         ld      [rWY], a
 
 
-        ld      b, r1_WorldMapPalettesEnd - r1_WorldMapPalettes
-        ld      hl, r1_WorldMapPalettes
+        ld      b, r1_WorldMapObjectPalettesEnd - r1_WorldMapObjectPalettes
+        ld      hl, r1_WorldMapObjectPalettes
         call    LoadObjectColors
 
         ret
@@ -946,29 +974,57 @@ r1_WorldMapUpdateCursor:
 
 
 ;;; ----------------------------------------------------------------------------
-	
+
 r1_WorldMapInitCursor:
+        ld      l, 0
+        call    OamLoad
+        ld      a, 20
+        ld      [hl+], a        ; y
+        ld      a, 12
+        ld      [hl+], a        ; x
+        ld      a, 0
+        ld      [hl+], a        ; tile
+        ld      a, $08
+        ld      [hl+], a        ; attr
+
+        ld      a, 20
+        ld      [hl+], a        ; y
+        ld      a, 20
+        ld      [hl+], a        ; x
+        ld      a, 2
+        ld      [hl+], a        ; tile
+        ld      a, $08
+        ld      [hl+], a        ; attr
+
         ret
 
+
+;;; ----------------------------------------------------------------------------
 
 r1_WorldMapMoveCursorUp:
         call    r1_WorldMapInitCursor
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
 r1_WorldMapMoveCursorDown:
         call    r1_WorldMapInitCursor
         ret
-	
+
+
+;;; ----------------------------------------------------------------------------
 
 r1_WorldMapMoveCursorLeft:
         call    r1_WorldMapInitCursor
-        ret	
+        ret
 
-	
+
+;;; ----------------------------------------------------------------------------
+
 r1_WorldMapMoveCursorRight:
         call    r1_WorldMapInitCursor
-        ret	
+        ret
 
 
 ;;; ---------------------------------------------------------------------------
