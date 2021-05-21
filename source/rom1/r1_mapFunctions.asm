@@ -1027,7 +1027,7 @@ r1_WorldMapDescribeRoomVBlankImpl:
         VIDEO_BANK 0
 
         ld      hl, $9e20
-        ld      a, 0
+        ld      a, $37
         ld      bc, 20
         call    Memset
 
@@ -1039,8 +1039,11 @@ r1_WorldMapDescribeRoomVBlankImpl:
 
         RAM_BANK 1
 
-        inc     hl              ; \
-        inc     hl              ; | Skip over room header to get to object array
+        ld      a, [hl+]        ; \ Don't show list of items in room if
+        and     ROOM_VISITED    ; | room not yet visited.
+        ret     Z               ; /
+
+        inc     hl              ; \ Skip over the rest of the room header
         inc     hl              ; /
 
         ld      bc, $9e20
@@ -1081,7 +1084,16 @@ r1_WorldMapDescribeRoomVBlankImpl:
 .show_collectibles_loop:
         inc     hl
         ld      a, [hl+]
-;;; ...
+
+        cp      0
+        jr      Z, .skip2
+
+	add     $29
+        ld      [bc], a
+        inc     bc
+
+.skip2:
+
         inc     d
         ld      a, 7
         cp      d
@@ -1223,6 +1235,8 @@ r1_WorldMapSceneUpdateCursorUpImpl:
         ret
 
 .continue:
+        call    r1_WorldMapDescribeRoom
+
         ld      a, 1
         ld      [var_world_map_cursor_moving], a
 
@@ -1299,6 +1313,8 @@ r1_WorldMapSceneUpdateCursorDownImpl:
 	call    r1_WorldMapDescribeRoom
 
 .continue:
+        call    r1_WorldMapDescribeRoom
+
         ld      a, 1
         ld      [var_world_map_cursor_moving], a
         ret
@@ -1368,6 +1384,8 @@ r1_WorldMapSceneUpdateCursorLeftImpl:
 
         ret
 .continue:
+        call    r1_WorldMapDescribeRoom
+
         ld      a, 1
         ld      [var_world_map_cursor_moving], a
 
@@ -1446,6 +1464,8 @@ r1_WorldMapSceneUpdateCursorRightImpl:
         ret
 
 .continue:
+        call    r1_WorldMapDescribeRoom
+
         ld      a, 1
         ld      [var_world_map_cursor_moving], a
 
@@ -1930,4 +1950,32 @@ DB $FF,$FF,$FF,$EF,$FF,$E3,$FF,$F0
 DB $FF,$A0,$FF,$E4,$FF,$CD,$FF,$E3
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$9C,$FF,$C9,$FF,$F7
+DB $FF,$F7,$FF,$B7,$FF,$D7,$FF,$D5
+DB $FF,$FD,$FF,$F9,$FF,$FB,$FF,$F7
+DB $FF,$F7,$FF,$EF,$FF,$DF,$FF,$DF
 r1_WorldMapTilesEnd::
