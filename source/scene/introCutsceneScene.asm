@@ -82,8 +82,18 @@ IntroCutsceneSceneEnter:
 
 
 IntroCutsceneSceneUpdate:
+	ld      e, 0            ; frame number
+        call    CutsceneWriteFrame
 
-	ld      d, 2            ; number of frames
+	ld      e, 10
+.sleep_frames:
+        dec     e
+        ld      a, e
+        or      a
+        jr      NZ, .sleep_frames
+
+
+	ld      d, 24            ; number of frames
         call    CutscenePlay
 
 

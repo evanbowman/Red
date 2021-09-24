@@ -51,6 +51,8 @@ while True:
                 tc_file.write('${0:0{1}X}, '.format((accum & 0xff00) >> 8, 2))
                 accum += count * 16 # 16 bytes per tile texture
 
+        print("texture bytes used: {}".format(accum))
+
         print("end of gif")
         sys.exit(1)
 
@@ -94,6 +96,8 @@ while True:
             return 0
         elif rgb == (251, 40, 84):
             return 1
+        elif rgb == (8, 4, 23):
+            return 2
         else:
             raise Exception("unexpected color in cutscene frame " + str(rgb))
 
@@ -111,7 +115,7 @@ while True:
                 pixel = map_color(px[xx, yy])
 
                 tile_temp_1 = tile_temp_1 | ((pixel & 0x1) << (7 - count))
-                tile_temp_2 = tile_temp_2 | ((pixel & 0x2) << (7 - count))
+                tile_temp_2 = tile_temp_2 | (((pixel & 0x2) >> 1) << (7 - count))
 
                 count = count + 1
 
@@ -144,6 +148,8 @@ while True:
             for i in range(0, 32 - 20):
                 map_file.write("$00, ")
             map_file.write("\n")
+
+    print(len(unique_tiles))
 
 
     with open(texture_data_file_name, "a") as td_file:
