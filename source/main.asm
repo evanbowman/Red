@@ -264,7 +264,7 @@ Main:
 
 	call    InitRandom              ; TODO: call this later on
 
-        ld      de, OverworldSceneEnter
+        ld      de, IntroCreditsSceneEnter
         call    SceneSetUpdateFn
 
         ld      de, VoidVBlankFn
@@ -340,15 +340,6 @@ Main:
 
 
 CreateWorld:
-        ;; FIXME: this is just for testing purposes. In practice, we would have
-        ;; a title screen, where we'd be running the rng.
-.srand:
-        call    GetRandom
-
-        LONG_CALL r1_ReadKeys
-        bit     PADB_START, b
-        jr      Z, .srand
-
 
         call    VBlankIntrWait
 
@@ -357,9 +348,7 @@ CreateWorld:
 
 	LONG_CALL r1_SetLevelupExp
 
-        RAM_BANK 1
-
-	LONG_CALL r1_WorldGen
+        call    LoadDefaultMap
 
         call    MapLoad2__rom0_only
 
@@ -374,6 +363,26 @@ CreateWorld:
         ld      b, ITEM_DAGGER
         call    InventoryAddItem
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+LoadDefaultMap:
+;;; Sets ROM Bank to ten
+;;; Sets RAM bank to two
+        SET_BANK 10
+        RAM_BANK 1
+        ld      hl, r10_DefaultMap1
+        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
+        ld      de, wram1_var_world_map_info
+        call    Memcpy
+
+        RAM_BANK 2
+        ld      hl, r10_DefaultCollectibles
+        ld      bc, r10_DefaultCollectiblesEnd - r10_DefaultCollectibles
+        ld      de, wram2_var_collectibles
+        call    Memcpy
         ret
 
 
@@ -450,6 +459,7 @@ MapSpriteBlock:
 ;;; I ran into issues where the I see illegal instruction errors when separating
 ;;; my source code into different sections.
         INCLUDE "animation.asm"
+        INCLUDE "cutscene.asm"
         INCLUDE "entity.asm"
         INCLUDE "bonfire.asm"
         INCLUDE "player.asm"
@@ -460,6 +470,7 @@ MapSpriteBlock:
         INCLUDE "overworldScene.asm"
         INCLUDE "inventoryScene.asm"
         INCLUDE "introCreditsScene.asm"
+        INCLUDE "introCutsceneScene.asm"
         INCLUDE "roomTransitionScene.asm"
         INCLUDE "worldmapScene.asm"
         INCLUDE "constructBonfireScene.asm"
@@ -484,6 +495,8 @@ MapSpriteBlock:
         INCLUDE "rom9_code.asm"
         INCLUDE "rom10_map_data.asm"
         INCLUDE "rom11_data.asm"
+        INCLUDE "rom12_intro_cutscene_data.asm"
+        INCLUDE "rom20_intro_cutscene_texture_data.asm"
 
 
 ;;; SECTION START

@@ -6,10 +6,10 @@
         "connections": {
             "right": false,
             "left": false,
-            "down": false,
+            "down": true,
             "up": false
         },
-        "variant": 0,
+        "variant": 1,
         "entities": [
             {
                 "type": 1,
@@ -29,10 +29,10 @@
         "x": 0,
         "y": 1,
         "connections": {
-            "right": false,
+            "right": true,
             "left": false,
             "down": false,
-            "up": false
+            "up": true
         },
         "variant": 0,
         "entities": [

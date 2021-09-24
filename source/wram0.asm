@@ -266,7 +266,7 @@ var_overlay_y_offset:         DS      1
 var_scene_update_fn:    DS      2
 var_scene_vblank_fn:    DS      2
 
-	
+
 var_scene_counter:      DS      1
 
 var_scene_union:
@@ -304,6 +304,13 @@ var_crafting_dependency_set_end:
         NEXTU
         ENDU
 var_scene_union_end:
+
+
+;;; Cutscene control variables
+var_cutscene_tile_offset:       DS      1
+var_cutscene_tile_start_bank:   DS      1
+var_cutscene_tile_current_bank: DS      1
+var_cutscene_map_bank:          DS      1
 
 
 var_water_anim:

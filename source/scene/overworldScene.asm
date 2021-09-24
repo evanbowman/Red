@@ -443,7 +443,7 @@ VBlankCopyWaterTextures:
 
         ld      de, $8D40       ; Address of water tiles in VRAM
         ld      b, 19           ; tiles-to-copy - 1
-        call GDMABlockCopy
+        call    GDMABlockCopy
 
         ret
 

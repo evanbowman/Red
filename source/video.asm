@@ -778,9 +778,6 @@ LoadFont:
 
 ;;; ----------------------------------------------------------------------------
 
-test_string:
-        DB      "Evan Bowman Presents", 0
-
 
 AsciiToGlyph:
 ;;; a - ascii char

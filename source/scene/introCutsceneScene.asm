@@ -37,97 +37,62 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ;;;
 ;;;
-;;;  Intro Credits Scene
+;;;  Intro Cutscene Scene
 ;;;
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-intro_credits_line1_str::
-DB      "Evan Bowman", 0
-
-intro_credits_line2_str::
-DB      "presents", 0
-
-
-intro_credits_bkg_palette::
-DB      $BF,$73, $1A,$20, $00,$04, $1A,$20,
-
-
 
 ;;; ----------------------------------------------------------------------------
 
 
-
-IntroCreditsSceneEnter:
-        call    IntroCutsceneSetup
-
-        call    VBlankIntrWait
-
-        ld      d, 12           ; \ bank containing map data
-        ld      e, 20           ; | bank containing tile textures
-        call    CutsceneInit    ; /
-
-        ld      e, 0                    ; \ frame number
-        call    CutsceneWriteFrame      ; /
-
-
-        call    VBlankIntrWait
-        ld      hl, intro_credits_bkg_palette
-        ld      b, 8
-        call    LoadBackgroundColors
-
-        ld      a, 7
-        ld      [rWX], a
-
+IntroCutsceneSetup:
+        call    LcdOff
+        ld	a, 1
+	ld	[rVBK], a
+        ld      hl, $9C00
+        ld      bc, 576
+        ld      a, $88
+        call    Memset
+        call    LcdOn
         ld      a, 0
-        ld      [var_scene_counter], a
-
-        ld      de, IntroCreditsSceneUpdate
-        call    SceneSetUpdateFn
-
-
-        SET_BANK 7
-
-
-        call    VBlankIntrWait
-
-        ld      b, $88
-        ld      de, $9cc5
-        ld      hl, intro_credits_line1_str
-        call    PutText
-
-        ld      b, $88
-        ld      de, $9d06
-        ld      hl, intro_credits_line2_str
-        call    PutText
-
-        SET_BANK 1
-
+        ld	[rVBK], a
         ret
+
 
 
 ;;; ----------------------------------------------------------------------------
 
-IntroCreditsSceneUpdate:
-        ld      a, [var_scene_counter]
-        inc     a
-        ld      [var_scene_counter], a
-        cp      154
-        jr      Z, .nextScene
-	jr      .done
 
-.nextScene:
-        ;; call    OverworldSceneUpdateView
 
-        ;; ld      de, OverworldSceneEnter
-        ;; call    SceneSetUpdateFn
+IntroCutsceneSceneEnter:
+        call    VBlankIntrWait
 
-	ld      de, IntroCutsceneSceneEnter
+        ld      e, 0            ; frame number
+        call    CutsceneWriteFrame
+
+        ld      de, IntroCutsceneSceneUpdate
         call    SceneSetUpdateFn
 
-.done:
+
+
+;;; ----------------------------------------------------------------------------
+
+
+
+IntroCutsceneSceneUpdate:
+
+	ld      d, 2            ; number of frames
+        call    CutscenePlay
+
+
+        call    OverworldSceneUpdateView
+
+        ld      de, OverworldSceneEnter
+        call    SceneSetUpdateFn
         ret
+
 
 
 ;;; ----------------------------------------------------------------------------
