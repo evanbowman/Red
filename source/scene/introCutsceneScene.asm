@@ -85,12 +85,13 @@ IntroCutsceneSceneUpdate:
 	ld      e, 0            ; frame number
         call    CutsceneWriteFrame
 
-	ld      e, 10
-.sleep_frames:
-        dec     e
-        ld      a, e
-        or      a
-        jr      NZ, .sleep_frames
+	ld      e, 20             ; \
+.sleep_frames:                    ; |
+        call    VBlankIntrWait    ; | Sleep ten frames
+        dec     e                 ; |
+        ld      a, e              ; |
+        or      a                 ; |
+        jr      NZ, .sleep_frames ; /
 
 
 	ld      d, 24            ; number of frames
