@@ -84,6 +84,7 @@ IntroCutsceneSceneEnter:
 
 
 IntroCutsceneSceneUpdate:
+        call    VBlankIntrWait
 	ld      e, 0            ; frame number
         call    CutsceneWriteFrame
 
