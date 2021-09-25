@@ -48,6 +48,8 @@
 
 
 IntroCutsceneSetup:
+        ;; This function mostly just places attributes in vram, assigning
+        ;; palettes/attributes to tiles before beginning the animation.
         call    LcdOff
         ld	a, 1
 	ld	[rVBK], a
@@ -85,17 +87,14 @@ IntroCutsceneSceneUpdate:
 	ld      e, 0            ; frame number
         call    CutsceneWriteFrame
 
-	ld      e, 20             ; \
-.sleep_frames:                    ; |
-        call    VBlankIntrWait    ; | Sleep ten frames
-        dec     e                 ; |
-        ld      a, e              ; |
-        or      a                 ; |
-        jr      NZ, .sleep_frames ; /
+	ld      e, 20           ; \ Pause 20 frames
+        call    .SleepFrames    ; /
 
-
-	ld      d, 24            ; number of frames
+	ld      d, 24           ; number of frames
         call    CutscenePlay
+
+	ld      e, 30           ; \ Pause 30 frames
+        call    .SleepFrames    ; /
 
 
         call    OverworldSceneUpdateView
@@ -104,6 +103,13 @@ IntroCutsceneSceneUpdate:
         call    SceneSetUpdateFn
         ret
 
-
+.SleepFrames:
+;;; e - frames to sleep
+        call    VBlankIntrWait    ; | Sleep ten frames
+        dec     e                 ; |
+        ld      a, e              ; |
+        or      a                 ; |
+        jr      NZ, .SleepFrames  ; /
+        ret
 
 ;;; ----------------------------------------------------------------------------

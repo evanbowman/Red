@@ -130,7 +130,7 @@ while True:
         if not tile_out in unique_tiles:
             map_data += '${0:0{1}X}, '.format(0x80 + len(unique_tiles), 2)
             unique_tiles.append(tile_out)
-            if len(unique_tiles) > 89:
+            if len(unique_tiles) > 49:
                 raise Exception("too many unique tiles in frame")
         else:
             map_data += '${0:0{1}X}, '.format(0x80 + unique_tiles.index(tile_out), 2)

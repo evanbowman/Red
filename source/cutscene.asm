@@ -64,10 +64,13 @@ CutsceneInit:
 
 CutscenePlay:
 ;;; d - number of frames
+;;; e - rom bank to jump back to upon exit
 
 ;;; NOTE: Displaying a cutscene is a delicate operation, needs to be carfully
 ;;; calibrated to fit within the VBlank window. Therefore, we do not return control
 ;;; to the game's main loop while we render the cutscene.
+
+        push    de              ; Store exit rom bank number
 
         ld      e, 0            ; frame number
 .outerloop:
@@ -79,7 +82,7 @@ CutscenePlay:
 
         ld      a, e
         cp      d               ; \ We've reached the desired frame count,
-        ret     Z               ; / return.
+        jr      Z, .end         ; / return.
 
 .innerloop:
         call    VBlankIntrWait
@@ -94,6 +97,12 @@ CutscenePlay:
         pop     de
 
         jr      .outerloop
+
+.end:
+        pop     de              ; Restore exit rom bank number in e
+        ld      a, e            ; \ Set the result ROM bank. Allows the function
+        ld      [rROMB0], a     ; / to be called safely from anywhere.
+        ret
 
 
 
@@ -187,7 +196,9 @@ CutsceneWriteFrame:
 	add     hl, de          ; Add previously calculated offset to texture array
 
         ld      de, $8800
-        ld      b, 88           ; I could copy at most 89 without exceeding vblank
+        ;; Ok, so this is really bizarre. I am able to copy 89+ tiles on an AGS
+        ;; 101 in CGB mode, but only 49 tiles on an actual CGB (model C). Weird.
+        ld      b, 48
         call    GDMABlockCopy
 
         ld	a, 0
