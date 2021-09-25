@@ -198,7 +198,7 @@ CutsceneWriteFrame:
         ld      de, $8800
         ;; Ok, so this is really bizarre. I am able to copy 89+ tiles on an AGS
         ;; 101 in CGB mode, but only 49 tiles on an actual CGB (model C). Weird.
-        ld      b, 48
+        ld      b, 88
         call    GDMABlockCopy
 
         ld	a, 0
