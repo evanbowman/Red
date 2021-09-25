@@ -1522,11 +1522,11 @@ r1_Mul13Fast:
 
         pop     bc
 
-        add     bc
-        add     bc
-        add     bc
-        add     bc
-        add     bc
+        add     hl, bc
+        add     hl, bc
+        add     hl, bc
+        add     hl, bc
+        add     hl, bc
 
         ret
 
@@ -1605,10 +1605,10 @@ r1_LoadRoom:
         pop     bc              ; previous hl to bc
 
         ;; hl = (x * 13) + (y * 18 * 13)
-        add     bc
+        add     hl, bc
 
         ld      bc, wram1_var_world_map_info
-        add     bc
+        add     hl, bc
 
         ret
 

@@ -660,7 +660,7 @@ r8_GetItemDesc:
         sla     c
 
         ld      hl, r8_ItemDescs
-        add     bc
+        add     hl, bc
         ret
 
 

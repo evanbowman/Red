@@ -139,7 +139,7 @@ GetRoomData__rom0_only:
         ld      d, 0
 
         ld      hl, .roomDataBankTab    ; \
-        add     de                      ; | Set bank where we'll look for the
+        add     hl, de                  ; | Set bank where we'll look for the
         ld      a, [hl]                 ; | map data.
         ld      [rROMB0], a             ; /
 
