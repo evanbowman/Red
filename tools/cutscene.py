@@ -52,6 +52,7 @@ while True:
                 accum += count * 16 # 16 bytes per tile texture
 
         print("texture bytes used: {}".format(accum))
+        print("frame map bytes used: {}".format(576 * (frame - 1)))
 
         print("end of gif")
         sys.exit(1)
@@ -95,9 +96,11 @@ while True:
         if rgb == (242, 245, 235):
             return 0
         elif rgb == (251, 40, 84):
-            return 1
+            return 3
         elif rgb == (8, 4, 23):
             return 2
+        elif rgb == (95, 65, 71):
+            return 1
         else:
             raise Exception("unexpected color in cutscene frame " + str(rgb))
 
@@ -130,8 +133,8 @@ while True:
         if not tile_out in unique_tiles:
             map_data += '${0:0{1}X}, '.format(0x80 + len(unique_tiles), 2)
             unique_tiles.append(tile_out)
-            if len(unique_tiles) > 49:
-                raise Exception("too many unique tiles in frame")
+            if len(unique_tiles) > 89:
+                raise Exception("too many unique tiles in frame, excess " + (89 - len(unique_tiles)))
         else:
             map_data += '${0:0{1}X}, '.format(0x80 + unique_tiles.index(tile_out), 2)
 

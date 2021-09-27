@@ -281,6 +281,11 @@ Main:
         ldh     [hvar_joypad_raw], a
 
 
+        ldh     a, [hvar_joypad_raw]              ; \ Soft reset for A + start +
+        and     PADF_SELECT | PADF_START | PADF_A ; | select.
+        cp      PADF_SELECT | PADF_START | PADF_A ; |
+        jp      Z, Start                          ; /
+
         ld      de, var_scene_update_fn ; \
         ld      a, [de]                 ; |
         inc     de                      ; |
@@ -451,6 +456,13 @@ MapSpriteBlock:
         ld      b, 15
         call    GDMABlockCopy
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+SoftReset:
+        jp      Start
 
 
 ;;; ----------------------------------------------------------------------------

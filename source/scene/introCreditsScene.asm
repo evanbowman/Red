@@ -50,8 +50,12 @@ intro_credits_line2_str::
 DB      "presents", 0
 
 
+intro_credits_line3_str::
+DB      "winter 1792", 0
+
+
 intro_credits_bkg_palette::
-DB      $BF,$73, $1A,$20, $00,$04, $1A,$20,
+DB      $BF,$73, $0B,$21, $00,$04, $1A,$20,
 
 
 
