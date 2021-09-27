@@ -44,6 +44,28 @@
 
 
 
+intro_credits_line1_str::
+DB      "Evan Bowman", 0
+
+
+intro_credits_line2_str::
+DB      "presents", 0
+
+
+intro_credits_line3_str::
+DB      "winter 1792", 0
+
+
+
+
+intro_credits_bkg_palette_0::
+DB      $BF,$73, $0B,$21, $1A,$20, $00,$04,
+
+intro_credits_bkg_palette::
+DB      $BF,$73, $0B,$21, $00,$04, $1A,$20,
+
+
+
 ;;; ----------------------------------------------------------------------------
 
 
@@ -69,6 +91,32 @@ IntroCutsceneSetup:
 
 
 IntroCutsceneSceneEnter:
+        call    IntroCutsceneSetup
+
+
+        call    VBlankIntrWait
+
+        ;; ...
+        ld      d, 13           ; \ bank containing map data
+        ld      e, 21           ; | bank containing tile textures
+        ld      bc, r21_cutscene_wolf_texture_offsets
+        call    CutsceneInit    ; /
+
+        ld      e, 0                    ; \ frame number
+        call    CutsceneWriteFrame      ; /
+
+
+        call    VBlankIntrWait
+        ld      hl, intro_credits_bkg_palette_0
+        ld      b, 8
+        call    LoadBackgroundColors
+
+        ld      a, 7
+        ld      [rWX], a
+
+        ld      a, 0
+        ld      [var_scene_counter], a
+
         call    VBlankIntrWait
 
         ld      e, 0            ; frame number
@@ -77,40 +125,92 @@ IntroCutsceneSceneEnter:
         ld      de, IntroCutsceneSceneUpdate
         call    SceneSetUpdateFn
 
-
+        ;; fixme: accidental fallthrough which isn't actually problematic
 
 ;;; ----------------------------------------------------------------------------
 
 
 
 IntroCutsceneSceneUpdate:
+
+        call    VBlankIntrWait
+        ld      b, $88
+        ld      de, $9ce4
+        ld      hl, intro_credits_line3_str
+        call    PutText
+
+
+        ld      e, 154
+        call    ForceSleep
+
+
         call    VBlankIntrWait
 	ld      e, 0            ; frame number
         call    CutsceneWriteFrame
 
-	ld      e, 20           ; \ Pause 20 frames
-        call    .SleepFrames    ; /
 
-	ld      d, 24           ; number of frames
+        ;; ok, so why all this weirdness (below)? Our font uses a specific color
+        ;; palette, while our cutscene uses a different color palette. We play
+        ;; the first frame with a couple colors swapped, in order to display a
+        ;; black background. FIXME: give the text its own palette.
+        call    VBlankIntrWait
+        ld      hl, intro_credits_bkg_palette
+        ld      b, 8
+        call    LoadBackgroundColors
+        ld      e, 1            ; frame number
+        call    CutsceneWriteFrame
+        ;; end weirdness
+
+        ld      e, 2
+        call    ForceSleep
+
+
+        ;; Play the first cutscene, wolf turns to look at camera
+	ld      d, 12           ; number of frames
         call    CutscenePlay
 
-	ld      e, 30           ; \ Pause 30 frames
-        call    .SleepFrames    ; /
+	ld      e, 30           ; \ frames to sleep
+        call    ForceSleep      ; /
+
+
+        ;; Setup second cutscene sequence
+        ld      d, 12           ; \ bank containing map data
+        ld      e, 20           ; | bank containing tile textures
+        ld      bc, r20_cutscene_test_texture_offsets
+        call    CutsceneInit    ; /
+
+        call    VBlankIntrWait
+        ld      e, 0
+        call    CutsceneWriteFrame
+
+
+        call    VBlankIntrWait              ; \
+        ld      b, $88                      ; |
+        ld      de, $9cc5                   ; |
+        ld      hl, intro_credits_line1_str ; | Show intro credits text
+        call    PutText                     ; |
+        ld      b, $88                      ; |
+        ld      de, $9d06                   ; |
+        ld      hl, intro_credits_line2_str ; |
+        call    PutText                     ; /
+
+
+        ld      e, 154
+        call    ForceSleep
+
+        ;; Play second cutscene sequence
+        ld      d, 24
+        call    CutscenePlay
+
+
+        ld      e, 30           ; \ frames to sleep
+        call    ForceSleep      ; /
 
 
         call    OverworldSceneUpdateView
 
         ld      de, OverworldSceneEnter
         call    SceneSetUpdateFn
-        ret
-
-.SleepFrames:
-;;; e - frames to sleep
-        call    VBlankIntrWait    ; | Sleep ten frames
-        dec     e                 ; |
-        ld      a, e              ; |
-        or      a                 ; |
-        jr      NZ, .SleepFrames  ; /
         ret
 
 ;;; ----------------------------------------------------------------------------

@@ -311,6 +311,7 @@ var_cutscene_tile_offset:       DS      1
 var_cutscene_tile_start_bank:   DS      1
 var_cutscene_tile_current_bank: DS      1
 var_cutscene_map_bank:          DS      1
+var_cutscene_offsets_array:     DS      2
 
 
 var_water_anim:

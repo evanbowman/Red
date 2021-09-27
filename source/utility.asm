@@ -107,6 +107,17 @@ ScheduleSleep:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
+ForceSleep:
+;;; e - frames to sleep
+        call    VBlankIntrWait
+        dec     e
+        ld      a, e
+        cp      0
+        jr      NZ, ForceSleep
+        ret
+
 
 ;;; ----------------------------------------------------------------------------
 

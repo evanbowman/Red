@@ -47,6 +47,12 @@
 CutsceneInit:
 ;;; d - map starting bank
 ;;; e - texture starting bank
+;;; bc - location of texture offsets array
+        ld      a, b                                ; \
+        ld      [var_cutscene_offsets_array], a     ; | Store pointer to texture
+        ld      a, c                                ; | offsets array.
+        ld      [var_cutscene_offsets_array + 1], a ; /
+
         ld      a, d
         ld      [var_cutscene_map_bank], a
         ld      a, e
@@ -186,7 +192,12 @@ CutsceneWriteFrame:
         sla     e               ; | Multiply frame number by two, because each
         adc     0               ; | texture offset occupies two bytes.
         ld      d, a            ; /
-	ld      hl, r20_cutscene_test_texture_offsets
+
+        ld      a, [var_cutscene_offsets_array]     ; \
+        ld      h, a                                ; | Load pointer to texture
+        ld      a, [var_cutscene_offsets_array + 1] ; | offsets array.
+        ld      l, a                                ; /
+
         add     hl, de          ; Seek offset into tile counts array
         ld      e, [hl]         ; \
         inc     hl              ; | Load offset into de
@@ -199,7 +210,7 @@ CutsceneWriteFrame:
         ld      de, $8800
         ;; Ok, so this is really bizarre. I am able to copy 89+ tiles on an AGS
         ;; 101 in CGB mode, but only 49 tiles on an actual CGB (model C). Weird.
-        ld      b, 88
+        ld      b, 87
         call    GDMABlockCopy
 
         ld	a, 0

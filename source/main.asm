@@ -264,7 +264,7 @@ Main:
 
 	call    InitRandom              ; TODO: call this later on
 
-        ld      de, IntroCreditsSceneEnter
+        ld      de, IntroCutsceneSceneEnter
         call    SceneSetUpdateFn
 
         ld      de, VoidVBlankFn
@@ -481,7 +481,6 @@ SoftReset:
         INCLUDE "inventory.asm"
         INCLUDE "overworldScene.asm"
         INCLUDE "inventoryScene.asm"
-        INCLUDE "introCreditsScene.asm"
         INCLUDE "introCutsceneScene.asm"
         INCLUDE "roomTransitionScene.asm"
         INCLUDE "worldmapScene.asm"
@@ -508,7 +507,9 @@ SoftReset:
         INCLUDE "rom10_map_data.asm"
         INCLUDE "rom11_data.asm"
         INCLUDE "rom12_intro_cutscene_data.asm"
+        INCLUDE "rom13_intro_cutscene_data.asm"
         INCLUDE "rom20_intro_cutscene_texture_data.asm"
+        INCLUDE "rom21_intro_cutscene_texture_data.asm"
 
 
 ;;; SECTION START
