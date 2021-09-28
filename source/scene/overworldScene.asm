@@ -52,13 +52,13 @@ OverworldSceneFadeInVBlank:
 
 .transition:
         ld      de, OverworldSceneOnVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
 .continue:
         ld      [var_scene_counter], a
-        call    FadeToBlack
+        fcall   FadeToBlack
 
-	call    VBlankCopySpriteTextures
+	fcall   VBlankCopySpriteTextures
         ret
 
 
@@ -70,49 +70,49 @@ OverworldSceneInitOverlayVRam:
         ld      hl, r7_OverlayTiles
         ld      bc, r7_OverlayTilesEnd - r7_OverlayTiles
         ld      de, $9000
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
-        call    InitOverlay
-	call    UpdateStaminaBar
+        fcall   InitOverlay
+	fcall   UpdateStaminaBar
 
-        call    VBlankIntrWait
-        call    ShowOverlay
+        fcall   VBlankIntrWait
+        fcall   ShowOverlay
 
         ret
 
 
 OverworldSceneLoadTiles:
 
-        call    OverworldSceneInitOverlayVRam ; Sets rom bank 7
+        fcall   OverworldSceneInitOverlayVRam ; Sets rom bank 7
 
         ld      hl, r7_BackgroundTiles
         ld      bc, r7_BackgroundTilesEnd - r7_BackgroundTiles
         ld      de, $8800
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         VIDEO_BANK 1
         ld      hl, r7_BackgroundTiles2
         ld      bc, r7_BackgroundTiles2End - r7_BackgroundTiles2
         ld      de, $8800
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
         VIDEO_BANK 0
 
         ld      hl, r7_SpriteDropShadow
         ld      bc, r7_SpriteDropShadowEnd - r7_SpriteDropShadow
         ld      de, $87c0
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
         ret
 
 
 OverworldSceneEnter:
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         ld      c, 255
-        call    FadeToBlack
+        fcall   FadeToBlack
 
-        call    OverworldSceneLoadTiles
+        fcall   OverworldSceneLoadTiles
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         ld      a, 128
         ld      [rWY], a
@@ -123,15 +123,15 @@ OverworldSceneEnter:
 ;;; TODO: reload map tiles
 
         ld      de, OverworldSceneUpdate
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      a, 255
         ld      [var_scene_counter], a
 
         ld      de, OverworldSceneFadeInVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
-        call    OverlayRepaintRow2
+        fcall   OverlayRepaintRow2
 
         ret
 
@@ -187,7 +187,7 @@ OverworldSceneUpdateView:
         ld      [var_view_y], a
 
 .done:
-        call    UpdateStaminaBar
+        fcall   UpdateStaminaBar
         ret
 
 
@@ -206,10 +206,10 @@ OverworldSceneUpdate:
         ldh     [hvar_exp_changed_flag], a
 
         LONG_CALL r1_ExpDoLevelup
-        call    OverlayRepaintRow2
+        fcall   OverlayRepaintRow2
 
         ld      e, 60
-	call    ScheduleSleep
+	fcall   ScheduleSleep
 
         ;; TODO: play a jingle, go to levelup scene
 
@@ -223,7 +223,7 @@ OverworldSceneUpdate:
         xor     a
         ldh     [hvar_exp_changed_flag], a
 
-	call    OverlayRepaintRow2
+	fcall   OverlayRepaintRow2
 
         ret
 
@@ -233,10 +233,10 @@ OverworldSceneUpdate:
         jr      Z, .checkStart
 
         ld      de, WorldmapSceneEnter
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, VoidVBlankFn
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
         ret
 
 .checkStart:
@@ -249,7 +249,7 @@ OverworldSceneUpdate:
         ld      [var_inventory_scene_tab], a
 
         ld      de, InventorySceneEnter
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
         ret
 
 .updateEntities:
@@ -299,15 +299,15 @@ EntityUpdateLoopResume:
 ;;; intentional fallthrough
 EntityUpdateLoopDone:
 
-        call    OverworldSceneAnimateWater
+        fcall   OverworldSceneAnimateWater
 
 ;;; If it wasn't for view scrolling, the update and draw stuff could be done in
 ;;; the same loop.
-        call    OverworldSceneUpdateView
+        fcall   OverworldSceneUpdateView
 
-        call    DrawEntities
+        fcall   DrawEntities
 
-        call    OverworldSceneTryRoomTransition
+        fcall   OverworldSceneTryRoomTransition
 
         ret
 
@@ -367,7 +367,7 @@ VBlankCopySpriteTextures:
 .test:
         add     d               ; keyframe + framebase is spritesheet index
         ld      h, a            ; pass spritesheet index in h
-        call    MapSpriteBlock  ; DMA copy the sprite into vram
+        fcall   MapSpriteBlock  ; DMA copy the sprite into vram
 
         pop     de              ; restore entity buffer pointer
 .noTextureCopy:
@@ -401,7 +401,7 @@ OverworldSceneOnVBlank:
         srl     a
         cp      b
         jr      Z, .skip
-        call    ShowOverlay
+        fcall   ShowOverlay
 .skip:
         ld      a, [var_overlay_y_offset]
         ld      [rWY], a
@@ -415,9 +415,9 @@ OverworldSceneOnVBlank:
         ;; every 12 frames at most).
         ld      a, [var_water_anim_changed]
         or      a
-        call    NZ, VBlankCopyWaterTextures
+        fcallc  NZ, VBlankCopyWaterTextures
 
-	call    VBlankCopySpriteTextures
+	fcall   VBlankCopySpriteTextures
 
         ret
 
@@ -443,7 +443,7 @@ VBlankCopyWaterTextures:
 
         ld      de, $8D40       ; Address of water tiles in VRAM
         ld      b, 19           ; tiles-to-copy - 1
-        call    GDMABlockCopy
+        fcall   GDMABlockCopy
 
         ret
 
@@ -454,7 +454,7 @@ OverworldSceneAnimateWater:
         ld      hl, var_water_anim
         ld      c, 13
         ld      d, 3
-        call    AnimationAdvance
+        fcall   AnimationAdvance
 	ld      [var_water_anim_changed], a
         ret
 
@@ -464,20 +464,20 @@ OverworldSceneAnimateWater:
 
 OverworldSceneStartTransition:
 ;;; de - transition fn
-	call    SceneSetUpdateFn
+	fcall   SceneSetUpdateFn
 
-	call    EntityBufferReset
+	fcall   EntityBufferReset
 
-        call    OverlayRepaintRow2
+        fcall   OverlayRepaintRow2
 
         ld      hl, var_map_slabs
         ld      bc, MAP_HEIGHT / 2
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
         ;; The player entity is always present in every room (obviously?)
         ld      de, var_player_struct
-        call    EntityBufferEnqueue
+        fcall   EntityBufferEnqueue
 
         ld      a, [hvar_joypad_raw]
         ld      [var_room_load_joypad_cache], a
@@ -502,12 +502,12 @@ OverworldSceneTryRoomTransition:
         ld      [var_room_y], a
 
         ld      de, RoomTransitionSceneDownUpdate
-        call    OverworldSceneStartTransition
+        fcall   OverworldSceneStartTransition
 
         ld      de, RoomTransitionSceneDownVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
-        call    MapLoad2__rom0_only
+        fcall   MapLoad2__rom0_only
 
         ld      a, 0
         ld      [var_room_load_counter], a
@@ -531,12 +531,12 @@ OverworldSceneTryRoomTransition:
         ld      [var_room_y], a
 
         ld      de, RoomTransitionSceneUpUpdate
-        call    OverworldSceneStartTransition
+        fcall   OverworldSceneStartTransition
 
         ld      de, RoomTransitionSceneUpVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
-        call    MapLoad2__rom0_only
+        fcall   MapLoad2__rom0_only
 
         ld      a, 31
         ld      [var_room_load_counter], a
@@ -557,12 +557,12 @@ OverworldSceneTryRoomTransition:
         ld      [var_room_x], a
 
         ld      de, RoomTransitionSceneRightUpdate
-        call    OverworldSceneStartTransition
+        fcall   OverworldSceneStartTransition
 
         ld      de, RoomTransitionSceneRightVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
-        call    MapLoad2__rom0_only
+        fcall   MapLoad2__rom0_only
 
         ld      a, 0
         ld      [var_room_load_counter], a
@@ -585,12 +585,12 @@ OverworldSceneTryRoomTransition:
         ld      [var_room_x], a
 
         ld      de, RoomTransitionSceneLeftUpdate
-        call    OverworldSceneStartTransition
+        fcall   OverworldSceneStartTransition
 
         ld      de, RoomTransitionSceneLeftVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
-        call    MapLoad2__rom0_only
+        fcall   MapLoad2__rom0_only
 
         ld      a, 31
         ld      [var_room_load_counter], a

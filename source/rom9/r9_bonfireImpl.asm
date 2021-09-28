@@ -42,9 +42,9 @@ r9_BonfireUpdateImpl:
         ld      e, 6
         ld      d, 5
 
-        call    EntityAnimationAdvance
+        fcall   EntityAnimationAdvance
 
-        call    r9_BonfireMessageLoop
+        fcall   r9_BonfireMessageLoop
 
         ret
 
@@ -57,12 +57,12 @@ r9_BonfireMessageLoop:
 ;;; trashes hl
         push    hl
 
-        call    EntityGetMessageQueue
-        call    MessageQueueLoad
+        fcall   EntityGetMessageQueue
+        fcall   MessageQueueLoad
 
         pop     de
         ld      bc, r9_BonfireOnMessage
-        call    MessageQueueDrain
+        fcall   MessageQueueDrain
         ret
 
 
@@ -81,22 +81,22 @@ r9_BonfireOnMessage:
 	ld      h, d
         ld      l, e
 
-        call    EntityGetPos
+        fcall   EntityGetPos
         ld      hl, var_temp_hitbox1
-        call    r9_BonfirePopulateHitbox
+        fcall   r9_BonfirePopulateHitbox
 
         ld      hl, var_temp_hitbox2
-        call    r9_PlayerPopulateHitbox
+        fcall   r9_PlayerPopulateHitbox
 
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
-        call    CheckIntersection
+        fcall   CheckIntersection
 
         or      a
         jr      Z, .skip
 
         ld      de, InventorySceneEnter
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      a, 1
         ld      [var_inventory_scene_cooking_tab_avail], a

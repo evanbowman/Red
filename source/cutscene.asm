@@ -69,6 +69,7 @@ CutsceneInit:
 
 
 
+;;; NOTE: this code must be placed in ROM0
 CutscenePlay:
 ;;; d - number of frames
 ;;; e - rom bank to jump back to upon exit
@@ -92,7 +93,17 @@ CutscenePlay:
         jr      Z, .end         ; / return.
 
 .innerloop:
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
+
+        ;; push    bc
+        ;; LONG_CALL r1_ReadKeys
+        ;; ld      a, b
+        ;; pop     bc
+        ;; and     PADF_A | PADF_B
+        ;; or      a
+        ;; jr      NZ, .end
+
+
         dec     b
         ld      a, 0
         cp      b
@@ -100,7 +111,7 @@ CutscenePlay:
 
         inc     e               ; inc frame number
         push    de
-        call    CutsceneWriteFrame
+        fcall   CutsceneWriteFrame
         pop     de
 
         jr      .outerloop
@@ -110,7 +121,6 @@ CutscenePlay:
         ld      a, e            ; \ Set the result ROM bank. Allows the function
         ld      [rROMB0], a     ; / to be called safely from anywhere.
         ret
-
 
 
 ;;; ----------------------------------------------------------------------------
@@ -133,6 +143,7 @@ CutscenePlay:
 ;; cutscene animations must use large planes of relatively flat color,
 ;; allowing us to recycle tiles.
 
+;;; NOTE: this code must be placed in ROM0
 CutsceneWriteFrame:
 ;;; e - frame number (TODO)
 ;;; trashes pretty much all registers
@@ -157,7 +168,7 @@ CutsceneWriteFrame:
 
         ld      b, 0            ; \
         ld      c, a            ; |
-        call    Mul32           ; |
+        fcall   Mul32           ; |
         sla     b               ; | n * 64
         sla     c               ; |
         ld      a, b            ; |
@@ -174,7 +185,7 @@ CutsceneWriteFrame:
 
         ld      de, $9C00       ; \ Copy tilemap data to VRAM.
         ld      b, 35           ; | 36 - 1, DMA copies n+1 blocks
-        call    GDMABlockCopy   ; /
+        fcall   GDMABlockCopy   ; /
 
 
 	;; Ok, now that we got that out of the way, we want to copy the actual
@@ -211,7 +222,7 @@ CutsceneWriteFrame:
         ;; Ok, so this is really bizarre. I am able to copy 89+ tiles on an AGS
         ;; 101 in CGB mode, but only 49 tiles on an actual CGB (model C). Weird.
         ld      b, 87
-        call    GDMABlockCopy
+        fcall   GDMABlockCopy
 
         ld	a, 0
 	ld	[rVBK], a

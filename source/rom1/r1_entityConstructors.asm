@@ -37,18 +37,18 @@ r1_PlayerNew:
         ld      hl, var_player_struct
         ld      bc, var_player_struct_end - var_player_struct
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
         ld      a, 0
         ld      [var_player_type], a
 
         ld      hl, var_player_coord_x
-        ld      bc, $81
-        call    FixnumInit
+        ld      bc, $37
+        fcall   FixnumInit
 
         ld      hl, var_player_coord_y
-        ld      bc, $75
-        call    FixnumInit
+        ld      bc, $65
+        fcall   FixnumInit
 
         ld      a, SPRID_PLAYER_SD
         ld      [var_player_fb], a
@@ -61,15 +61,15 @@ r1_PlayerNew:
 
         ld      hl, var_player_struct
         ld      de, PlayerUpdate
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         ld      de, var_player_struct
-        call    EntityBufferEnqueue
+        fcall   EntityBufferEnqueue
 
         ld      hl, var_player_stamina
         ld      bc, $ffff
         ld      a, $ff
-        call    FixnumInit
+        fcall   FixnumInit
 
         ret
 
@@ -84,7 +84,7 @@ r1_EntityInit:
 ;;; return hl - entity pointer
         push    bc
 
-        call    AllocateEntity
+        fcall   AllocateEntity
         ld      a, 0
         or      h
         or      l
@@ -94,7 +94,7 @@ r1_EntityInit:
         push    hl
         push    hl
         pop     de
-	call    EntityBufferEnqueue
+	fcall   EntityBufferEnqueue
 
         pop     hl
         pop     bc
@@ -102,17 +102,17 @@ r1_EntityInit:
         ld      a, 1
         ld      [hl], a
 
-        call    EntitySetPos
+        fcall   EntitySetPos
 
         push    hl
-        call    AllocateTexture
+        fcall   AllocateTexture
         cp      0
 
 .texturePoolLeak:
         jr      Z, .texturePoolLeak
 
         pop     hl
-        call    EntitySetTexture
+        fcall   EntitySetTexture
 
         ret
 
@@ -125,24 +125,24 @@ r1_BonfireNew:
 ;;; c - y
         push    bc
 
-        call    r1_EntityInit
+        fcall   r1_EntityInit
 
         ld      a, SPRID_BONFIRE
-        call    EntitySetFrameBase
+        fcall   EntitySetFrameBase
 
         ld      a, 1
-        call    EntitySetPalette
+        fcall   EntitySetPalette
 
         ld      a, 0
-        call    EntitySetDisplayFlags
+        fcall   EntitySetDisplayFlags
 
         ld      a, ENTITY_TYPE_BONFIRE
-        call    EntitySetType
+        fcall   EntitySetType
 
         ld      de, BonfireUpdate
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
-	call    VBlankIntrWait  ; required b/c we're setting map tiles
+	fcall   VBlankIntrWait  ; required b/c we're setting map tiles
         pop     bc
         srl     b
         srl     b
@@ -158,7 +158,7 @@ r1_BonfireNew:
         ld      d, c
         ld      e, $80
         ld      c, 1
-        call    SetBackgroundTile32x32
+        fcall   SetBackgroundTile32x32
         ret
 
 
@@ -168,51 +168,51 @@ r1_BonfireNew:
 r1_GreywolfNew:
 ;;; b - x
 ;;; c - y
-        call    r1_EntityInit
+        fcall   r1_EntityInit
 
         ld      a, SPRID_GREYWOLF_RUN_L
-        call    EntitySetFrameBase
+        fcall   EntitySetFrameBase
 
         ld      a, 3
-        call    EntitySetPalette
+        fcall   EntitySetPalette
 
         ld      a, ENTITY_TYPE_GREYWOLF
-        call    EntitySetType
+        fcall   EntitySetType
 
         ld      de, GreywolfUpdate
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         ld      a, 1 | SPRITE_SHAPE_SQUARE_32
-        call    EntitySetDisplayFlags
+        fcall   EntitySetDisplayFlags
 
 
         ld      bc, GREYWOLF_VAR_SLAB
-        call    EntityGetSlack
+        fcall   EntityGetSlack
 
 	push    bc              ; \ bc -> de
         pop     de              ; /
 
         push    hl
         ld      d, 6
-        call    SlabTableFindAnyUnused
+        fcall   SlabTableFindAnyUnused
         ld      a, c
         ld      [de], a         ; store slab in slack var
 
         ld      d, 6            ; our weight
-        call    SlabTableBind
+        fcall   SlabTableBind
         pop     hl
 
 
         push    hl
         ld      bc, GREYWOLF_VAR_STAMINA
-        call    EntityGetSlack
+        fcall   EntityGetSlack
 
         push    bc              ; \ bc -> hl
         pop     hl              ; /
 
         ld      bc, $ffff
         ld      a, $ff
-        call    FixnumInit
+        fcall   FixnumInit
 
         pop     hl
 
@@ -223,22 +223,22 @@ r1_GreywolfNew:
 
 
 r1_GreywolfDeadNew:
-        call    r1_EntityInit
+        fcall   r1_EntityInit
 
         ld      a, SPRID_GREYWOLF_DEAD_L
-        call    EntitySetFrameBase
+        fcall   EntitySetFrameBase
 
         ld      a, 4
-        call    EntitySetPalette
+        fcall   EntitySetPalette
 
         ld      a, ENTITY_TYPE_GREYWOLF_DEAD
-        call    EntitySetType
+        fcall   EntitySetType
 
         ld      de, GreywolfUpdateDead
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         ld      a, SPRITE_SHAPE_T
-        call    EntitySetDisplayFlags
+        fcall   EntitySetDisplayFlags
 
         ;; TODO: add ourself to slab table...
 

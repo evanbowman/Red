@@ -44,7 +44,7 @@ InitRandom:
         ld      a, [rDIV]
         ld      [hvar_rand_state], a
 
-        call    VBlankIntrWait  ; let rdiv change
+        fcall   VBlankIntrWait  ; let rdiv change
 
         ld      a, [rDIV]
         ld      [hvar_rand_state + 1], a

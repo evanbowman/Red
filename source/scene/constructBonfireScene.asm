@@ -41,11 +41,11 @@ ConstructBonfireSceneEnter:
         ld      c, a
 
         LONG_CALL r1_BonfireNew
-	
+
 
 
         ld      de, ConstructBonfireSceneUpdate
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ret
 
@@ -55,7 +55,7 @@ ConstructBonfireSceneEnter:
 ConstructBonfireSceneUpdate:
 ;;; TODO...
         ld      de, InventorySceneEnter
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
         ret
 
 

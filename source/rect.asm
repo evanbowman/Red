@@ -55,6 +55,37 @@
 ;;; ----------------------------------------------------------------------------
 
 
+CheckXIntersection:
+;;; hl - rect1
+;;; de - rect2
+;;; trashes b
+;;; return a - true if intersection, false otherwise
+	inc     de
+        inc     de              ; rect2.x2 is third byte in struct
+
+        ld      b, [hl]         ; rect1.x1
+        ld      a, [de]         ; rect2.x2
+        cp      b
+        jr      C, .failed      ; rect2.x2 < rect1.x1, so no intersection
+
+        inc     hl              ; move hl to rect1.x2
+        inc     hl
+        dec     de              ; rest de to beginning
+        dec     de
+
+        ld      a, [de]         ; rect2.x1
+        ld      b, a
+        ld      a, [hl]         ; rect1.x2
+        cp      b
+        jr      C, .failed      ; rect1.x2 < rect2.x1, so no intersection
+
+        ld      a, 1
+        ret
+.failed:
+        ld      a, 0
+        ret
+
+
 CheckIntersection:
 ;;; hl - rect1
 ;;; de - rect2

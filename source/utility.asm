@@ -111,7 +111,7 @@ ScheduleSleep:
 
 ForceSleep:
 ;;; e - frames to sleep
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         dec     e
         ld      a, e
         cp      0
@@ -161,7 +161,7 @@ VramSafeMemcpy:
 	jr      .start
 
 .needsInitialVSync:
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
 .start:
 	inc	b
@@ -175,7 +175,7 @@ VramSafeMemcpy:
         jr      .copy
 
 .vsync:
-	call    VBlankIntrWait
+	fcall   VBlankIntrWait
 
 .copy:
 	ld	a, [hl+]
@@ -220,7 +220,7 @@ IntegerToString:
 ;;; hl - integer
 ;;; de - dest string buffer
 ;;; return de - pointer to beginning of string in buffer
-        call    .impl
+        fcall   .impl
         ld      a, 0
         ld      [de], a         ; Add null terminator
         ret
@@ -229,13 +229,13 @@ IntegerToString:
 ;;; hl - integer
 ;;; de - dest string buffer
         ld      bc, -10000
-        call    .one
+        fcall   .one
         ld      bc, -1000
-        call    .one
+        fcall   .one
         ld      bc, -100
-        call    .one
+        fcall   .one
         ld      bc, -10
-        call    .one
+        fcall   .one
         ld      c, -1
 .one
         ld      a, "0"-1
@@ -252,7 +252,7 @@ IntegerToString:
         cpl
         ld      c, a
         inc     bc
-        call    c, .carry
+        fcallc  c, .carry
         pop     af
         add     hl, bc
         pop     bc

@@ -33,239 +33,62 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-;;; Super lazy code written in a hurry in ~30 minutes, I should really fix this
-;;; sometime. I wrote this code specifically for the main player character, and
-;;; later repurposed the code for testing wall collisions for other entities.
+
+;;; ----------------------------------------------------------------------------
+
+r9_WallCollisionInitCharacterHitbox:
+;;; d - x offset
+;;; e - y offset
+;;; trashes hl, b, c
+        ld      hl, var_temp_hitbox1
+
+        ld      a, [hvar_wall_collision_source_x]
+        add     d
+        ld      [hl+], a
+        ld      b, a
+
+        ld      a, [hvar_wall_collision_source_y]
+        add     e
+        ld      [hl+], a
+        ld      c, a
+
+        ld      a, [hvar_wall_collision_size_x]
+        add     b
+        ld      [hl+], a
+
+        ld      a, [hvar_wall_collision_size_y]
+        add     c
+        ld      [hl], a
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
 
-
-r9_WallCollisionCheckLeft:
-;;; a - wall tile x
-;;; b - wall tile y
-;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
+r9_WallCollisionInitWallHitbox:
+;;; a - x (tile coord 0-15)
+;;; b - y (tile coord 0-15)
+;;; trashes a, b, hl
         swap    a
         swap    b
-        ld      c, a
 
-;;; We have the abs coords, now we want to check whether the absolute coord of
-;;; the player falls within the bounds of the square tile. So we need to do a
-;;; bounding box test:
+        dec     a               ; 1px padding around tile
+        dec     b
 
+        ld      hl, var_temp_hitbox2
+        ld      [hl+], a        ; \ Top left
+        ld      [hl], b         ; /
 
-;;; Player.y < tile.y? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_y]
-        cp      b
-	pop     bc
-        jr      C, .false
+        inc     hl
 
-;;; Player.y > tile.y + 16? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_y]
-        ld      c, a
-        ld      a, b
-        add     16
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x < tile.x? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_x]
-        sub     8
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x > tile.x + 16? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_x]
-        sub     8
-        ld      b, a
-        ld      a, c
-        add     16
-        cp      b
-        pop     bc
-        jr      C, .false
-
-        ld      a, [hvar_wall_collision_result]
-        or      COLLISION_LEFT
-        ld      [hvar_wall_collision_result], a
-.false:
+        add     16 + 2          ; \ + 2 padding
+        ld      [hl+], a        ; | Bottom right (top left (x,y) + (16,16))
+        ld      a, b            ; |
+        add     16 + 2          ; |
+        ld      [hl], a         ; /
         ret
 
 
-
-r9_WallCollisionCheckUp:
-;;; a - wall tile x
-;;; b - wall tile y
-;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
-        swap    a
-        swap    b
-        ld      c, a
-
-;;; We have the abs coords, now we want to check whether the absolute coord of
-;;; the player falls within the bounds of the square tile. So we need to do a
-;;; bounding box test:
-
-
-;;; Player.y < tile.y? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_y]
-        sub     8
-        cp      b
-	pop     bc
-        jr      C, .false
-
-;;; Player.y > tile.y + 16? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_y]
-        sub     8
-        ld      c, a
-        ld      a, b
-        add     16
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x < tile.x? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_x]
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x > tile.x + 16? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_x]
-        ld      b, a
-        ld      a, c
-        add     16
-        cp      b
-        pop     bc
-        jr      C, .false
-
-        ld      a, [hvar_wall_collision_result]
-        or      COLLISION_UP
-        ld      [hvar_wall_collision_result], a
-.false:
-        ret
-
-
-r9_WallCollisionCheckDown:
-;;; a - wall tile x
-;;; b - wall tile y
-;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
-        swap    a
-        swap    b
-        ld      c, a
-
-;;; We have the abs coords, now we want to check whether the absolute coord of
-;;; the player falls within the bounds of the square tile. So we need to do a
-;;; bounding box test:
-
-
-;;; Player.y < tile.y? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_y]
-        add     11
-        cp      b
-	pop     bc
-        jr      C, .false
-
-;;; Player.y > tile.y + 16? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_y]
-        add     11
-        ld      c, a
-        ld      a, b
-        add     16
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x < tile.x? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_x]
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x > tile.x + 16? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_x]
-        ld      b, a
-        ld      a, c
-        add     16
-        cp      b
-        pop     bc
-        jr      C, .false
-
-        ld      a, [hvar_wall_collision_result]
-        or      COLLISION_DOWN
-        ld      [hvar_wall_collision_result], a
-.false:
-        ret
-
-
-
-r9_WallCollisionCheckRight:
-;;; a - wall tile x
-;;; b - wall tile y
-;;; Now, we want the absolute position of the tile coordinates. Multiply by 16.
-        swap    a
-        swap    b
-        ld      c, a
-
-;;; We have the abs coords, now we want to check whether the absolute coord of
-;;; the player falls within the bounds of the square tile. So we need to do a
-;;; bounding box test:
-
-
-;;; Player.y < tile.y? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_y]
-        cp      b
-	pop     bc
-        jr      C, .false
-
-;;; Player.y > tile.y + 16? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_y]
-        ld      c, a
-        ld      a, b
-        add     16
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x < tile.x? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_x]
-        add     8
-        cp      c
-        pop     bc
-        jr      C, .false
-
-;;; Player.x > tile.x + 16? Then no collision
-        push    bc
-        ld      a, [hvar_wall_collision_source_x]
-        add     8
-        ld      b, a
-        ld      a, c
-        add     16
-        cp      b
-        pop     bc
-        jr      C, .false
-
-        ld      a, [hvar_wall_collision_result]
-        or      COLLISION_RIGHT
-        ld      [hvar_wall_collision_result], a
-.false:
-        ret
-
+;;; ----------------------------------------------------------------------------
 
 r9_WallCollisionTileCoord:
 ;;; return b - y
@@ -281,261 +104,353 @@ r9_WallCollisionTileCoord:
         ret
 
 
-r9_WallCollisionCheck:
-;;; This is manually unrolled, but what we're doing here, is checking a 3x3
-;;; square of 16x16 tiles for collisions.
+;;; ----------------------------------------------------------------------------
 
+r9_WallCollisionCheck:
         ld      a, 0
         ld      [hvar_wall_collision_result], a
 
-	call    r9_WallCollisionTileCoord
 
-;;; ...... x - 1, y - 1
-        push    af
-        push    bc
-
-        dec     a
-        dec     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xm1_ym1
-        jr      .skip_xm1_ym1
-
-.test_xm1_ym1:
-        call    r9_WallCollisionTileCoord
-        dec     a
-        dec     b
-        call    r9_WallCollisionCheckLeft
-
-        call    r9_WallCollisionTileCoord
-        dec     a
-        dec     b
-        call    r9_WallCollisionCheckUp
-
-
-.skip_xm1_ym1:
-        pop     bc
-        pop     af
-
-;;; ...... x - 1, y
-
-        push    af
-        push    bc
-
-        dec     a
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xm1_y
-        jr      .skip_xm1_y
-
-.test_xm1_y:
-        call    r9_WallCollisionTileCoord
-        dec     a
-        call    r9_WallCollisionCheckLeft
-
-
-.skip_xm1_y:
-        pop     bc
-        pop     af
-
-
-;;; ...... x - 1, y + 1
-
-        push    af
-        push    bc
-
-        dec     a
-        inc     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xm1_yp1
-        jr      .skip_xm1_yp1
-
-.test_xm1_yp1:
-        call    r9_WallCollisionTileCoord
-        dec     a
-        inc     b
-        call    r9_WallCollisionCheckLeft
-
-        call    r9_WallCollisionTileCoord
-        dec     a
-        inc     b
-        call    r9_WallCollisionCheckDown
-
-
-.skip_xm1_yp1:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x, y - 1
-
-        push    af
-        push    bc
-
-        dec     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_x_ym1
-        jr      .skip_x_ym1
-
-.test_x_ym1:
-        call    r9_WallCollisionTileCoord
-        dec     b
-        call    r9_WallCollisionCheckUp
-
-
-.skip_x_ym1:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x, y + 1
-
-        push    af
-        push    bc
-
-        inc     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_x_yp1
-        jr      .skip_x_yp1
-
-.test_x_yp1:
-        call    r9_WallCollisionTileCoord
-        inc     b
-        call    r9_WallCollisionCheckDown
-
-.skip_x_yp1:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x + 1, y - 1
-
-        push    af
-        push    bc
-
-        inc     a
-        dec     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xp1_ym1
-        jr      .skip_xp1_ym1
-
-.test_xp1_ym1:
-        call    r9_WallCollisionTileCoord
-        inc     a
-        dec     b
-        call    r9_WallCollisionCheckRight
-
-        call    r9_WallCollisionTileCoord
-        inc     a
-        dec     b
-        call    r9_WallCollisionCheckUp
-
-.skip_xp1_ym1:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x + 1, y
-
-        push    af
-        push    bc
-
-        inc     a
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xp1_y
-        jr      .skip_xp1_y
-
-.test_xp1_y:
-        call    r9_WallCollisionTileCoord
-        inc     a
-        call    r9_WallCollisionCheckRight
-
-
-.skip_xp1_y:
-
-        pop     bc
-        pop     af
-
-
-;;; ...... x + 1, y + 1
-
-        push    af
-        push    bc
-
-        inc     a
-        inc     b
-
-        ld      hl, var_map_info
-        call    MapGetTile
-
-        ld      a, b
-        cp      WALL_TILES_END
-
-        jr      C, .test_xp1_yp1
-        jr      .skip_xp1_yp1
-
-.test_xp1_yp1:
-        call    r9_WallCollisionTileCoord
-        inc     a
-        inc     b
-        call    r9_WallCollisionCheckRight
-
-        call    r9_WallCollisionTileCoord
-        inc     a
-        inc     b
-        call    r9_WallCollisionCheckDown
-
-
-.skip_xp1_yp1:
-
-        pop     bc
-        pop     af
-
-
-;;; TODO... We want to check collisions based on all tiles around the player.
-
+        fcall   r9_WallCollisionCheckLeft
+        fcall   r9_WallCollisionCheckRight
+        fcall   r9_WallCollisionCheckUp
+        fcall   r9_WallCollisionCheckDown
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_WallCollisionCheckRight:
+        ld      a, [hvar_wall_collision_size_x]
+        ld      d, a
+        ld      e, 0
+        fcall   r9_WallCollisionInitCharacterHitbox
+
+.test0:
+	fcall   r9_WallCollisionTileCoord
+        inc     a
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        jr      NC, .test1
+
+	fcall   r9_WallCollisionTileCoord
+        inc     a
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        jr      Z, .test1
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_RIGHT
+        ld      [hvar_wall_collision_result], a
+        ret
+
+.test1:
+	fcall   r9_WallCollisionTileCoord
+        inc     a
+        inc     b
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        jr      NC, .test2
+
+	fcall   r9_WallCollisionTileCoord
+        inc     a
+        inc     b
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        jr      Z, .test2
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_RIGHT
+        ld      [hvar_wall_collision_result], a
+        ret
+
+.test2:
+	fcall   r9_WallCollisionTileCoord
+        inc     a
+        dec     b
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        ret     NC
+
+	fcall   r9_WallCollisionTileCoord
+        inc     a
+        dec     b
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        ret     Z
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_RIGHT
+        ld      [hvar_wall_collision_result], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_WallCollisionCheckLeft:
+        ld      a, [hvar_wall_collision_size_x]
+        cpl
+        add     1
+        ld      d, a
+        ld      e, 0
+        fcall   r9_WallCollisionInitCharacterHitbox
+
+.test0:
+	fcall   r9_WallCollisionTileCoord
+        dec     a
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        jr      NC, .test1
+
+	fcall   r9_WallCollisionTileCoord
+        dec     a
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        jr      Z, .test1
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_LEFT
+        ld      [hvar_wall_collision_result], a
+        ret
+
+.test1:
+	fcall   r9_WallCollisionTileCoord
+        dec     a
+        inc     b
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        jr      NC, .test2
+
+	fcall   r9_WallCollisionTileCoord
+        dec     a
+        inc     b
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        jr      Z, .test2
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_LEFT
+        ld      [hvar_wall_collision_result], a
+        ret
+
+.test2:
+	fcall   r9_WallCollisionTileCoord
+        dec     a
+        dec     b
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        ret     NC
+
+	fcall   r9_WallCollisionTileCoord
+        dec     a
+        dec     b
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        ret     Z
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_LEFT
+        ld      [hvar_wall_collision_result], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_WallCollisionCheckUp:
+        ld      d, 0
+        ld      a, [hvar_wall_collision_size_y]
+        cpl
+        add     1
+        ld      e, a
+        fcall   r9_WallCollisionInitCharacterHitbox
+
+.test0:
+	fcall   r9_WallCollisionTileCoord
+        dec     b
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        jr      NC, .test1
+
+	fcall   r9_WallCollisionTileCoord
+        dec     b
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        jr      Z, .test1
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_UP
+        ld      [hvar_wall_collision_result], a
+        ret
+
+.test1:
+	fcall   r9_WallCollisionTileCoord
+        dec     b
+        inc     a
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        jr      NC, .test2
+
+	fcall   r9_WallCollisionTileCoord
+        dec     b
+        inc     a
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        jr      Z, .test2
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_UP
+        ld      [hvar_wall_collision_result], a
+        ret
+
+.test2:
+	fcall   r9_WallCollisionTileCoord
+        dec     b
+        dec     a
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        ret     NC
+
+	fcall   r9_WallCollisionTileCoord
+        dec     b
+        dec     a
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        ret     Z
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_UP
+        ld      [hvar_wall_collision_result], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_WallCollisionCheckDown:
+        ld      d, 0
+        ld      a, [hvar_wall_collision_size_y]
+        ld      e, a
+        fcall   r9_WallCollisionInitCharacterHitbox
+
+.test0:
+	fcall   r9_WallCollisionTileCoord
+        inc     b
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        jr      NC, .test1
+
+	fcall   r9_WallCollisionTileCoord
+        inc     b
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        jr      Z, .test1
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_DOWN
+        ld      [hvar_wall_collision_result], a
+        ret
+
+.test1:
+	fcall   r9_WallCollisionTileCoord
+        inc     b
+        inc     a
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        jr      NC, .test2
+
+	fcall   r9_WallCollisionTileCoord
+        inc     b
+        inc     a
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        jr      Z, .test2
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_DOWN
+        ld      [hvar_wall_collision_result], a
+        ret
+
+.test2:
+	fcall   r9_WallCollisionTileCoord
+        inc     b
+        dec     a
+        ld      hl, var_map_info
+        fcall   MapGetTile
+        ld      a, b
+        cp      WALL_TILES_END
+        ret     NC
+
+	fcall   r9_WallCollisionTileCoord
+        inc     b
+        dec     a
+        fcall   r9_WallCollisionInitWallHitbox
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        or      a
+        ret     Z
+
+        ld      a, [hvar_wall_collision_result]
+        or      COLLISION_DOWN
+        ld      [hvar_wall_collision_result], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------

@@ -93,9 +93,14 @@ hvar_temp_loop_counter2:         DS      1
 
 hvar_wall_collision_source_x: DS 1
 hvar_wall_collision_source_y: DS 1
+hvar_wall_collision_size_x:   DS 1
+hvar_wall_collision_size_y:   DS 1
 
 
 hvar_wall_collision_result:   DS 1
+
+
+hvar_bank:      DS      1
 
 
 ;;; SECTION WALL_COLLISON_TEST_VARS

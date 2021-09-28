@@ -40,7 +40,7 @@ r1_WorldGen:
         ld      hl, wram1_var_world_map_info
         ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
         ld      a, ROOM_B3_PROXIMAL_PATH
         ld      [var_worldgen_path_flags], a
@@ -48,31 +48,31 @@ r1_WorldGen:
         ld      a, $ff / 2 - 28
         ld      [var_worldgen_path_w], a
 
-        call    r1_WorldGen_RandomWalkProximalPath
+        fcall   r1_WorldGen_RandomWalkProximalPath
 
         ld      a, $ff / 2 + 28
         ld      [var_worldgen_path_w], a
 
-        call    r1_WorldGen_RandomWalkProximalPath
+        fcall   r1_WorldGen_RandomWalkProximalPath
 
 
         ld      a, $ff / 2
         ld      [var_worldgen_path_w], a
 
-        call    r1_WorldGen_RandomWalkDiagonalPath
+        fcall   r1_WorldGen_RandomWalkDiagonalPath
 
         ld      a, $ff / 2 - 40
         ld      [var_worldgen_path_w], a
 
-        call    r1_WorldGen_RandomWalkDiagonalPath
+        fcall   r1_WorldGen_RandomWalkDiagonalPath
 
         ld      a, $ff / 2 + 40
         ld      [var_worldgen_path_w], a
 
-        call    r1_WorldGen_RandomWalkDiagonalPath
+        fcall   r1_WorldGen_RandomWalkDiagonalPath
 
 .expand:
-        call    r1_WorldGen_CountConnectedRooms
+        fcall   r1_WorldGen_CountConnectedRooms
 
         ld      a, d
         or      a
@@ -89,15 +89,15 @@ r1_WorldGen:
         ;; If the generated room, so far, is smaller than 200 rooms, generate
         ;; some more, by various methods.
 
-        call    r1_GenerateRandomBacktrackPath
+        fcall   r1_GenerateRandomBacktrackPath
         jr      .expand
 
 .done:
-        call    r1_WorldGen_AssignVariants
+        fcall   r1_WorldGen_AssignVariants
 
-        call    r1_WorldGen_InitOrigin
+        fcall   r1_WorldGen_InitOrigin
 
-        call    .initMetablocks
+        fcall   .initMetablocks
 
         ret
 
@@ -109,7 +109,7 @@ r1_WorldGen:
         ld      b, 0
         ld      c, 0
         ld      de, r1_Mbl_0_0_data
-        call    r1_WorldGen_InitMetablock
+        fcall   r1_WorldGen_InitMetablock
         ret
 
 
@@ -122,7 +122,7 @@ r1_WorldGen_CountConnectedRooms:
         ld      b, 0
         ld      c, 0
 
-        call    r1_LoadRoom             ; rooms pointer in hl
+        fcall   r1_LoadRoom             ; rooms pointer in hl
 
         ld      de, 0                   ; Accumulator
 
@@ -174,7 +174,7 @@ r1_WorldGen_WalkUp:
         ld      a, [var_worldgen_curr_x]
         ld      b, a
 
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      a, [hl]
         or      ROOM_CONNECTED_D
@@ -191,7 +191,7 @@ r1_WorldGen_WalkUp:
         ld      a, [var_worldgen_prev_x]
         ld      b, a
 
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      a, [hl]
         or      ROOM_CONNECTED_U
@@ -218,7 +218,7 @@ r1_WorldGen_WalkDown:
         ld      a, [var_worldgen_curr_x]
         ld      b, a
 
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      a, [hl]
         or      ROOM_CONNECTED_U
@@ -235,7 +235,7 @@ r1_WorldGen_WalkDown:
         ld      a, [var_worldgen_prev_x]
         ld      b, a
 
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      a, [hl]
         or      ROOM_CONNECTED_D
@@ -262,7 +262,7 @@ r1_WorldGen_WalkLeft:
         ld      a, [var_worldgen_curr_y]
         ld      c, a
 
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      a, [hl]
         or      ROOM_CONNECTED_R
@@ -279,7 +279,7 @@ r1_WorldGen_WalkLeft:
         ld      a, [var_worldgen_prev_x]
         ld      b, a
 
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      a, [hl]
         or      ROOM_CONNECTED_L
@@ -305,7 +305,7 @@ r1_WorldGen_WalkRight:
         ld      a, [var_worldgen_curr_y]
         ld      c, a
 
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      a, [hl]
         or      ROOM_CONNECTED_L
@@ -322,7 +322,7 @@ r1_WorldGen_WalkRight:
         ld      a, [var_worldgen_prev_x]
         ld      b, a
 
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      a, [hl]
         or      ROOM_CONNECTED_R
@@ -352,7 +352,7 @@ r1_WorldGen_RandomWalkProximalPath:
         cp      15
         jr      Z, .moveRightOnly
 
-        call    GetRandom
+        fcall   GetRandom
         ld      a, [var_worldgen_path_w]
         ld      b, a
         ld      a, h
@@ -362,11 +362,11 @@ r1_WorldGen_RandomWalkProximalPath:
 	jr      .moveDown
 
 .moveUp:
-        call    r1_WorldGen_WalkUp
+        fcall   r1_WorldGen_WalkUp
         jr      .cond
 
 .moveLeft:
-        call    r1_WorldGen_WalkLeft
+        fcall   r1_WorldGen_WalkLeft
         jr      .cond
 
 
@@ -375,16 +375,16 @@ r1_WorldGen_RandomWalkProximalPath:
         or      a
         jr      Z, .skip1
 
-        call    GetRandom
+        fcall   GetRandom
         ld      a, h
         cp      $ff / 4
         jr      C, .backtrackUp
         jr      .skip1
 .backtrackUp:
-        call    r1_WorldGen_WalkUp
+        fcall   r1_WorldGen_WalkUp
         jr      .cond
 .skip1:
-        call    r1_WorldGen_WalkDown
+        fcall   r1_WorldGen_WalkDown
         jr      .cond
 
 
@@ -394,16 +394,16 @@ r1_WorldGen_RandomWalkProximalPath:
         or      a
         jr      Z, .skip2
 
-        call    GetRandom
+        fcall   GetRandom
         ld      a, h
         cp      $ff / 4
         jr      C, .backtrackLeft
         jr      .skip2
 .backtrackLeft:
-        call    r1_WorldGen_WalkLeft
+        fcall   r1_WorldGen_WalkLeft
         jr      .cond
 .skip2:
-        call    r1_WorldGen_WalkRight
+        fcall   r1_WorldGen_WalkRight
 
 .cond:
         jr      .loop
@@ -416,7 +416,7 @@ r1_WorldGen_RandomWalkProximalPath:
         cp      15
         jr      Z, .md_done
 
-        call    r1_WorldGen_WalkDown
+        fcall   r1_WorldGen_WalkDown
         jr      .moveDownOnly
 
 .md_done:
@@ -427,7 +427,7 @@ r1_WorldGen_RandomWalkProximalPath:
         cp      17
         jr      Z, .mr_done
 
-        call    r1_WorldGen_WalkRight
+        fcall   r1_WorldGen_WalkRight
         jr      .moveRightOnly
 .mr_done:
         ret
@@ -454,7 +454,7 @@ r1_WorldGen_RandomWalkDiagonalPath:
         cp      0
         jr      Z, .moveRightOnly
 
-        call    GetRandom
+        fcall   GetRandom
         ld      a, [var_worldgen_path_w]
         ld      b, a
         ld      a, h
@@ -464,12 +464,12 @@ r1_WorldGen_RandomWalkDiagonalPath:
 
 
 .moveUp:
-        call    r1_WorldGen_WalkUp
+        fcall   r1_WorldGen_WalkUp
         jr      .cond
 
 
 .moveRight:
-        call    r1_WorldGen_WalkRight
+        fcall   r1_WorldGen_WalkRight
 
 .cond:
         jr      .loop
@@ -482,7 +482,7 @@ r1_WorldGen_RandomWalkDiagonalPath:
         cp      0
         ret     Z
 
-        call    r1_WorldGen_WalkUp
+        fcall   r1_WorldGen_WalkUp
         jr      .moveUpOnly
 
 
@@ -491,14 +491,14 @@ r1_WorldGen_RandomWalkDiagonalPath:
         cp      17
         ret     Z
 
-        call    r1_WorldGen_WalkRight
+        fcall   r1_WorldGen_WalkRight
         jr      .moveRightOnly
 
 
 ;;; ----------------------------------------------------------------------------
 
 r1_GenerateRandomBacktrackPath:
-        call    r1_GetRandomRoom
+        fcall   r1_GetRandomRoom
 
         ld      a, [hl]
         and     ROOM_B1_CONNECTIONS
@@ -521,7 +521,7 @@ r1_GenerateRandomBacktrackPath:
         ld      b, a
         ld      a, [var_worldgen_curr_y]
         ld      c, a
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
         inc     hl
         inc     hl
         ld      a, [hl]
@@ -538,7 +538,7 @@ r1_GenerateRandomBacktrackPath:
         cp      0
         jr      Z, .moveLeftOnly
 
-        call    GetRandom
+        fcall   GetRandom
         ld      b, $ff / 2
         ld      a, h
         cp      b
@@ -547,12 +547,12 @@ r1_GenerateRandomBacktrackPath:
 
 
 .moveUp:
-        call    r1_WorldGen_WalkUp
+        fcall   r1_WorldGen_WalkUp
         jr      .cond
 
 
 .moveLeft:
-        call    r1_WorldGen_WalkLeft
+        fcall   r1_WorldGen_WalkLeft
 
 .cond:
         jr      .loop
@@ -565,7 +565,7 @@ r1_GenerateRandomBacktrackPath:
         cp      0
         ret     Z
 
-        call    r1_WorldGen_WalkUp
+        fcall   r1_WorldGen_WalkUp
         jr      .moveUpOnly
 
 
@@ -574,7 +574,7 @@ r1_GenerateRandomBacktrackPath:
         cp      0
         ret     Z
 
-        call    r1_WorldGen_WalkLeft
+        fcall   r1_WorldGen_WalkLeft
         jr      .moveLeftOnly
 
 
@@ -585,7 +585,7 @@ r1_GetRandomRoom:
 ;;; room in hl
 ;;; b - room x coord
 ;;; c - room y coord
-        call    GetRandom
+        fcall   GetRandom
         ld      a, l
         and     15              ; l % 16
         ld      b, a
@@ -595,13 +595,13 @@ r1_GetRandomRoom:
         ;; selection.
 
 
-        call    GetRandom
+        fcall   GetRandom
         ld      a, l
         and     15              ; l % 16 (world map height)
         ld      c, a
 
         push    bc
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
         pop     bc
         ret
 
@@ -614,7 +614,7 @@ r1_WorldGen_AssignVariants:
         ld      b, 0
         ld      c, 0
 
-        call    r1_LoadRoom             ; rooms pointer in hl
+        fcall   r1_LoadRoom             ; rooms pointer in hl
 
         ld      de, 0                   ; Accumulator
 
@@ -633,7 +633,7 @@ r1_WorldGen_AssignVariants:
 
 
         push    hl
-        call    GetRandom
+        fcall   GetRandom
         ld      a, l
         and     1
         pop     hl
@@ -677,14 +677,14 @@ r1_WorldGen_PlaceCollectibleInRoom:
         ld      [var_worldgen_curr_y], a
 
         ld      a, 1            ; our bank 1, to return to
-        call    FindEmptyTileInRoom
+        fcall   FindEmptyTileInRoom
 
         push    bc
         ld      a, [var_worldgen_curr_x]
         ld      b, a
         ld      a, [var_worldgen_curr_y]
         ld      c, a
-        call    __CollectiblesLoad ; collectible array in hl
+        fcall   __CollectiblesLoad ; collectible array in hl
         pop     bc
 
 
@@ -696,7 +696,7 @@ r1_WorldGen_PlaceCollectibleInRoom:
 
         pop     af              ; Item in a
 
-        call    CollectibleItemAdd
+        fcall   CollectibleItemAdd
 
         ret
 
@@ -706,7 +706,7 @@ r1_WorldGen_PlaceCollectibleInRoom:
 r1_WorldGen_InitOrigin:
         ld      b, 0
         ld      c, 0
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      a, 0
 
@@ -722,12 +722,12 @@ r1_WorldGen_InitOrigin:
         ;; ld      b, 0
         ;; ld      c, 0
         ;; ld      a, COLLECTIBLE_TILE_POTATO
-        ;; call    r1_WorldGen_PlaceCollectibleInRoom
+        ;; fcall   r1_WorldGen_PlaceCollectibleInRoom
 
         ;; ld      b, 0
         ;; ld      c, 1
         ;; ld      a, COLLECTIBLE_TILE_POTATO
-        ;; call    r1_WorldGen_PlaceCollectibleInRoom
+        ;; fcall   r1_WorldGen_PlaceCollectibleInRoom
 
         ret
 
@@ -749,7 +749,7 @@ r1_WorldGen_InitMetablock:
 	push    de
         push    bc
 
-        call    r1_WorldGen_PlaceCollectibleInBlock
+        fcall   r1_WorldGen_PlaceCollectibleInBlock
 
         pop     bc
         pop     de
@@ -783,7 +783,7 @@ r1_WorldGen_InitMetablock:
 r1_Choice6:
 ;;; trashes a, hl
 ;;; return number 0-5 in a
-        call    GetRandom
+        fcall   GetRandom
         ld      a, h
         cp      (1 * 255) / 6
         jr      C, .zero
@@ -823,16 +823,16 @@ r1_WorldGen_PlaceCollectibleInBlock:
 ;;; c - block y (fixme: ignored)
         ld      d, a
 
-        call    GetRandom       ; \
+        fcall   GetRandom       ; \
         ld      a, h            ; | In reg c: y value between 0-3. Blocks are
         and     3               ; | 6x4.
         ld      c, a            ; /
 
-        call    r1_Choice6      ; \ In reg b: x value between 0-5. Blocks are
+        fcall   r1_Choice6      ; \ In reg b: x value between 0-5. Blocks are
         ld      b, a            ; / 6x4.
 
         ld      a, d
-        call    r1_WorldGen_PlaceCollectibleInRoom
+        fcall   r1_WorldGen_PlaceCollectibleInRoom
 
         ret
 

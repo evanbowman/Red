@@ -52,9 +52,24 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
         INCLUDE "combat.inc"
 
 
+fcall: MACRO                    ; fast call, as opposed to a long call
+        ;; We can only call a function in the same bank, unless our code is in
+        ;; bank zero.
+        ASSERT (BANK(\1) == BANK(@) || BANK(\1) == BANK(EntryPoint))
+        call   \1
+ENDM
+
+
+fcallc: MACRO
+        ASSERT (BANK(\2) == BANK(@) || BANK(\2) == BANK(EntryPoint))
+        call   \1, \2
+ENDM
+
+
 
 ;;; NOTE: LONG_CALL does not restore the current rom bank
 LONG_CALL: MACRO
+        ASSERT (BANK(\1) != BANK(@)) ; pointless long call to current bank
         ld      a, BANK(\1)
         ld      hl, \1
         rst     $08
@@ -201,8 +216,8 @@ Start:
         jr      z, .gbcDetected         ; if a == 0, then we have gbc
 
         di
-        call    LcdOff
-        call    LoadFont
+        fcall   LcdOff
+        fcall   LoadFont
 	LONG_CALL r1_GameboyColorNotDetected
 
 ;;; TODO: Display some text to indicate that the game requires a gbc. There's no
@@ -224,7 +239,7 @@ Start:
         LONG_CALL r1_SetCpuFast
         LONG_CALL r1_VBlankPoll            ; Wait for vbl before disabling lcd.
 
-        call    LcdOff
+        fcall   LcdOff
 
 	ld	a, 0
 	ld	[rIF], a
@@ -256,25 +271,25 @@ Main:
 
         LONG_CALL r1_CopyDMARoutine
 
-        call    LoadFont
+        fcall   LoadFont
 
-        call    LcdOn
+        fcall   LcdOn
 
         ei
 
-	call    InitRandom              ; TODO: call this later on
+	fcall   InitRandom              ; TODO: call this later on
 
         ld      de, IntroCutsceneSceneEnter
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, VoidVBlankFn
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
 
-        call    CreateWorld
+        fcall   CreateWorld
 
 .loop:
-        call    GetRandom
+        fcall   GetRandom
 
         LONG_CALL r1_ReadKeys
         ld      a, b
@@ -301,12 +316,12 @@ Main:
         jr      z, .vsync
         dec     a
         ldh     [hvar_sleep_counter], a
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         jr      .sched_sleep
 
 
 .vsync:
-        call    VBlankIntrWait          ; vsync
+        fcall   VBlankIntrWait          ; vsync
 
         ld      a, [var_view_x]
         ld      [rSCX], a
@@ -315,7 +330,7 @@ Main:
         ld      [rSCY], a
 
         ld      a, HIGH(var_oam_back_buffer)
-        call    hOAMDMA
+        fcall   hOAMDMA
 
 
         ld      de, var_scene_vblank_fn ; \
@@ -346,18 +361,18 @@ Main:
 
 CreateWorld:
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         ld      a, 1
         ld      [var_level], a
 
 	LONG_CALL r1_SetLevelupExp
 
-        call    LoadDefaultMap
+        fcall   LoadDefaultMap
 
-        call    MapLoad2__rom0_only
+        fcall   MapLoad2__rom0_only
 
-        call    MapShow
+        fcall   MapShow
 
         LONG_CALL r1_PlayerNew
 
@@ -366,7 +381,7 @@ CreateWorld:
 	LONG_CALL r1_SetRoomVisited
 
         ld      b, ITEM_DAGGER
-        call    InventoryAddItem
+        fcall   InventoryAddItem
 
         ret
 
@@ -381,13 +396,13 @@ LoadDefaultMap:
         ld      hl, r10_DefaultMap1
         ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
         ld      de, wram1_var_world_map_info
-        call    Memcpy
+        fcall   Memcpy
 
         RAM_BANK 2
         ld      hl, r10_DefaultCollectibles
         ld      bc, r10_DefaultCollectiblesEnd - r10_DefaultCollectibles
         ld      de, wram2_var_collectibles
-        call    Memcpy
+        fcall   Memcpy
         ret
 
 
@@ -454,7 +469,7 @@ MapSpriteBlock:
         pop     hl
 
         ld      b, 15
-        call    GDMABlockCopy
+        fcall   GDMABlockCopy
         ret
 
 

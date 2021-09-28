@@ -65,7 +65,7 @@ r1_ExpDoLevelup:
         inc     a
         ld      [var_level], a
 
-        call    r1_SetLevelupExp
+        fcall   r1_SetLevelupExp
         ret
 
 .levelMaxed:
@@ -77,7 +77,7 @@ r1_ExpDoLevelup:
 r1_SetLevelupExp:
         ld      a, [var_level]
         ld      b, a
-        call    r1_GetLevelupExp
+        fcall   r1_GetLevelupExp
         ld      a, c
         ld      [var_exp_to_next_level + 1], a
         ld      a, b

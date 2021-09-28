@@ -71,7 +71,7 @@ ShowSpriteSquare16:
 ; d - palette
 ; e - start tile
         push    de
-        call    OamLoad
+        fcall   OamLoad
         pop     de
 
         ld      a, 2
@@ -123,7 +123,7 @@ ShowSpriteTall16x32:
         ld      c, a
 
         push    de                      ; de trashed by OamLoad
-        call    OamLoad                 ; OAM pointer in hl
+        fcall   OamLoad                 ; OAM pointer in hl
         pop     de                      ; restore e
 
         push    bc                      ; for when we jump down a row
@@ -232,7 +232,7 @@ ShowSpriteSquare32:
         ld      c, a
 
         push    de                      ; de trashed by OamLoad
-        call    OamLoad                 ; OAM pointer in hl
+        fcall   OamLoad                 ; OAM pointer in hl
         pop     de                      ; restore e
 
         push    bc                      ; for when we jump down a row
@@ -328,7 +328,7 @@ ShowSpriteT:
         ld      c, a
 
         push    de                      ; de trashed by OamLoad
-        call    OamLoad                 ; OAM pointer in hl
+        fcall   OamLoad                 ; OAM pointer in hl
         pop     de                      ; restore e
 
         push    bc                      ; for when we jump down a row
@@ -429,7 +429,7 @@ OamSetPosition:
 ; l - oam number
 ; b - x
 ; c - y
-        call    OamLoad
+        fcall   OamLoad
         ld      [hl], c
         inc     hl
         ld      [hl], b
@@ -441,7 +441,7 @@ OamSetPosition:
 OamSetTile:
 ; l - oam number
 ; a - tile
-        call    OamLoad
+        fcall   OamLoad
         inc     hl
         inc     hl
         ld      [hl], a
@@ -453,7 +453,7 @@ OamSetTile:
 OamSetParams:
 ; l - oam number
 ; a - params
-        call    OamLoad
+        fcall   OamLoad
         inc     hl
         inc     hl
         inc     hl
@@ -534,7 +534,7 @@ Fade:
         add     hl, bc
 
         ld      b, 64
-        call    LoadBackgroundColors
+        fcall   LoadBackgroundColors
 
 
         pop     bc
@@ -570,7 +570,7 @@ Fade:
         add     hl, bc                  ; See pop, above
 
         ld      b, 64
-        call    LoadObjectColors
+        fcall   LoadObjectColors
 
         ret
 .skip:
@@ -585,11 +585,11 @@ Fade:
 LoadOverworldPalettes:
         ld      b, 64
         ld      hl, r7_SpritePalettes
-        call    LoadObjectColors
+        fcall   LoadObjectColors
 
         ld      b, 64
         ld      hl, r7_BackgroundPalette
-        call    LoadBackgroundColors
+        fcall   LoadBackgroundColors
         ret
 
 
@@ -607,14 +607,14 @@ SetBackgroundTile16x16:
         push    bc
 
         push    de
-        call    SetBackgroundTile
+        fcall   SetBackgroundTile
         pop     de
 
         inc     e
         inc     a
 
         push    de
-        call    SetBackgroundTile
+        fcall   SetBackgroundTile
         pop     de
 
         inc     e
@@ -642,7 +642,7 @@ SetBackgroundTile32x32:
 ;;; c - palette
 
         push    bc
-        call    BackgroundTileAddress
+        fcall   BackgroundTileAddress
         pop     bc
 
         ld      d, c            ; move pal to d
@@ -768,7 +768,7 @@ LoadFont:
         ld	a, 1
 	ld	[rVBK], a
 
-	call    Memcpy
+	fcall   Memcpy
 
         xor     a
         ld      [rVBK], a
@@ -838,7 +838,7 @@ PutText:
         cp      0
 	jr      Z, .done
 
-        call    AsciiToGlyph
+        fcall   AsciiToGlyph
         ld      [de], a
 
         ld      a, 1
@@ -868,7 +868,7 @@ PutTextSimple:
         cp      0
 	jr      Z, .done
 
-        call    AsciiToGlyph
+        fcall   AsciiToGlyph
         ld      [de], a
 
         inc     de
@@ -996,91 +996,91 @@ SetFadeBank:
 
 FadeToBlack:
 ;;; c - amount
-        call    SetFadeBank
+        fcall   SetFadeBank
 
-        call    GetFadeToBlackBkgLut
-        call    GetFadeToBlackSprLut
-        call    Fade
+        fcall   GetFadeToBlackBkgLut
+        fcall   GetFadeToBlackSprLut
+        fcall   Fade
         ret
 
 
 FadeToBlackExcludeOverlay:
 ;;; c - amount
-        call    SetFadeBank
+        fcall   SetFadeBank
 
-        call    GetFadeToBlackBkgLut
-        call    GetFadeToBlackSprLut
-        call    Fade
+        fcall   GetFadeToBlackBkgLut
+        fcall   GetFadeToBlackSprLut
+        fcall   Fade
 
         ld      b, 8
-        call    GetFadeToBlackBkgLut
-        call    LoadBackgroundColors
+        fcall   GetFadeToBlackBkgLut
+        fcall   LoadBackgroundColors
 
         ret
 
 
 BlackScreenExcludeOverlay:
-        call    SetFadeBank
+        fcall   SetFadeBank
 
 
-        call    GetFadeToBlackBkgLut
+        fcall   GetFadeToBlackBkgLut
         ld      bc, 1984       ; 64 colors * 31 yields the entry with total fade
         add     hl, bc
         ld      b, 64
-        call    LoadBackgroundColors
+        fcall   LoadBackgroundColors
 
         ld      b, 8
-        call    GetFadeToBlackBkgLut
-        call    LoadBackgroundColors
+        fcall   GetFadeToBlackBkgLut
+        fcall   LoadBackgroundColors
 
-	call    GetFadeToBlackSprLut
+	fcall   GetFadeToBlackSprLut
         ld      h, d
         ld      l, e
         ld      bc, 1984
         add     hl, bc
         ld      b, 64
-        call    LoadObjectColors
+        fcall   LoadObjectColors
 
         ret
 
 
 FadeNone:
-        call    SetFadeBank
+        fcall   SetFadeBank
         ld      b, 64
-        call    GetFadeToBlackBkgLut
-        call    LoadBackgroundColors
+        fcall   GetFadeToBlackBkgLut
+        fcall   LoadBackgroundColors
 
         ld      b, 64
-        call    GetFadeToBlackSprLut
+        fcall   GetFadeToBlackSprLut
         ld      h, d
         ld      l, e
-        call    LoadObjectColors
+        fcall   LoadObjectColors
         ret
 
 
 FadeToTan:
-        call    SetFadeBank
-        call    GetFadeToTanBkgLut
-        call    GetFadeToTanSprLut
-        call    Fade
+        fcall   SetFadeBank
+        fcall   GetFadeToTanBkgLut
+        fcall   GetFadeToTanSprLut
+        fcall   Fade
         ret
 
 
 TanScreen:
-        call    SetFadeBank
-	call    GetFadeToTanBkgLut
+        fcall   SetFadeBank
+	fcall   GetFadeToTanBkgLut
         ld      bc, 1984       ; 64 colors * 31 yields the entry with total fade
         add     hl, bc
         ld      b, 64
-        call    LoadBackgroundColors
+        fcall   LoadBackgroundColors
 
-        call    GetFadeToTanSprLut
+        fcall   GetFadeToTanSprLut
         ld      h, d
         ld      l, e
         ld      bc, 1984
         add     hl, bc
         ld      b, 64
-        call    LoadObjectColors
+        fcall   LoadObjectColors
         ret
 
 

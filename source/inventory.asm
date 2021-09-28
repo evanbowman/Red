@@ -74,7 +74,7 @@ InventoryRemoveItem:
         inc     hl              ; memmove source at next item index
         inc     hl
 
-        call    MemmoveLeft
+        fcall   MemmoveLeft
 
 .removeLastEntry:
         ld      hl, var_inventory_last_item
@@ -159,7 +159,7 @@ InventoryConsumeItem:
         cp      b
         jr      NZ, .next
 
-        call    InventoryRemoveItem
+        fcall   InventoryRemoveItem
         ret
 
 .next:

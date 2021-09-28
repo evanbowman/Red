@@ -65,14 +65,14 @@ AddExp:
         ld      a, [var_exp + 1]
         ld      l, a
         ld      de, var_temp_str2
-        call    IntegerToString
+        fcall   IntegerToString
 
         ld      a, [var_exp_to_next_level]
         ld      h, a
         ld      a, [var_exp_to_next_level + 1]
         ld      l, a
         ld      de, var_temp_str3
-        call    IntegerToString
+        fcall   IntegerToString
 
         ld      de, var_temp_str3 + 2
         ld      hl, var_temp_str2 + 2

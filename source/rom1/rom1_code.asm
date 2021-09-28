@@ -68,7 +68,7 @@ r1_DMGPutText:
         cp      0
 	jr      Z, .done
 
-        call    AsciiToGlyph
+        fcall   AsciiToGlyph
         ld      [de], a
 
         inc     hl
@@ -84,18 +84,18 @@ r1_GameboyColorNotDetected:
         ld      hl, _SCRN1
         ld      a, $32
         ld      bc, $9FFF - $9C00 ; size of scrn1
-        call    Memset
+        fcall   Memset
 
         ld      hl, _OAMRAM
         ld      a, 0
         ld      bc, $FE9F - $FE00
-        call    Memset
+        fcall   Memset
 
         ld      hl, r1_GameboyColorNotDetectedText
         ld      b, $88
         ld      de, _SCRN1
-        call    r1_DMGPutText
-        call    LcdOn
+        fcall   r1_DMGPutText
+        fcall   LcdOn
 
         ld      a, 7
         ld      [rWX], a
@@ -125,7 +125,7 @@ r1_SaveGame:
         ld      hl, wram1_var_world_map_info
         ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
         ld      de, _SRAM
-        call    Memcpy
+        fcall   Memcpy
 
         ld      a, 0                    ; \ Disable SRAM writes
         ld      [rRAMG], a              ; /
@@ -145,7 +145,7 @@ r1_LoadGame:
         ld      hl, _SRAM
         ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
         ld      de, wram1_var_world_map_info
-        call    Memcpy
+        fcall   Memcpy
 
         ld      a, 0                    ; \ Disable SRAM writes
         ld      [rRAMG], a              ; /

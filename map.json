@@ -9,19 +9,34 @@
             "down": true,
             "up": false
         },
-        "variant": 1,
+        "variant": 0,
         "entities": [
             {
                 "type": 1,
-                "x": 6,
-                "y": 6
+                "x": 5,
+                "y": 8
             }
         ],
         "collectibles": [
             {
-                "type": 16,
+                "type": 15,
                 "x": 9,
                 "y": 9
+            },
+            {
+                "type": 15,
+                "x": 13,
+                "y": 9
+            },
+            {
+                "type": 15,
+                "x": 13,
+                "y": 8
+            },
+            {
+                "type": 16,
+                "x": 2,
+                "y": 8
             }
         ]
     },

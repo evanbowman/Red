@@ -67,13 +67,13 @@ MapShow:
         ;; load all at once. But, we just build this on top of the incremental
         ;; loading code.
         push    bc
-        call    r1_MapExpandRow
+        LONG_CALL r1_MapExpandRow
         pop     bc
 
-        call    VBlankIntrWait          ; r1_MapShowRow writes to vram.
+        fcall   VBlankIntrWait          ; r1_MapShowRow writes to vram.
 
         push    bc
-        call    r1_MapShowRow
+        LONG_CALL r1_MapShowRow
         pop     bc
 
         inc     c
@@ -210,12 +210,12 @@ MapLoad2__rom0_only:
         ld      a, [var_room_y]
         ld      c, a
 
-        call    GetRoomData__rom0_only
+        fcall   GetRoomData__rom0_only
 
 .copy:
         ld      bc, ROOM_DATA_SIZE
         ld      de, var_map_info
-	call    Memcpy
+	fcall   Memcpy
 
         ;; Now, the room data is sitting in RAM. We can safely call back into
         ;; bank 1 to do whatever other loading or level generation that we want
@@ -240,7 +240,7 @@ FindEmptyTileInRoom:
 
         push    af
 
-        call    GetRoomData__rom0_only ; returns pointer to tiles in hl
+        fcall   GetRoomData__rom0_only ; returns pointer to tiles in hl
 
         ld      e, 0            ; retry counter
 
@@ -251,7 +251,7 @@ FindEmptyTileInRoom:
 
         push    hl
 
-        call    GetRandom       ; random junk in hl
+        fcall   GetRandom       ; random junk in hl
         ld      a, l
         and     15              ; mod 16
         ld      b, a
@@ -269,7 +269,7 @@ FindEmptyTileInRoom:
         push    hl
         ld      a, b
         ld      b, c
-        call    MapGetTile
+        fcall   MapGetTile
         pop     hl
 
 	inc     e

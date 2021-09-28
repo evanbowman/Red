@@ -102,7 +102,7 @@ MessageQueueLoad:
         ;; multiply our queue num by 32.
         ld      c, a
         ld      b, 0
-        call    Mul32
+        fcall   Mul32
 
         add     hl, bc
         ret
@@ -228,7 +228,7 @@ MessageBusBroadcast:
         ld      hl, var_message_queue_memory
 .loop:
         push    bc
-	call    MessageQueueAppend
+	fcall   MessageQueueAppend
         ld      bc, MESSAGE_QUEUE_SIZE
         add     hl, bc
         pop     bc

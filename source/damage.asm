@@ -115,14 +115,14 @@ CalculateDamage:
 
 ;;; Damage = B + ((B / 16) * A) - ((B / 16) * D)
 
-        call    Mul16
+        fcall   Mul16
 
         push    hl              ; Store original base damage
 
-        call    Div16           ; \
+        fcall   Div16           ; \
         ld      a, b            ; | (Damage / 16) * Attacker's attack power
         push    bc              ; | Preserve c for defense calc later
-        call    SoftwareMul     ; /
+        fcall   SoftwareMul     ; /
         pop     bc              ; restore c
 
         push    hl              ; \ copy hl -> de
@@ -135,9 +135,9 @@ CalculateDamage:
 
         push    hl              ; Store original base damage
 
-	call    Div16           ; \
+	fcall   Div16           ; \
         ld      a, c            ; | Damage / 16 * Defender's defense power
-        call    SoftwareMul     ; /
+        fcall   SoftwareMul     ; /
 
 	push    hl              ; \ copy hl -> bc
         pop     bc              ; /
@@ -158,7 +158,7 @@ CalculateDamage:
 
         add     hl, bc
 
-        call    Div16
+        fcall   Div16
 
         ret
 

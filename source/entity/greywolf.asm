@@ -102,7 +102,7 @@ GreywolfUpdatePause:
         ld      l, c
 
         ld      bc, GREYWOLF_VAR_COUNTER
-        call    EntityGetSlack
+        fcall   EntityGetSlack
         ld      a, [bc]
         dec     a
         ld      [bc], a
@@ -113,7 +113,7 @@ GreywolfUpdatePause:
 
 .idle:
         ld      de, GreywolfUpdate
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         jp      EntityUpdateLoopResume
 

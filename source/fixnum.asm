@@ -82,7 +82,7 @@ FixnumAddClamped:
         ld      d, [hl]
         push    hl
         push    de
-        call    FixnumAdd
+        fcall   FixnumAdd
         pop     de
         pop     hl
 

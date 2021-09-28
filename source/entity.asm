@@ -71,24 +71,24 @@ EntityBufferReset:
         ld      hl, var_entity_mem_used
         ld      bc, var_entity_mem_used_end - var_entity_mem_used
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
 ;;; Same here, we just cleared all entities, let's free the associated textures.
         ld      hl, var_texture_slots
         ld      bc, var_texture_slots_end - var_texture_slots
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
 ;;; And, we can clear out message queues as well.
         ld      hl, var_message_queues
         ld      bc, var_message_queues_end - var_message_queues
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
         ld      hl, var_message_queue_memory
         ld      bc, var_message_queue_memeory_end - var_message_queue_memory
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
         ret
 
@@ -137,7 +137,7 @@ EntityAnimationAdvance:
         ld      bc, 7
         add     hl, bc
         ld      c, e
-        call    AnimationAdvance
+        fcall   AnimationAdvance
         pop     hl
 
         ld      d, a                    ; return frameChanged:true/false in d
@@ -351,6 +351,20 @@ EntityBufferEnqueue:
 
 ;;; ----------------------------------------------------------------------------
 
+EntityGetUpdateFn:
+;;; hl - entity
+;;; de - result
+        push    hl
+        ld      de, 13
+        add     hl, de
+        ld      d, [hl]
+        inc     hl
+        ld      e, [hl]
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 EntitySetUpdateFn:
 ;;; hl - entity
@@ -461,7 +475,7 @@ EntityDrawLoop:
         add     6                       ; top row uses 2 oam, bottom row uses 4
         ld      [var_oam_top_counter], a
         push    bc
-        call    ShowSpriteT
+        fcall   ShowSpriteT
         pop     bc
         jr      .putSpriteFinished
 
@@ -471,7 +485,7 @@ EntityDrawLoop:
         add     8                       ; 32x32 sprite uses 8 oam
         ld      [var_oam_top_counter], a
         push    bc
-        call    ShowSpriteSquare32
+        fcall   ShowSpriteSquare32
         pop     bc
         jr      .putSpriteFinished
 
@@ -481,7 +495,7 @@ EntityDrawLoop:
         add     4                       ; 16x32 sprite uses 4 oam
         ld      [var_oam_top_counter], a
         push    bc
-        call    ShowSpriteTall16x32
+        fcall   ShowSpriteTall16x32
         pop     bc
 
 
@@ -517,7 +531,7 @@ EntitySwapResume:
         ld      [var_oam_bottom_counter], a
         ld      e, $7c
         ld      d, 2
-        call    ShowSpriteSquare16
+        fcall   ShowSpriteSquare16
 
 .skipShadow:
 
@@ -531,7 +545,7 @@ EntityDrawLoopDone:
         ld      a, [var_oam_top_counter]
         ld      b, a
         ld      l, b
-        call    OamLoad
+        fcall   OamLoad
 
 	ld      c, 0
 
@@ -658,7 +672,7 @@ AllocateEntity:
         ld      [hl], a         ; set entity mem used
 
         ;; Now, we want to multiply bc by the size of an entity (32)...
-	call    Mul32
+	fcall   Mul32
 
         ld      hl, var_entity_mem
         add     hl, bc
@@ -667,13 +681,13 @@ AllocateEntity:
 
         ld      bc, 32
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
         pop     hl
 
         push    hl                ; \
         push    hl                ; |
-        call    MessageQueueAlloc ; |
+        fcall   MessageQueueAlloc ; |
         pop     hl                ; |
         ld      bc, 16            ; | Bind message queue to entity
         add     hl, bc            ; |

@@ -167,11 +167,11 @@ r8_InventoryGetTabText:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryShowTabHeading:
-        call    r8_InventoryGetTabText
+        fcall   r8_InventoryGetTabText
 
         ld      de, $9c22
         ld      b, $89
-        call    PutText
+        fcall   PutText
         ret
 
 
@@ -216,11 +216,11 @@ r8_InventoryTabLoadItem:
         jr      Z, .craft
 
 .items:
-        call    InventoryGetItem
+        fcall   InventoryGetItem
         ret
 
 .craft:
-        call    r8_InventoryGetCraftableItem
+        fcall   r8_InventoryGetCraftableItem
         ret
 
 
@@ -230,7 +230,7 @@ r8_InventoryLowerBoxInitRow:
 ;;; de - address
         ld      hl, r8_InventoryLowerBoxMiddleRow
         ld      bc, r8_InventoryLowerBoxMiddleRowEnd - r8_InventoryLowerBoxMiddleRow
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
         ret
 
 
@@ -240,7 +240,7 @@ r8_InventoryImageBoxInitRow:
 ;;; de - address
         ld      hl, r8_InventoryImageBoxMiddleRow
         ld      bc, r8_InventoryImageBoxMiddleRowEnd - r8_InventoryImageBoxMiddleRow
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
         ret
 
 
@@ -292,7 +292,7 @@ r8_InventoryPutTextRow:
         push    hl
         push    bc
 
-        call    r8_InventoryTextRowAddress
+        fcall   r8_InventoryTextRowAddress
 
         ld      d, h
         ld      e, l
@@ -300,13 +300,13 @@ r8_InventoryPutTextRow:
         pop     bc
         pop     hl
 
-        call    PutText
+        fcall   PutText
 
         ;; Now, fill the rest of the row with spaces. PutText should leave
         ;; de in the correct position to keep on going...
         pop     hl
 
-        call    r8_SmallStrlen
+        fcall   r8_SmallStrlen
 
         ld      a, 18
         sub     c
@@ -340,7 +340,7 @@ r8_InventoryItemText:
 ;;; b - item typeinfo
         ld      c, b
         ld      b, 0
-        call    r8_Mul16
+        fcall   r8_Mul16
 
         ld      hl, r8_InventoryItemTextTable
         add     hl, bc
@@ -353,9 +353,9 @@ r8_InventoryItemText:
 r8_InventoryItemRowText:
 ;;; a - row
         ld      b, a
-        call    r8_InventoryTabLoadItem
+        fcall   r8_InventoryTabLoadItem
 
-        call    r8_InventoryItemText
+        fcall   r8_InventoryItemText
         ret
 
 
@@ -378,7 +378,7 @@ r8_InventoryAdjustOffset:
 
 r8_InventoryGetSelectedIndex:
         ld      a, [var_inventory_scene_selected_row]
-        call    r8_InventoryAdjustOffset
+        fcall   r8_InventoryAdjustOffset
         ret
 
 
@@ -390,7 +390,7 @@ r8_InventoryInitText:
 	push    af
 
         push    af
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         pop     af
 	push    af
         ld      b, a
@@ -404,12 +404,12 @@ r8_InventoryInitText:
 
 	push    af
         push    bc
-        call    r8_InventoryAdjustOffset
-        call    r8_InventoryItemRowText
+        fcall   r8_InventoryAdjustOffset
+        fcall   r8_InventoryItemRowText
         pop     bc
         pop     af
 
-        call    r8_InventoryPutTextRow
+        fcall   r8_InventoryPutTextRow
 
 	pop     af
         inc     a
@@ -426,7 +426,7 @@ r8_InventoryTextRowSetAttr:
 ;;; a - row num
 ;;; b - attribute
         push    bc
-        call    r8_InventoryTextRowAddress
+        fcall   r8_InventoryTextRowAddress
         pop     bc
 
         ld      d, 0
@@ -451,7 +451,7 @@ r8_InventoryUpdateImageCopyAttributeRow:
         ld      bc, 4
         push    hl
         push    de
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
         pop     de
         pop     hl
 
@@ -499,11 +499,11 @@ r8_Mul16:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryUpdateImage:
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
-        call    r8_InventoryGetSelectedIndex
+        fcall   r8_InventoryGetSelectedIndex
         ld      b, a
-        call    r8_InventoryTabLoadItem
+        fcall   r8_InventoryTabLoadItem
 	ld      c, b
 	ld      b, 0
 
@@ -518,14 +518,14 @@ r8_InventoryUpdateImage:
 
         ld      de, $9400
         ld      b, 15
-        call    GDMABlockCopy
+        fcall   GDMABlockCopy
 
         pop     bc
         push    bc
 
 	ld      hl, r8_InventoryItemAttributes
 
-        call    r8_Mul16                ; 16 bytes per attribute block
+        fcall   r8_Mul16                ; 16 bytes per attribute block
 
         add     hl, bc
 
@@ -535,10 +535,10 @@ r8_InventoryUpdateImage:
 
         ld      de, $9c4e
 
-        call    r8_InventoryUpdateImageCopyAttributeRow
-        call    r8_InventoryUpdateImageCopyAttributeRow
-        call    r8_InventoryUpdateImageCopyAttributeRow
-        call    r8_InventoryUpdateImageCopyAttributeRow
+        fcall   r8_InventoryUpdateImageCopyAttributeRow
+        fcall   r8_InventoryUpdateImageCopyAttributeRow
+        fcall   r8_InventoryUpdateImageCopyAttributeRow
+        fcall   r8_InventoryUpdateImageCopyAttributeRow
 
         ld      a, 0
         ld	[rVBK], a
@@ -546,7 +546,7 @@ r8_InventoryUpdateImage:
         pop     bc
 
         ld      hl, r8_InventoryItemPalettes
-        call    r8_Mul64                ; 64 bytes per palette
+        fcall   r8_Mul64                ; 64 bytes per palette
         add     hl, bc
 
         ld      a, [rLY]
@@ -556,10 +556,10 @@ r8_InventoryUpdateImage:
 .vsync:
 ;;; We should never reach here, the code is fast enough to run within the blank
 ;;; window. But just in case...
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 .copyColors:
         ld      b, 64
-        call    LoadBackgroundColors
+        fcall   LoadBackgroundColors
 
         ret
 
@@ -669,15 +669,15 @@ r8_GetItemDesc:
 
 r8_InventoryUseItem:
         ld      a, [var_inventory_scene_selected_row]
-        call    r8_InventoryAdjustOffset
+        fcall   r8_InventoryAdjustOffset
 
         ld      b, a
-        call    InventoryGetItem
+        fcall   InventoryGetItem
 
         ld      d, b            ; Store item id in d
 
         ld      c, b
-	call    r8_GetItemDesc
+	fcall   r8_GetItemDesc
 
         ld      a, [hl]
         cp      ITEM_CATEGORY_EQUIPMENT
@@ -692,16 +692,16 @@ r8_InventoryUseItem:
         ld      c, 0
 
         ld      hl, var_player_stamina
-        call    FixnumAddClamped
+        fcall   FixnumAddClamped
 
-        call    UpdateStaminaBar
-        call    VBlankIntrWait  ; FIXME...
-        call    ShowOverlay
+        fcall   UpdateStaminaBar
+        fcall   VBlankIntrWait  ; FIXME...
+        fcall   ShowOverlay
 
-        call    r8_RemoveSelectedItem
+        fcall   r8_RemoveSelectedItem
 
-        call    r8_InventoryInitText
-        call    r8_InventoryUpdateImage
+        fcall   r8_InventoryInitText
+        fcall   r8_InventoryUpdateImage
         ret
 
 .useEquipmentItem:
@@ -720,7 +720,7 @@ r8_InventoryUseItem:
 .useFirewoodItem:
 
         ld      de, ConstructBonfireSceneEnter
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
         ret
 
 
@@ -729,9 +729,9 @@ r8_InventoryUseItem:
 
 r8_RemoveSelectedItem:
         ld      a, [var_inventory_scene_selected_row]
-        call    r8_InventoryAdjustOffset
+        fcall   r8_InventoryAdjustOffset
         ld      c, a
-	call    InventoryRemoveItem
+	fcall   InventoryRemoveItem
         ret
 
 
@@ -747,20 +747,20 @@ r8_InventoryAPressed:
         cp      INVENTORY_TAB_COOK
         jr      Z, .craft
 .items:
-        call    r8_InventoryUseItem
+        fcall   r8_InventoryUseItem
         ret
 .craft:
-        call    r8_InventoryCraftItem
+        fcall   r8_InventoryCraftItem
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryCraftItem:
-        call    r8_InventoryGetSelectedIndex
+        fcall   r8_InventoryGetSelectedIndex
         ld      b, a
 
-        call    r8_GetCraftableItemRecipe
+        fcall   r8_GetCraftableItemRecipe
 
         ld      a, h                    ; \
         or      l                       ; | Null pointer check.
@@ -773,30 +773,30 @@ r8_InventoryCraftItem:
         ;; Consume the three dependencies
         ld      b, [hl]
         push    hl
-        call    InventoryConsumeItem
+        fcall   InventoryConsumeItem
         pop     hl
         inc     hl
 
         ld      b, [hl]
         push    hl
-        call    InventoryConsumeItem
+        fcall   InventoryConsumeItem
         pop     hl
         inc     hl
 
         ld      b, [hl]
-        call    InventoryConsumeItem
+        fcall   InventoryConsumeItem
 
         pop     hl
 
         ld      b, [hl]                 ; Load result
-        call    InventoryAddItem        ; Store result
+        fcall   InventoryAddItem        ; Store result
 
         ;; Redisplay everything. We consumed items from the inventory, so the
         ;; subset of things that we can craft may have changed.
-        call    r8_InventoryLoadCraftableItems
-        call    r8_InventoryInitText
-        call    r8_InventoryUpdateImage
-        call    r8_InventoryDescribeItem
+        fcall   r8_InventoryLoadCraftableItems
+        fcall   r8_InventoryInitText
+        fcall   r8_InventoryUpdateImage
+        fcall   r8_InventoryDescribeItem
 
 .skip:
         ret
@@ -900,7 +900,7 @@ r8_CraftableItemDependencyCheckAvailable:
 
         ld      b, a                    ; Pass item type parameter in b
         push    hl
-        call    InventoryCountOccurrences
+        fcall   InventoryCountOccurrences
         pop     hl
 
         ld      a, [hl+]
@@ -925,7 +925,7 @@ r8_CraftableItemCheckDependencies:
         ld      hl, var_crafting_dependency_set
         ld      bc, var_crafting_dependency_set_end - var_crafting_dependency_set
         ld      a, 0
-        call    Memset
+        fcall   Memset
         pop     hl
 
         push    hl
@@ -933,27 +933,27 @@ r8_CraftableItemCheckDependencies:
 
         ld      a, [hl+]
         ld      b, a
-        call    r8_CraftingDependencyInsert
+        fcall   r8_CraftingDependencyInsert
 
         ld      a, [hl+]
         ld      b, a
-        call    r8_CraftingDependencyInsert
+        fcall   r8_CraftingDependencyInsert
 
         ld      a, [hl]
         ld      b, a
-        call    r8_CraftingDependencyInsert
+        fcall   r8_CraftingDependencyInsert
 
         ld      hl, var_crafting_dependency_set
 
-        call    r8_CraftableItemDependencyCheckAvailable
+        fcall   r8_CraftableItemDependencyCheckAvailable
         or      a
         jr      Z, .noMatch
 
-        call    r8_CraftableItemDependencyCheckAvailable
+        fcall   r8_CraftableItemDependencyCheckAvailable
         or      a
         jr      Z, .noMatch
 
-        call    r8_CraftableItemDependencyCheckAvailable
+        fcall   r8_CraftableItemDependencyCheckAvailable
         or      a
         jr      Z, .noMatch
 
@@ -1017,15 +1017,15 @@ r8_InventoryLoadCraftableItems:
         ld      hl, var_inventory_scene_craftable_items_list
         ld      bc, CRAFTABLE_ITEMS_COUNT * 2
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
-        call    r8_InventoryGetRecipeList
+        fcall   r8_InventoryGetRecipeList
 .loop:
         ld      a, [hl]
         cp      ITEM_NONE
         jr      Z, .endLoop
 
-        call    r8_CraftableItemCheckDependencies
+        fcall   r8_CraftableItemCheckDependencies
 	or      a
         jr      Z, .skip
 
@@ -1036,7 +1036,7 @@ r8_InventoryLoadCraftableItems:
         push    hl              ; \ Copy hl to de (I'm feeling lazy)
         pop     de              ; /
 
-        call    r8_CraftableItemsListInsert
+        fcall   r8_CraftableItemsListInsert
         pop     hl
 
 .skip:
@@ -1068,7 +1068,7 @@ r8_PutTruncatedItemText:
         cp      0
 	jr      Z, .done
 
-        call    AsciiToGlyph
+        fcall   AsciiToGlyph
         ld      [de], a
 
         ld      a, 1
@@ -1098,11 +1098,11 @@ r8_ShowRecipeText:
         ld      b, a
         push    hl
         push    de
-        call    r8_InventoryItemText    ; text ptr now in hl
+        fcall   r8_InventoryItemText    ; text ptr now in hl
         pop     de
         ld      b, $89
         ld      c, 9                    ; Max chars to print
-        call    r8_PutTruncatedItemText
+        fcall   r8_PutTruncatedItemText
         pop     hl
         ret
 
@@ -1120,10 +1120,10 @@ r8_InventoryDescribeItem:
         ret
 
 .showRecipeList:
-        call    r8_InventoryGetSelectedIndex
+        fcall   r8_InventoryGetSelectedIndex
         ld      b, a
 
-        call    r8_GetCraftableItemRecipe
+        fcall   r8_GetCraftableItemRecipe
 .here:
         ld      a, h                    ; \
         or      l                       ; | Null pointer check.
@@ -1135,15 +1135,15 @@ r8_InventoryDescribeItem:
         cp      b                       ; |
         jr      Z, .reset               ; /
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 	ld      de, $9c62
-        call    r8_ShowRecipeText
+        fcall   r8_ShowRecipeText
 
 	ld      de, $9c82
-        call    r8_ShowRecipeText
+        fcall   r8_ShowRecipeText
 
 	ld      de, $9ca2
-        call    r8_ShowRecipeText
+        fcall   r8_ShowRecipeText
 
         ld      a, $3D
         ld      hl, $9c61
@@ -1155,7 +1155,7 @@ r8_InventoryDescribeItem:
 
 	ret
 .reset:
-        call    r8_InventoryClearItemInfoBox
+        fcall   r8_InventoryClearItemInfoBox
         ret
 
 
@@ -1163,17 +1163,17 @@ r8_InventoryClearItemInfoBox:
         ld      hl, $9c61
         ld      bc, 10
         ld      d, 0
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9c81
         ld      bc, 10
         ld      d, 0
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9ca1
         ld      bc, 10
         ld      d, 0
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      a, 1
         ld      [rVBK], a
@@ -1181,17 +1181,17 @@ r8_InventoryClearItemInfoBox:
         ld      hl, $9c61
         ld      bc, 10
         ld      d, $81
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9c81
         ld      bc, 10
         ld      d, $81
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9ca1
         ld      bc, 10
         ld      d, $81
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      a, 0
         ld      [rVBK], a
@@ -1203,7 +1203,7 @@ r8_InventoryClearItemInfoBox:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventorySetTab:
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         ld      a, 0
         ld      [var_inventory_scene_selected_row], a
@@ -1218,26 +1218,26 @@ r8_InventorySetTab:
         jr      Z, .loadCraftTab
 
 .loadItemsTab:
-        call    r8_InventoryShowTabHeading
-	call    r8_InventoryInitText
-        call    r8_InventoryUpdateImage
-        call    r8_InventoryDescribeItem
+        fcall   r8_InventoryShowTabHeading
+	fcall   r8_InventoryInitText
+        fcall   r8_InventoryUpdateImage
+        fcall   r8_InventoryDescribeItem
         ret
 
 .loadCraftTab:
-        call    r8_InventoryLoadCraftableItems ; FIXME: code is identical toexcept for this line
-        call    VBlankIntrWait
-        call    r8_InventoryShowTabHeading
-	call    r8_InventoryInitText
-        call    r8_InventoryUpdateImage
-        call    r8_InventoryDescribeItem
+        fcall   r8_InventoryLoadCraftableItems ; FIXME: code is identical toexcept for this line
+        fcall   VBlankIntrWait
+        fcall   r8_InventoryShowTabHeading
+	fcall   r8_InventoryInitText
+        fcall   r8_InventoryUpdateImage
+        fcall   r8_InventoryDescribeItem
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryTabRight:
-        call    r8_InventoryClearItemInfoBox
+        fcall   r8_InventoryClearItemInfoBox
 
         ld      a, [var_inventory_scene_tab]
 .next:
@@ -1259,7 +1259,7 @@ r8_InventoryTabRight:
 .skip:
         ld      [var_inventory_scene_tab], a
 
-        call    r8_InventorySetTab
+        fcall   r8_InventorySetTab
 
 
 
@@ -1269,7 +1269,7 @@ r8_InventoryTabRight:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryTabLeft:
-        call    r8_InventoryClearItemInfoBox
+        fcall   r8_InventoryClearItemInfoBox
 
         ld      a, [var_inventory_scene_tab]
         cp      INVENTORY_TAB_ITEMS
@@ -1290,7 +1290,7 @@ r8_InventoryTabLeft:
 .set:
         ld      [var_inventory_scene_tab], a
 
-        call    r8_InventorySetTab
+        fcall   r8_InventorySetTab
 
         ret
 
@@ -1303,27 +1303,27 @@ r8_InventoryMoveCursorDown:
         cp      6
         jr      Z, .nextPage
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         ld      a, 1
         ld	[rVBK], a
 
         ld      a, [var_inventory_scene_selected_row]
         ld      b, $89
-        call    r8_InventoryTextRowSetAttr
+        fcall   r8_InventoryTextRowSetAttr
 
 	ld      a, [var_inventory_scene_selected_row]
         inc     a
         ld      [var_inventory_scene_selected_row], a
 
         ld      b, $8A
-        call    r8_InventoryTextRowSetAttr
+        fcall   r8_InventoryTextRowSetAttr
 
         ld      a, 0
         ld	[rVBK], a
 
-        call    r8_InventoryUpdateImage
-        call    r8_InventoryDescribeItem
+        fcall   r8_InventoryUpdateImage
+        fcall   r8_InventoryDescribeItem
         ret
 .nextPage:
         ld      a, [var_inventory_scene_page]
@@ -1338,7 +1338,7 @@ r8_InventoryMoveCursorDown:
 
         ld      a, [var_inventory_scene_selected_row]
         ld      b, $89
-        call    r8_InventoryTextRowSetAttr
+        fcall   r8_InventoryTextRowSetAttr
 
         ld      a, 0
         ld	[rVBK], a
@@ -1346,10 +1346,10 @@ r8_InventoryMoveCursorDown:
 	ld      a, 0
         ld      [var_inventory_scene_selected_row], a
 
-	call    r8_InventoryInitText
+	fcall   r8_InventoryInitText
 
-        call    r8_InventoryUpdateImage
-        call    r8_InventoryDescribeItem
+        fcall   r8_InventoryUpdateImage
+        fcall   r8_InventoryDescribeItem
 .skip:
         ret
 
@@ -1362,27 +1362,27 @@ r8_InventoryMoveCursorUp:
         cp      0
         jr      Z, .prevPage
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         ld      a, 1
         ld	[rVBK], a
 
         ld      a, [var_inventory_scene_selected_row]
         ld      b, $89
-        call    r8_InventoryTextRowSetAttr
+        fcall   r8_InventoryTextRowSetAttr
 
 	ld      a, [var_inventory_scene_selected_row]
         dec     a
         ld      [var_inventory_scene_selected_row], a
 
         ld      b, $8A
-        call    r8_InventoryTextRowSetAttr
+        fcall   r8_InventoryTextRowSetAttr
 
         ld      a, 0
         ld	[rVBK], a
 
-        call    r8_InventoryUpdateImage
-        call    r8_InventoryDescribeItem
+        fcall   r8_InventoryUpdateImage
+        fcall   r8_InventoryDescribeItem
         ret
 .prevPage:
         ld      a, [var_inventory_scene_page]
@@ -1398,21 +1398,21 @@ r8_InventoryMoveCursorUp:
 
         ld      a, [var_inventory_scene_selected_row]
         ld      b, $89
-        call    r8_InventoryTextRowSetAttr
+        fcall   r8_InventoryTextRowSetAttr
 
         ld      a, 6
         ld      [var_inventory_scene_selected_row], a
 
         ld      b, $8A
-        call    r8_InventoryTextRowSetAttr
+        fcall   r8_InventoryTextRowSetAttr
 
         ld      a, 0
         ld	[rVBK], a
 
-        call    r8_InventoryInitText
+        fcall   r8_InventoryInitText
 
-        call    r8_InventoryUpdateImage
-        call    r8_InventoryDescribeItem
+        fcall   r8_InventoryUpdateImage
+        fcall   r8_InventoryDescribeItem
 .skip:
         ret
 
@@ -1424,14 +1424,14 @@ r8_InventoryUpdate:
         bit     PADB_UP, a
         jr      Z, .checkA
 
-        call    r8_InventoryMoveCursorUp
+        fcall   r8_InventoryMoveCursorUp
 
 .checkA:
 	ldh     a, [hvar_joypad_current]
         bit     PADB_A, a
         jr      Z, .checkDown
 
-        call    r8_InventoryAPressed
+        fcall   r8_InventoryAPressed
         ret
 
 .checkDown:
@@ -1439,21 +1439,21 @@ r8_InventoryUpdate:
         bit     PADB_DOWN, a
         jr      Z, .checkLeft
 
-        call    r8_InventoryMoveCursorDown
+        fcall   r8_InventoryMoveCursorDown
 
 .checkLeft:
         ldh     a, [hvar_joypad_current]
         bit     PADB_LEFT, a
         jr      Z, .checkRight
 
-        call    r8_InventoryTabLeft
+        fcall   r8_InventoryTabLeft
 
 .checkRight:
         ldh     a, [hvar_joypad_current]
         bit     PADB_RIGHT, a
         jr      Z, .done
 
-        call    r8_InventoryTabRight
+        fcall   r8_InventoryTabRight
 
 .done:
         ret
@@ -1465,32 +1465,32 @@ r8_InventoryInitImageMargin:
         ld      hl, $9c2d
 	ld      bc, 6
         ld      d, $36
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9c4d
 	ld      bc, 6
         ld      d, $36
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9c6d
 	ld      bc, 6
         ld      d, $36
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9c8d
 	ld      bc, 6
         ld      d, $36
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9cad
 	ld      bc, 6
         ld      d, $36
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9ccd
 	ld      bc, 6
         ld      d, $36
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
 
         ld      a, 1
@@ -1499,32 +1499,32 @@ r8_InventoryInitImageMargin:
         ld      hl, $9c2d
 	ld      bc, 6
         ld      d, $83
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9c4d
 	ld      bc, 6
         ld      d, $83
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9c6d
 	ld      bc, 6
         ld      d, $83
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9c8d
 	ld      bc, 6
         ld      d, $83
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9cad
 	ld      bc, 6
         ld      d, $83
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      hl, $9ccd
 	ld      bc, 6
         ld      d, $83
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
 
         ld      a, 0
         ld	[rVBK], a
@@ -1538,22 +1538,22 @@ r8_InventoryOpen:
         ld      hl, r8_InventoryTiles
         ld      bc, r8_InventoryTilesEnd - r8_InventoryTiles
         ld      de, $9300
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         ;; It's just simpler if objects are reset
         ld      hl, var_oam_back_buffer
         ld      a, 0
         ld      bc, OAM_SIZE * OAM_COUNT
-        call    Memset
+        fcall   Memset
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         ld      a, HIGH(var_oam_back_buffer)
-        call    hOAMDMA
+        fcall   hOAMDMA
 
 	ld      hl, r8_InventoryItemIcons
         ld      de, $9400
         ld      b, 15
-        call    GDMABlockCopy
+        fcall   GDMABlockCopy
 
         ld      a, 1
         ld	[rVBK], a
@@ -1561,75 +1561,75 @@ r8_InventoryOpen:
         ld      hl, (_SCRN1 + 32)
         ld      bc, $9e14 - (_SCRN1  + 32)
         ld      d, $81
-        call    r8_VramSafeMemset
+        fcall   r8_VramSafeMemset
         ld      a, 0
         ld      [rVBK], a
 
         ld      hl, r8_InventoryLowerBoxTopRow
         ld      bc, r8_InventoryLowerBoxTopRowEnd - r8_InventoryLowerBoxTopRow
         ld      de, $9D00
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         ld      de, $9C20
-        call    r8_InventoryImageBoxInitRow
+        fcall   r8_InventoryImageBoxInitRow
 
         ld      de, $9C40
-        call    r8_InventoryImageBoxInitRow
+        fcall   r8_InventoryImageBoxInitRow
 
         ld      de, $9C60
-        call    r8_InventoryImageBoxInitRow
+        fcall   r8_InventoryImageBoxInitRow
 
         ld      de, $9C80
-        call    r8_InventoryImageBoxInitRow
+        fcall   r8_InventoryImageBoxInitRow
 
 	ld      de, $9CA0
-        call    r8_InventoryImageBoxInitRow
+        fcall   r8_InventoryImageBoxInitRow
 
 	ld      de, $9CC0
-        call    r8_InventoryImageBoxInitRow
+        fcall   r8_InventoryImageBoxInitRow
 
         ld      hl, r8_InventoryImageBoxBottomRow
         ld      bc, r8_InventoryImageBoxBottomRowEnd - r8_InventoryImageBoxBottomRow
         ld      de, $9CE0
-	call    VramSafeMemcpy
+	fcall   VramSafeMemcpy
 
         ld      de, $9D20
-        call    r8_InventoryLowerBoxInitRow
+        fcall   r8_InventoryLowerBoxInitRow
 
         ld      de, $9D40
-        call    r8_InventoryLowerBoxInitRow
+        fcall   r8_InventoryLowerBoxInitRow
 
         ld      de, $9D60
-        call    r8_InventoryLowerBoxInitRow
+        fcall   r8_InventoryLowerBoxInitRow
 
         ld      de, $9D80
-        call    r8_InventoryLowerBoxInitRow
+        fcall   r8_InventoryLowerBoxInitRow
 
         ld      de, $9DA0
-        call    r8_InventoryLowerBoxInitRow
+        fcall   r8_InventoryLowerBoxInitRow
 
 	ld      de, $9DC0
-        call    r8_InventoryLowerBoxInitRow
+        fcall   r8_InventoryLowerBoxInitRow
 
         ld      de, $9DE0
-        call    r8_InventoryLowerBoxInitRow
+        fcall   r8_InventoryLowerBoxInitRow
 
         ld      hl, r8_InventoryLowerBoxBottomRow
         ld      bc, r8_InventoryLowerBoxBottomRowEnd - r8_InventoryLowerBoxBottomRow
         ld      de, $9E00
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         ld      a, 1
         ld      [var_overlay_alternate_pos], a
 
-        call    ShowOverlay
+        fcall   ShowOverlay
 
-        call    r8_InventoryInitImageMargin
+        fcall   r8_InventoryInitImageMargin
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         ld      b, r8_InventoryPalettesEnd - r8_InventoryPalettes
         ld      hl, r8_InventoryPalettes
-        call    LoadBackgroundColors
+        fcall   LoadBackgroundColors
 
 ;;; Now, we can draw the very top row! Jump the window up, and draw the top row
 ;;; in place of where the overlay bar used to be.
@@ -1660,7 +1660,7 @@ r8_InventoryOpen:
         ld      [var_inventory_scene_selected_row], a
         ld      [var_inventory_scene_page], a
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         ld      hl, $9c21       ; \
         ld      a, $3a          ; | Show left arrow
@@ -1673,14 +1673,14 @@ r8_InventoryOpen:
         ld      hl, $9c41       ; \
         ld      bc, 10          ; | Show divider
         ld      a, $3c          ; /
-        call    Memset
+        fcall   Memset
 
 
-        call    r8_SetupImageTiles
+        fcall   r8_SetupImageTiles
 
-	call    r8_InventorySetTab
+	fcall   r8_InventorySetTab
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         ret
 
 
@@ -1690,22 +1690,22 @@ r8_SetupImageTiles:
         ld      de, $9c4e
         ld      hl, r8_InventoryImgRow1
         ld      bc, 4
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         ld      de, $9c6e
         ld      hl, r8_InventoryImgRow2
         ld      bc, 4
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         ld      de, $9c8e
         ld      hl, r8_InventoryImgRow3
         ld      bc, 4
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         ld      de, $9cae
         ld      hl, r8_InventoryImgRow4
         ld      bc, 4
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         ret
 
@@ -1722,7 +1722,7 @@ r8_VramSafeMemset:
 	jr      .start
 
 .needsInitialVSync:
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
 .start:
 	inc	b
@@ -1735,7 +1735,7 @@ r8_VramSafeMemset:
         jr      .fill
 
 .vsync:
-	call    VBlankIntrWait
+	fcall   VBlankIntrWait
 .fill:
 	ld	[hl], d
         inc     hl
@@ -1756,7 +1756,7 @@ r8_VramSafeMemset:
 ;;; and because we pad the strings, we don't need to worry about zero-ing out
 ;;; stuff when writing different strings to a spot onscreen.
 r8_InventoryItemTextTable::
-DB      "empty          ", 0
+DB      "--             ", 0
 DB      "wolf pelt      ", 0
 DB      "dagger         ", 0
 DB      "raw meat       ", 0

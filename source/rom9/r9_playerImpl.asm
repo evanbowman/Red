@@ -57,12 +57,31 @@ r9_PlayerTileCoord:
 ;;; ----------------------------------------------------------------------------
 
 
-r9_PlayerUpdateMovement:
+r9_PlayerWallCollisionCheck:
+        ;; Don't ask me why these numbers work (because I do not recall). I
+        ;; calibrated the hitbox size so that the player's drop-shadow wouldn't
+        ;; overlap with the edge of any wall tiles. Otherwise, the size is
+        ;; fairly arbitrary.
         ld      a, [var_player_coord_x]
+        sub     2
         ld      [hvar_wall_collision_source_x], a
         ld      a, [var_player_coord_y]
+        add     2
         ld      [hvar_wall_collision_source_y], a
-        call    r9_WallCollisionCheck
+        ld      a, 4
+        ld      [hvar_wall_collision_size_x], a
+        ld      a, 4
+        ld      [hvar_wall_collision_size_y], a
+        fcall   r9_WallCollisionCheck
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+
+r9_PlayerUpdateMovement:
+        fcall   r9_PlayerWallCollisionCheck
 
 
 ;;; try walk left
@@ -80,7 +99,7 @@ r9_PlayerUpdateMovement:
         ldh     a, [hvar_joypad_raw]
         and     PADF_LEFT
         ld      e, SPRID_PLAYER_WL
-        call    r9_PlayerJoypadResponse
+        fcall   r9_PlayerJoypadResponse
 
 
 
@@ -96,7 +115,7 @@ r9_PlayerUpdateMovement:
         ldh     a, [hvar_joypad_raw]
         and     PADF_RIGHT
         ld      e, SPRID_PLAYER_WR
-        call    r9_PlayerJoypadResponse
+        fcall   r9_PlayerJoypadResponse
 
 
 
@@ -115,7 +134,7 @@ r9_PlayerUpdateMovement:
         ldh     a, [hvar_joypad_raw]
 	and     PADF_DOWN
         ld      e, SPRID_PLAYER_WD
-        call    r9_PlayerJoypadResponse
+        fcall   r9_PlayerJoypadResponse
 
 
 
@@ -130,7 +149,7 @@ r9_PlayerUpdateMovement:
         ldh     a, [hvar_joypad_raw]
 	and     PADF_UP
         ld      e, SPRID_PLAYER_WU
-        call    r9_PlayerJoypadResponse
+        fcall   r9_PlayerJoypadResponse
 
         ret
 
@@ -159,7 +178,7 @@ r9_PlayerAnimate:
         ld      hl, var_player_animation
         ld      c, 6
         ld      d, 5
-        call    AnimationAdvance
+        fcall   AnimationAdvance
         or      a
         jr      NZ, .frameChangedLR
         jr      .done
@@ -169,7 +188,7 @@ r9_PlayerAnimate:
         ld      c, 6
         ld      d, 10
 
-        call    AnimationAdvance
+        fcall   AnimationAdvance
         or      a
         jr      NZ, .frameChangedUD
 .done:
@@ -261,14 +280,14 @@ r9_PlayerJoypadResponse:
 ;;; diagonally, otherwise, we will move faster in the diagonal direction.
         jr      NZ, .moveDiagonalFwd
         ld      b, 1
-        ld      c, 40
+        ld      c, 64
         jr      .moveFwd
 .moveDiagonalFwd:
         ld      b, 0
-        ld      c, 206
+        ld      c, 224
 .moveFwd:
 
-        call    FixnumAdd
+        fcall   FixnumAdd
         pop     bc
         jr      .done
 .subPosition:
@@ -287,7 +306,7 @@ r9_PlayerJoypadResponse:
 
         ld      b, 1
         ld      c, 64
-        call    FixnumSub
+        fcall   FixnumSub
         pop     bc
 	jr      .done
 
@@ -320,20 +339,20 @@ r9_PlayerOnMessage:
         ld      b, [hl]         ; Load enemy x from message
 
         ld      hl, var_temp_hitbox2
-        call    r9_GreywolfPopulateHitbox
+        fcall   r9_GreywolfPopulateHitbox
 
         ld      hl, var_temp_hitbox1
-        call    r9_PlayerPopulateHitbox
+        fcall   r9_PlayerPopulateHitbox
 
 
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
-        call    CheckIntersection
+        fcall   CheckIntersection
 
         or      a
         jr      Z, .skip
 
-        call    r9_PlayerWolfAttackDepleteStamina
+        fcall   r9_PlayerWolfAttackDepleteStamina
 
         ld      a, 25
         ld      [var_player_color_counter], a
@@ -351,18 +370,18 @@ r9_PlayerMessageLoop:
         ld      hl, var_message_queue_memory
 
         ld      bc, r9_PlayerOnMessage
-	call    MessageQueueDrain
+	fcall   MessageQueueDrain
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 r9_PlayerUpdateImpl:
-        call    r9_PlayerMessageLoop
+        fcall   r9_PlayerMessageLoop
 
-        call    r9_PlayerUpdateInjuredColor
+        fcall   r9_PlayerUpdateInjuredColor
 
-        call    r9_PlayerUpdateMovement
+        fcall   r9_PlayerUpdateMovement
 
         ldh     a, [hvar_joypad_released]
         and     PADF_DOWN
@@ -440,9 +459,9 @@ r9_PlayerUpdateImpl:
         or      a
         jr      Z, .done
 
-	call    r9_PlayerWalkDepleteStamina
+	fcall   r9_PlayerWalkDepleteStamina
 
-	call    r9_PlayerAnimate
+	fcall   r9_PlayerAnimate
 
         ldh     a, [hvar_joypad_current]
         bit     PADB_A, a
@@ -450,19 +469,19 @@ r9_PlayerUpdateImpl:
         ld      a, [hvar_wall_collision_result]
         or      a
         jr      Z, .tryInteractEntities
-        call    r9_PlayerTryInteract
+        fcall   r9_PlayerTryInteract
         jr      .done
 
 .checkB:
         bit     PADB_B, a
         jr      Z, .done
-        call    r9_PlayerAttackInit
+        fcall   r9_PlayerAttackInit
 
 .done:
         ret
 
 .tryInteractEntities:
-        call    r9_PlayerInteractBroadcast
+        fcall   r9_PlayerInteractBroadcast
         ret
 
 
@@ -495,7 +514,7 @@ r9_PlayerTryInteract:
         ret
 
 .tryInteractEntities:
-        call    r9_PlayerInteractBroadcast
+        fcall   r9_PlayerInteractBroadcast
         ret
 
 .tryInteractLeft:
@@ -503,10 +522,10 @@ r9_PlayerTryInteract:
         and     COLLISION_LEFT
         jr      Z, .tryInteractEntities
 
-	call    r9_PlayerTileCoord
+	fcall   r9_PlayerTileCoord
         dec     a
         ld      d, SPRID_PLAYER_PL
-        call    r9_PlayerInteractTile
+        fcall   r9_PlayerInteractTile
 
         ret
 
@@ -515,10 +534,10 @@ r9_PlayerTryInteract:
         and     COLLISION_RIGHT
         jr      Z, .tryInteractEntities
 
-	call    r9_PlayerTileCoord
+	fcall   r9_PlayerTileCoord
         inc     a
         ld      d, SPRID_PLAYER_PR
-        call    r9_PlayerInteractTile
+        fcall   r9_PlayerInteractTile
 
         ret
 
@@ -527,10 +546,10 @@ r9_PlayerTryInteract:
         and     COLLISION_UP
         jr      Z, .tryInteractEntities
 
-	call    r9_PlayerTileCoord
+	fcall   r9_PlayerTileCoord
         dec     b
         ld      d, SPRID_PLAYER_PU
-        call    r9_PlayerInteractTile
+        fcall   r9_PlayerInteractTile
 
         ret
 
@@ -539,10 +558,10 @@ r9_PlayerTryInteract:
         and     COLLISION_DOWN
         jr      Z, .tryInteractEntities
 
-	call    r9_PlayerTileCoord
+	fcall   r9_PlayerTileCoord
         inc     b
         ld      d, SPRID_PLAYER_PD
-        call    r9_PlayerInteractTile
+        fcall   r9_PlayerInteractTile
 
         ret
 
@@ -571,23 +590,23 @@ r9_PlayerInteractTile:
 
 
         ld      hl, var_map_info
-        call    MapGetTile
+        fcall   MapGetTile
 
         ld      a, b
-        call    IsTileCollectible
+        fcall   IsTileCollectible
         jr      NZ, .tryInteractEntities
 
         ld      hl, var_player_struct
         ld      de, PlayerUpdatePickupItem
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         pop     de
 
-        call    r9_PlayerPickupAnimationInit
+        fcall   r9_PlayerPickupAnimationInit
         ret
 
 .tryInteractEntities:
-        call    r9_PlayerInteractBroadcast
+        fcall   r9_PlayerInteractBroadcast
 
         pop     de
         ret
@@ -615,7 +634,7 @@ r9_PlayerUpdatePickupItemImpl:
         ld      hl, var_player_animation
         ld      c, 7
         ld      d, 5
-        call    AnimationAdvance
+        fcall   AnimationAdvance
         or      a
         jr      NZ, .frameChanged
         ret
@@ -634,7 +653,7 @@ r9_PlayerUpdatePickupItemImpl:
         cp      4
         jr      NZ, .skip
 
-        call    r9_CollectMapItem
+        fcall   r9_CollectMapItem
 
 .skip:
         ret
@@ -642,7 +661,7 @@ r9_PlayerUpdatePickupItemImpl:
 .animationComplete:
         ld      hl, var_player_struct
         ld      de, PlayerUpdate
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         ld      a, [var_player_fb]
         cp      SPRID_PLAYER_PD
@@ -695,16 +714,16 @@ r9_PlayerAddItemToInventory:
 
 .potato:
         ld      b, ITEM_POTATO
-        call    InventoryAddItem
+        fcall   InventoryAddItem
         ld      hl, got_potato_str
-        call    OverlayPutText
+        fcall   OverlayPutText
         ret
 
 .stick:
         ld      b, ITEM_STICK
-        call    InventoryAddItem
+        fcall   InventoryAddItem
         ld      hl, got_stick_str
-        call    OverlayPutText
+        fcall   OverlayPutText
         ret
 
 
@@ -714,14 +733,14 @@ r9_PlayerAddItemToInventory:
 r9_CollectMapItem:
         ld      b, 7
 .waitLoop:
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         dec     b
         ld      a, 0
         cp      b
         jr      NZ, .waitLoop
 
 
-        call    InventoryIsFull
+        fcall   InventoryIsFull
         or      a
         jr      NZ, .failed
 
@@ -742,7 +761,7 @@ r9_CollectMapItem:
         ld      e, EMPTY_TILE_ADDR
         ld      c, $0a
 
-        call    SetBackgroundTile16x16
+        fcall   SetBackgroundTile16x16
 
 	pop     de                      ; \ Restore coordinate
         pop     af                      ; /
@@ -752,24 +771,24 @@ r9_CollectMapItem:
         push    af
         push    bc
         ld      hl, var_map_info
-        call    MapGetTile
+        fcall   MapGetTile
 
-        call    r9_PlayerAddItemToInventory
+        fcall   r9_PlayerAddItemToInventory
 
         pop     bc
         pop     af
 
         ld      hl, var_map_info
         ld      d, EMPTY_TILE
-        call    MapSetTile
+        fcall   MapSetTile
 
-        call    CollectibleItemErase
+        fcall   CollectibleItemErase
 
         ret
 
 .failed:
         ld      hl, inventory_full_str
-        call    OverlayPutText
+        fcall   OverlayPutText
         ret
 
 
@@ -781,11 +800,11 @@ DB      "inventory full", 0
 
 
 r9_PlayerAttackInit:
-	call    r9_PlayerKnifeAttackDepleteStamina
+	fcall   r9_PlayerKnifeAttackDepleteStamina
 
         ld      hl, var_player_struct
         ld      de, PlayerUpdateAttack1
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         ld      a, 0
         ld      [var_player_kf], a
@@ -889,7 +908,7 @@ r9_PlayerInteractBroadcast:
         push    bc
         ld      hl, sp+0
 
-        call    MessageBusBroadcast
+        fcall   MessageBusBroadcast
 
         pop     bc
         pop     bc
@@ -907,7 +926,7 @@ r9_PlayerKnifeAttackBroadcast:
         push    bc                             ; |
         ld      hl, sp+0                       ; /
 
-        call    MessageBusBroadcast
+        fcall   MessageBusBroadcast
 
         pop     bc              ; \ Pop message arg from stack
         pop     bc              ; /
@@ -919,11 +938,8 @@ r9_PlayerKnifeAttackBroadcast:
 
 
 r9_PlayerAttackMovement:
-        ld      a, [var_player_coord_x]
-        ld      [hvar_wall_collision_source_x], a
-        ld      a, [var_player_coord_y]
-        ld      [hvar_wall_collision_source_y], a
-        call    r9_WallCollisionCheck
+
+        fcall   r9_PlayerWallCollisionCheck
 
         ld      a, [var_player_fb]
         cp      SPRID_PLAYER_KNIFE_ATK_D
@@ -948,7 +964,7 @@ r9_PlayerAttackMovement:
         ld      hl, var_player_coord_y
         ld      b, 0
         ld      c, 30
-        call    FixnumAdd
+        fcall   FixnumAdd
 
 .skipMoveDown:
         ret
@@ -965,7 +981,7 @@ r9_PlayerAttackMovement:
         ld      hl, var_player_coord_y
         ld      b, 0
         ld      c, 30
-        call    FixnumSub
+        fcall   FixnumSub
 
 .skipMoveUp:
         ret
@@ -982,7 +998,7 @@ r9_PlayerAttackMovement:
         ld      hl, var_player_coord_x
         ld      b, 0
         ld      c, 30
-        call    FixnumAdd
+        fcall   FixnumAdd
 
 .skipMoveRight:
         ret
@@ -999,7 +1015,7 @@ r9_PlayerAttackMovement:
         ld      hl, var_player_coord_x
         ld      b, 0
         ld      c, 30
-        call    FixnumSub
+        fcall   FixnumSub
 
 .skipMoveLeft:
         ret
@@ -1022,7 +1038,7 @@ r9_PlayerDepleteStamina:
         push    af
 
         ld      hl, var_player_stamina
-        call    FixnumSub
+        fcall   FixnumSub
 
         pop     af
 
@@ -1032,7 +1048,7 @@ r9_PlayerDepleteStamina:
         ret
 
 .exhausted:
-	call    SystemReboot    ; FIXME...
+	fcall   SystemReboot    ; FIXME...
         ret
 
 
@@ -1043,7 +1059,7 @@ r9_PlayerWalkDepleteStamina:
         ;; TODO: Change the stamina depletion based on difficulty?
 	ld      b, 0
         ld      c, 3
-        call    r9_PlayerDepleteStamina
+        fcall   r9_PlayerDepleteStamina
         ret
 
 
@@ -1053,7 +1069,7 @@ r9_PlayerWalkDepleteStamina:
 r9_PlayerWolfAttackDepleteStamina:
         ld      b, 20
         ld      c, 70
-        call    r9_PlayerDepleteStamina
+        fcall   r9_PlayerDepleteStamina
         ret
 
 
@@ -1063,7 +1079,7 @@ r9_PlayerWolfAttackDepleteStamina:
 r9_PlayerKnifeAttackDepleteStamina:
         ld      b, 0
         ld      c, 48
-        call    r9_PlayerDepleteStamina
+        fcall   r9_PlayerDepleteStamina
         ret
 
 
@@ -1071,16 +1087,16 @@ r9_PlayerKnifeAttackDepleteStamina:
 
 
 r9_PlayerUpdateAttack1Impl:
-        call    r9_PlayerUpdateInjuredColor
-        call    r9_PlayerMessageLoop
+        fcall   r9_PlayerUpdateInjuredColor
+        fcall   r9_PlayerMessageLoop
 
-        call    r9_PlayerAttackMovement
+        fcall   r9_PlayerAttackMovement
 
-        call    r9_PlayerAttackSetFacing
+        fcall   r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
         ld      d, 15
-        call    AnimationAdvance
+        fcall   AnimationAdvance
         or      a
         jr      NZ, .frameChanged
         ret
@@ -1093,7 +1109,7 @@ r9_PlayerUpdateAttack1Impl:
         cp      3
         jr      NZ, .skip
 
-        call    r9_PlayerKnifeAttackBroadcast
+        fcall   r9_PlayerKnifeAttackBroadcast
 .skip:
 
         ld      a, [var_player_kf]
@@ -1109,16 +1125,16 @@ r9_PlayerUpdateAttack1Impl:
 
         ld      hl, var_player_struct
         ld      de, PlayerAttack1Exit
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         ret
 
 .next:
         ld      hl, var_player_struct
         ld      de, PlayerUpdateAttack2
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
-        call    r9_PlayerKnifeAttackDepleteStamina
+        fcall   r9_PlayerKnifeAttackDepleteStamina
 
         ret
 
@@ -1127,16 +1143,16 @@ r9_PlayerUpdateAttack1Impl:
 
 
 r9_PlayerUpdateAttack2Impl:
-        call    r9_PlayerUpdateInjuredColor
-        call    r9_PlayerMessageLoop
+        fcall   r9_PlayerUpdateInjuredColor
+        fcall   r9_PlayerMessageLoop
 
-        call    r9_PlayerAttackMovement
+        fcall   r9_PlayerAttackMovement
 
-        call    r9_PlayerAttackSetFacing
+        fcall   r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
         ld      d, 15
-        call    AnimationAdvance
+        fcall   AnimationAdvance
         or      a
         jr      NZ, .frameChanged
         ret
@@ -1149,7 +1165,7 @@ r9_PlayerUpdateAttack2Impl:
         cp      7
         jr      NZ, .skip
 
-        call    r9_PlayerKnifeAttackBroadcast
+        fcall   r9_PlayerKnifeAttackBroadcast
 .skip:
 
         ld      a, [var_player_kf]
@@ -1165,16 +1181,16 @@ r9_PlayerUpdateAttack2Impl:
 
         ld      hl, var_player_struct
         ld      de, PlayerAttack2Exit
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         ret
 
 .next:
         ld      hl, var_player_struct
         ld      de, PlayerUpdateAttack3
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
-	call    r9_PlayerKnifeAttackDepleteStamina
+	fcall   r9_PlayerKnifeAttackDepleteStamina
 
         ret
 
@@ -1183,16 +1199,16 @@ r9_PlayerUpdateAttack2Impl:
 
 
 r9_PlayerUpdateAttack3Impl:
-        call    r9_PlayerUpdateInjuredColor
-        call    r9_PlayerMessageLoop
+        fcall   r9_PlayerUpdateInjuredColor
+        fcall   r9_PlayerMessageLoop
 
-        call    r9_PlayerAttackMovement
+        fcall   r9_PlayerAttackMovement
 
-        call    r9_PlayerAttackSetFacing
+        fcall   r9_PlayerAttackSetFacing
         ld      hl, var_player_animation
         ld      c, 7
         ld      d, 15
-        call    AnimationAdvance
+        fcall   AnimationAdvance
         or      a
         jr      NZ, .frameChanged
         ret
@@ -1205,7 +1221,7 @@ r9_PlayerUpdateAttack3Impl:
         cp      12
         jr      NZ, .skip
 
-        call    r9_PlayerKnifeAttackBroadcast
+        fcall   r9_PlayerKnifeAttackBroadcast
 .skip:
 
         ld      a, [var_player_kf]
@@ -1216,7 +1232,7 @@ r9_PlayerUpdateAttack3Impl:
 .done:
         ld      hl, var_player_struct
         ld      de, PlayerAttack3Exit
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         ret
 
@@ -1242,9 +1258,9 @@ r9_PlayerAttackTryExit:
 
 .resume:
         ld      hl, var_player_struct
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
-	call    r9_PlayerKnifeAttackDepleteStamina
+	fcall   r9_PlayerKnifeAttackDepleteStamina
 
         ld      a, 0
         ld      [var_player_tmr], a
@@ -1279,7 +1295,7 @@ r9_PlayerAttackTryExit:
 
         ld      hl, var_player_struct
         ld      de, PlayerUpdate
-        call    EntitySetUpdateFn
+        fcall   EntitySetUpdateFn
 
         ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
@@ -1294,10 +1310,10 @@ r9_PlayerAttackTryExit:
 
 
 r9_PlayerAttack1ExitImpl:
-        call    r9_PlayerAttackMovement
+        fcall   r9_PlayerAttackMovement
 
         ld      de, PlayerUpdateAttack2
-        call    r9_PlayerAttackTryExit
+        fcall   r9_PlayerAttackTryExit
         ret
 
 
@@ -1305,10 +1321,10 @@ r9_PlayerAttack1ExitImpl:
 
 
 r9_PlayerAttack2ExitImpl:
-        call    r9_PlayerAttackMovement
+        fcall   r9_PlayerAttackMovement
 
         ld      de, PlayerUpdateAttack3
-        call    r9_PlayerAttackTryExit
+        fcall   r9_PlayerAttackTryExit
         ret
 
 
@@ -1316,10 +1332,10 @@ r9_PlayerAttack2ExitImpl:
 
 
 r9_PlayerAttack3ExitImpl:
-        call    r9_PlayerAttackMovement
+        fcall   r9_PlayerAttackMovement
 
         ld      de, PlayerUpdateAttack1
-        call    r9_PlayerAttackTryExit
+        fcall   r9_PlayerAttackTryExit
         ret
 
 
@@ -1348,6 +1364,29 @@ r9_PlayerUpdateInjuredColor:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerPopulateFootprint:
+;;; hl - hitbox to fill with data
+
+        ld      a, [var_player_coord_x]
+        add     8
+        ld      b, a
+        ld      [hl+], a
+        ld      a, [var_player_coord_y]
+        add     12
+        ld      c, a
+        ld      [hl+], a
+
+        ld      a, 8
+        add     b
+        ld      [hl+], a
+        ld      a, 8
+        add     c
+        ld      [hl], a
+
+        ret
+
 
 
 r9_PlayerPopulateHitbox:
@@ -1439,11 +1478,11 @@ r9_PlayerKnifeAttackPopulateHitbox:
 ;;         ret
 
 ;; .up:
-        ;; call    r9_PlayerPopulateHitbox ;todo
+        ;; fcall   r9_PlayerPopulateHitbox ;todo
 ;;         ret
 
 ;; .down:
-;;         call    r9_PlayerPopulateHitbox ;todo
+;;         fcall   r9_PlayerPopulateHitbox ;todo
         ret
 
 

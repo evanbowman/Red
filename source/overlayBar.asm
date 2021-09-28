@@ -64,7 +64,7 @@ ShowOverlay:
         push    de
         ld      hl, var_overlay_back_buffer
         ld      bc, 20
-        call    Memcpy
+        fcall   Memcpy
 
 	ld      a, 1
         ld      [rVBK], a
@@ -95,7 +95,7 @@ ShowOverlay:
 
 UpdateStaminaBar:
         ld      hl, var_player_stamina
-        call    FixnumUpper
+        fcall   FixnumUpper
         ld      c, 1
 
 .loopFull:
@@ -110,7 +110,7 @@ UpdateStaminaBar:
         sub     e
         ld      e, a
         ld      a, $2 + 8
-        call    SetOverlayTile
+        fcall   SetOverlayTile
         inc     c
 
         ld      a, 18
@@ -122,7 +122,7 @@ UpdateStaminaBar:
         ld      a, $2
         srl     e
         add     a, e
-        call    SetOverlayTile
+        fcall   SetOverlayTile
 
         inc     c
         ld      a, 17
@@ -131,7 +131,7 @@ UpdateStaminaBar:
 
 .empty:
         ld      a, $02
-        call    SetOverlayTile
+        fcall   SetOverlayTile
         inc     c
         ld      a, 17
         cp      c
@@ -172,10 +172,10 @@ DB      $00, $00, $00, $00, $00, $00, $00
 
 OverlayPutText:
 ;;; hl - text
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         push    hl
-        call    SmallStrlen
+        fcall   SmallStrlen
         pop     hl
 
 	push    hl
@@ -197,11 +197,11 @@ OverlayPutText:
         ld      hl, $9c20
         ld      bc, 20
         ld      a, $32
-        call    Memset
+        fcall   Memset
         pop     de
         pop     hl
 
-        call    PutTextSimple
+        fcall   PutTextSimple
 
 
         VIDEO_BANK 1
@@ -209,7 +209,7 @@ OverlayPutText:
         ld      hl, $9c20
         ld      bc, 20
         ld      a, $8b
-        call    Memset
+        fcall   Memset
 
         VIDEO_BANK 0
 
@@ -222,7 +222,7 @@ OverlayShowEnemyHealth:
 ;;; a - enemy health
 	ld      e, a
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         ld      hl, $9c20
         ld      a, $0f
         ld      [hl+], a
@@ -282,7 +282,7 @@ OverlayShowEnemyHealth:
         ld      hl, $9c20
         ld      bc, 20
         ld      a, $80
-        call    Memset
+        fcall   Memset
 
         VIDEO_BANK 0
 
@@ -293,7 +293,7 @@ OverlayRow2ResetVars:
         ld      hl, OverlayRow2TempWhitespace
         ld      de, $9c2d
         ld      bc, 7
-        call    Memcpy
+        fcall   Memcpy
 
         ret
 
@@ -308,7 +308,7 @@ OverlayRepaintRow2:
         ld      h, 0
         ld      l, a
         ld      de, var_temp_str1
-        call    IntegerToString
+        fcall   IntegerToString
 
 
         ld      a, [var_exp]
@@ -316,7 +316,7 @@ OverlayRepaintRow2:
         ld      a, [var_exp + 1]
         ld      l, a
         ld      de, var_temp_str2
-        call    IntegerToString
+        fcall   IntegerToString
 
 
         ld      a, [var_exp_to_next_level]
@@ -324,16 +324,16 @@ OverlayRepaintRow2:
         ld      a, [var_exp_to_next_level + 1]
         ld      l, a
         ld      de, var_temp_str3
-        call    IntegerToString
+        fcall   IntegerToString
 
 
-	call    VBlankIntrWait  ; Just to be safe. Again, this code rarely runs.
+	fcall   VBlankIntrWait  ; Just to be safe. Again, this code rarely runs.
 
         VIDEO_BANK 1
         ld      hl, OverlayRow2Attrs
         ld      de, $9c20
         ld      bc, OverlayRow2AttrsEnd - OverlayRow2Attrs
-        call    Memcpy
+        fcall   Memcpy
         VIDEO_BANK 0
 
         ld      hl, $9c28       ; \
@@ -342,28 +342,28 @@ OverlayRepaintRow2:
 
         ld      de, $9c20
         ld      hl, level_str
-        call    PutTextSimple
+        fcall   PutTextSimple
 
         ld      hl, var_temp_str1
         inc     hl
         inc     hl
         inc     hl
         ld      de, $9c22
-        call    PutTextSimple
+        fcall   PutTextSimple
 
         ld      hl, var_temp_str2
         inc     hl
         inc     hl
         ld      de, $9c25
-        call    PutTextSimple
+        fcall   PutTextSimple
 
         ld      hl, var_temp_str3
         inc     hl
         inc     hl
         ld      de, $9c29
-        call    PutTextSimple
+        fcall   PutTextSimple
 
-        call    OverlayRow2ResetVars
+        fcall   OverlayRow2ResetVars
 
         ld      hl, $9c24
         ld      a, $0c
@@ -382,31 +382,31 @@ OverlayRepaintRow2:
 InitOverlay:
         ld      c, 0
         ld      a, $1
-        call    SetOverlayTile
+        fcall   SetOverlayTile
 
         inc     c
 
         ld      a, $2
-        call    SetOverlayTile
+        fcall   SetOverlayTile
 
         inc     c
 
 .loop1:
         ld      a, $2
-        call    SetOverlayTile
+        fcall   SetOverlayTile
         inc     c
         ld      a, 17
         cp      c
         jr      NZ, .loop1
 
 	ld      a, $B
-        call    SetOverlayTile
+        fcall   SetOverlayTile
 
         inc     c
 
 .loop2:
         ld      a, $0
-        call    SetOverlayTile
+        fcall   SetOverlayTile
         inc     c
         ld      a, 20
         cp      c
@@ -415,10 +415,10 @@ InitOverlay:
 	dec     c
         dec     c
         ld      a, $D
-        call    SetOverlayTile
+        fcall   SetOverlayTile
         inc     c
         ld      a, $E
-        call    SetOverlayTile
+        fcall   SetOverlayTile
 
         ret
 

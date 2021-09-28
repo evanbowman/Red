@@ -57,10 +57,10 @@ WorldmapSceneEnter:
 
 
 	ld      de, VoidVBlankFn
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, WorldmapSceneFadeinVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
         ret
 
@@ -81,34 +81,34 @@ WorldmapSceneUpdate:
         ld      hl, var_oam_back_buffer
         ld      a, 0
         ld      bc, OAM_SIZE * OAM_COUNT
-        call    Memset
+        fcall   Memset
 
 
-        call    DrawEntities
+        fcall   DrawEntities
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 ;;; i.e. Hide all tiles onscreen
-        call    TanScreen
+        fcall   TanScreen
 
         ld      a, 128
         ld      [rWY], a
 
-        call    OverworldSceneInitOverlayVRam
+        fcall   OverworldSceneInitOverlayVRam
 
-        call    OverlayRepaintRow2
+        fcall   OverlayRepaintRow2
 
         VIDEO_BANK 1
         ld      hl, $9e20
         ld      a, $00
         ld      bc, 20
-        call    Memset
+        fcall   Memset
         VIDEO_BANK 0
 
 	ld      de, WorldmapSceneFadeOutVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
         ld      de, VoidUpdateFn
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
 .idle:
         ret
@@ -147,12 +147,12 @@ WorldmapSceneFadeinVBlank:
 
 .transition:
         ld      de, VoidVBlankFn
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
 	ld      de, WorldmapSceneUpdate
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
-        call    TanScreen
+        fcall   TanScreen
 
         LONG_CALL r1_WorldMapShow
 
@@ -160,7 +160,7 @@ WorldmapSceneFadeinVBlank:
 
 .continue:
         ld      [var_scene_counter], a
-        call    FadeToTan
+        fcall   FadeToTan
         ret
 
 
@@ -175,20 +175,20 @@ WorldmapSceneFadeOutVBlank:
 
 .transition:
 
-        call    FadeNone
+        fcall   FadeNone
 
 
         ld      de, OverworldSceneUpdate
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, OverworldSceneOnVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
         ret
 
 .continue:
         ld      [var_scene_counter], a
-        call    FadeToTan
+        fcall   FadeToTan
 
         ret
 

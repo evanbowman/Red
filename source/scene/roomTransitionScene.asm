@@ -74,10 +74,10 @@ RoomTransitionSceneDownVBlank:
 
 RoomTransitionDone:
 	ld      de, OverworldSceneUpdate
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, OverworldSceneOnVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
         LONG_CALL r1_SetRoomVisited
 
@@ -87,7 +87,7 @@ RoomTransitionDone:
 
         LONG_CALL r1_LoadRoomEntities
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         ret
 
@@ -117,7 +117,7 @@ RoomTransitionSceneDownFinishUpVBlank:
 
         jr      .return
 .done:
-        call    RoomTransitionDone
+        fcall   RoomTransitionDone
 
 .return:
         ret
@@ -145,9 +145,9 @@ RoomTransitionSceneDownUpdate:
 	ld      hl, var_player_coord_y
         ld      b, 0
 	ld      c, 148
-        call    FixnumAdd
+        fcall   FixnumAdd
 
-        call    DrawEntities
+        fcall   DrawEntities
 
         ld      a, [var_room_load_counter]
         ld      c, a
@@ -160,10 +160,10 @@ RoomTransitionSceneDownUpdate:
 ;;; while we're copying the rest of the map rows, it's kind of annoying to the
 ;;; user, because there's a split-second pause otherwise.
         ld      de, RoomTransitionSceneUDUpdateRest
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, RoomTransitionSceneDownFinishUpVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
 ;;; ...
 .continue:
@@ -191,9 +191,9 @@ RoomTransitionSceneUpUpdate:
         ld      hl, var_player_coord_y
         ld      b, 0
 	ld      c, 148
-        call    FixnumSub
+        fcall   FixnumSub
 
-        call    DrawEntities
+        fcall   DrawEntities
 
         ld      a, [var_room_load_counter]
         ld      c, a
@@ -203,10 +203,10 @@ RoomTransitionSceneUpUpdate:
 
 .done:
         ld      de, RoomTransitionSceneUDUpdateRest
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, RoomTransitionSceneUpFinishUpVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
 .continue:
 	ret
@@ -261,7 +261,7 @@ RoomTransitionSceneUpFinishUpVBlank:
 
         jr      .return
 .done:
-        call    RoomTransitionDone
+        fcall   RoomTransitionDone
 
 .return:
         ret
@@ -288,9 +288,9 @@ RoomTransitionSceneRightUpdate:
 	ld      hl, var_player_coord_x
         ld      b, 0
 	ld      c, 148
-        call    FixnumAdd
+        fcall   FixnumAdd
 
-        call    DrawEntities
+        fcall   DrawEntities
 
         ld      a, [var_room_load_counter]
         ld      c, a
@@ -300,10 +300,10 @@ RoomTransitionSceneRightUpdate:
 .done:
 
         ld      de, RoomTransitionSceneLRUpdateRest
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, RoomTransitionSceneRightFinishUpVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
 .continue:
         ret
@@ -332,7 +332,7 @@ RoomTransitionSceneRightFinishUpVBlank:
 
         jr      .return
 .done:
-        call    RoomTransitionDone
+        fcall   RoomTransitionDone
 
 .return:
         ret
@@ -385,9 +385,9 @@ RoomTransitionSceneLeftUpdate:
         ld      hl, var_player_coord_x
         ld      b, 0
 	ld      c, 148
-        call    FixnumSub
+        fcall   FixnumSub
 
-        call    DrawEntities
+        fcall   DrawEntities
 
         ld      a, [var_room_load_counter]
         ld      c, a
@@ -397,10 +397,10 @@ RoomTransitionSceneLeftUpdate:
 
 .done:
         ld      de, RoomTransitionSceneLRUpdateRest
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, RoomTransitionSceneLeftFinishUpVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
 .continue:
 	ret
@@ -474,7 +474,7 @@ RoomTransitionSceneLeftFinishUpVBlank:
 
         jr      .return
 .done:
-        call    RoomTransitionDone
+        fcall   RoomTransitionDone
 
 .return:
         ret

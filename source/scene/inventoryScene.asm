@@ -48,24 +48,24 @@ InventorySceneEnter:
         ld      [var_scene_counter], a
 
 	ld      de, VoidVBlankFn
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, InventorySceneFadeinVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
         ret
 
 
 ;;; ----------------------------------------------------------------------------
-	
+
 InventorySceneExit:
         ld      a, 255
         ld      [var_scene_counter], a
 
-        call    VBlankIntrWait
-        call    BlackScreenExcludeOverlay
+        fcall   VBlankIntrWait
+        fcall   BlackScreenExcludeOverlay
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         ld      a, 136
         ld      [rWY], a
         ld      [var_overlay_y_offset], a
@@ -73,19 +73,19 @@ InventorySceneExit:
         ld      a, 0
         ld      [var_overlay_alternate_pos], a
 
-        call    ShowOverlay
+        fcall   ShowOverlay
 
-        call    OverlayRepaintRow2
+        fcall   OverlayRepaintRow2
 
-        call    DrawEntities
+        fcall   DrawEntities
 
 	ld      de, InventorySceneFadeOutVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
         ld      de, VoidUpdateFn
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
         ret
-	
+
 
 ;;; ----------------------------------------------------------------------------
 
@@ -94,7 +94,7 @@ InventorySceneUpdate:
         and     PADF_START | PADF_B
         jr      Z, .idle
 
-        call    InventorySceneExit
+        fcall   InventorySceneExit
 
         ret
 
@@ -130,20 +130,20 @@ InventorySceneFadeinVBlank:
 
 .transition:
         ld      de, VoidVBlankFn
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
 	ld      de, InventorySceneUpdate
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      c, 255
-        call    BlackScreenExcludeOverlay
+        fcall   BlackScreenExcludeOverlay
 
         LONG_CALL r8_InventoryOpen
         ret
 
 .continue:
         ld      [var_scene_counter], a
-        call    FadeToBlackExcludeOverlay
+        fcall   FadeToBlackExcludeOverlay
 
         ret
 
@@ -160,18 +160,18 @@ InventorySceneFadeOutVBlank:
 	jr      .continue
 
 .transition:
-        call    FadeNone
+        fcall   FadeNone
 
         ld      de, OverworldSceneUpdate
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
         ld      de, OverworldSceneOnVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
         ret
 
 .continue:
         ld      [var_scene_counter], a
 
-        call    FadeToBlackExcludeOverlay
+        fcall   FadeToBlackExcludeOverlay
         ret

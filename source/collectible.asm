@@ -46,7 +46,7 @@ CollectiblesLoad:
         ld      a, [var_room_y]
         ld      c, a
 
-        call    __CollectiblesLoad
+        fcall   __CollectiblesLoad
 
         ret
 
@@ -64,7 +64,7 @@ __CollectiblesLoad:
         push    bc
 
         ;; hl = y * 18 * 2(bytes per collectible) * 7(collectibles per room)
-        call    l16Mul18Fast    ; x18
+        fcall   l16Mul18Fast    ; x18
         add     hl, hl          ; x2
 
         ld      b, h
@@ -108,7 +108,7 @@ __CollectiblesLoad:
 
 
 CollectibleItemErase:
-        call    CollectiblesLoad
+        fcall   CollectiblesLoad
 .loop:
         ld      a, 7
         cp      b

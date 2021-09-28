@@ -49,7 +49,7 @@ r1_InitWRam:
         ld      hl, _RAM
         ;; We don't want to zero the stack, or how will we return from this fn?
         ld      bc, STACK_END - _RAM
-        call    Memset
+        fcall   Memset
 
         ld      d, 1
 .loop:
@@ -62,7 +62,7 @@ r1_InitWRam:
         ld      hl, _RAMBANK
         ld      bc, ($DFFF - _RAMBANK) - 1
         ld      a, 0
-        call    Memset
+        fcall   Memset
 
         inc     d
         jr      .loop
@@ -81,9 +81,9 @@ r1_InitRam:
 
         ld      hl, _HRAM
         ld      bc, $80
-        call    Memset
+        fcall   Memset
 
-        call    r1_InitWRam
+        fcall   r1_InitWRam
 
         ret
 
@@ -209,5 +209,5 @@ r1_fatalError:
 
         pop     hl
 
-        call    SystemReboot
+        fcall   SystemReboot
         ret

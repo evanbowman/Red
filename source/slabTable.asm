@@ -113,15 +113,15 @@ SlabTableRebindNearest:
 
 	push    bc                      ; \
         ld      c, b                    ; | Free the row that we're currently
-        call    SlabTableUnbind         ; | using in the table.
+        fcall   SlabTableUnbind         ; | using in the table.
         pop     bc                      ; /
 
 
-        call    SlabTableGetNearestAvail
+        fcall   SlabTableGetNearestAvail
         or      a                       ; \ If there is no row available, remain
         jr      Z, .reset               ; / in current row.
 
-        call    SlabTableBind
+        fcall   SlabTableBind
 
         pop     hl                      ; pop bc into hl, we want to preserve bc
 
@@ -130,7 +130,7 @@ SlabTableRebindNearest:
 .reset:
         pop     bc
         ld      c, b                    ; \ Rebind ourself to the row that we're
-        call    SlabTableBind           ; / currently in.
+        fcall   SlabTableBind           ; / currently in.
         ret
 
 

@@ -119,11 +119,11 @@ r1_MapExpandRow:
 
 .prepColors:
         ld      a, [de]
-        call    r1_SetTileColor
+        fcall   r1_SetTileColor
 
         inc     hl
         ld      a, [de]
-        call    r1_SetTileColor
+        fcall   r1_SetTileColor
 
         inc     hl
         inc     de
@@ -144,7 +144,7 @@ r1_SetTileColor:
 ;;; hl - dest
 ;;; trashes a
         push    af
-        call    .check_cliff_tile
+        fcall   .check_cliff_tile
         pop     af
 
         cp      a, 28
@@ -247,14 +247,14 @@ r1_MapShowRow:
 
 .copy:
         ld      bc, 32
-        call    Memcpy
+        fcall   Memcpy
 
         pop     de
 
         VIDEO_BANK 1
         ld      bc, 32
         ld      hl, var_room_load_colors
-        call    Memcpy
+        fcall   Memcpy
         VIDEO_BANK 0
 
         ret
@@ -352,11 +352,11 @@ r1_MapExpandColumn:
 
 .prepColors:
         ld      a, [de]
-        call    r1_SetTileColor
+        fcall   r1_SetTileColor
 
         inc     hl
         ld      a, [de]
-        call    r1_SetTileColor
+        fcall   r1_SetTileColor
 
         inc     hl
 
@@ -722,18 +722,18 @@ r1_WorldMapShowRowPair:
 
         ld      hl, r1_WorldMapTemplateRow0
         ld      bc, r1_WorldMapTemplateRow0End - r1_WorldMapTemplateRow0
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         pop     de
 
         ld      hl, r1_WorldMapTemplateRow1
         ld      bc, r1_WorldMapTemplateRow1End - r1_WorldMapTemplateRow1
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
         ret
 
 
 r1_WorldMapShowRooms:
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 
         RAM_BANK 1
 
@@ -756,7 +756,7 @@ r1_WorldMapShowRooms:
         jr      Z, .vsync
         jr      .write
 .vsync:
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
 .write:
         ld      a, [hl]
         and     ROOM_VISITED            ; Check for room visited flag
@@ -846,7 +846,7 @@ r1_WorldMapInitBorder:
         ld      hl, $9c00       ; \
         ld      a, 0            ; | Zero out attribs for top row
         ld      bc, 20          ; |
-        call    Memset          ; /
+        fcall   Memset          ; /
 
 
         ld      a, 0
@@ -860,59 +860,59 @@ r1_WorldMapShow:
         ld      hl, r1_WorldMapObjectTextures
         ld      bc, r1_WorldMapObjectTexturesEnd - r1_WorldMapObjectTextures
         ld      de, $8000
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
         VIDEO_BANK 0
 
         ld      hl, r1_WorldMapTiles
         ld      bc, r1_WorldMapTilesEnd - r1_WorldMapTiles
         ld      de, $9000
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
         ld      hl, r1_WorldMapTemplateTop
         ld      bc, r1_WorldMapTemplateTopEnd - r1_WorldMapTemplateTop
         ld      de, $9C00
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
-        call    r1_WorldMapInitBorder
+        fcall   r1_WorldMapInitBorder
 
         ld      de, $9C20
         ld      hl, $9C40
-        call    r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowRowPair
 
         ld      de, $9C60
         ld      hl, $9C80
-        call    r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowRowPair
 
         ld      de, $9CA0
         ld      hl, $9CC0
-        call    r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowRowPair
 
         ld      de, $9CE0
         ld      hl, $9D00
-        call    r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowRowPair
 
         ld      de, $9D20
         ld      hl, $9D40
-        call    r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowRowPair
 
         ld      de, $9D60
         ld      hl, $9D80
-        call    r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowRowPair
 
         ld      de, $9DA0
         ld      hl, $9DC0
-        call    r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowRowPair
 
         ld      de, $9DE0
         ld      hl, $9E00
-        call    r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowRowPair
 
         ld      hl, r1_WorldMapTemplateBottom
         ld      bc, r1_WorldMapTemplateBottomEnd - r1_WorldMapTemplateBottom
         ld      de, $9E20
-        call    VramSafeMemcpy
+        fcall   VramSafeMemcpy
 
-        call    r1_WorldMapShowRooms
+        fcall   r1_WorldMapShowRooms
 
 
         ;; We're going to display a cursor and stuff using oam, so we want to
@@ -921,16 +921,16 @@ r1_WorldMapShow:
         ld      hl, var_oam_back_buffer
         ld      a, 0
         ld      bc, OAM_SIZE * OAM_COUNT
-        call    Memset
+        fcall   Memset
 
 
-        call    VBlankIntrWait
+        fcall   VBlankIntrWait
         ld      b, r1_WorldMapPalettesEnd - r1_WorldMapPalettes
         ld      hl, r1_WorldMapPalettes
-        call    LoadBackgroundColors
+        fcall   LoadBackgroundColors
 	;; We zeroed out the oam back buffer, now we want to copy it to vram.
         ld      a, HIGH(var_oam_back_buffer)
-        call    hOAMDMA
+        fcall   hOAMDMA
 
 
         ;; Set a few specific map tiles with custom graphics.
@@ -955,7 +955,7 @@ r1_WorldMapShow:
 
         ld      b, r1_WorldMapObjectPalettesEnd - r1_WorldMapObjectPalettes
         ld      hl, r1_WorldMapObjectPalettes
-        call    LoadObjectColors
+        fcall   LoadObjectColors
 
         ret
 
@@ -970,37 +970,37 @@ r1_WorldMapUpdateCursor:
 
         ldh     a, [hvar_joypad_current]
         bit     PADB_UP, a
-        call    NZ, r1_WorldMapMoveCursorUp
+        fcallc  NZ, r1_WorldMapMoveCursorUp
 
         ldh     a, [hvar_joypad_current]
         bit     PADB_DOWN, a
-        call    NZ, r1_WorldMapMoveCursorDown
+        fcallc  NZ, r1_WorldMapMoveCursorDown
 
         ldh     a, [hvar_joypad_current]
         bit     PADB_LEFT, a
-        call    NZ, r1_WorldMapMoveCursorLeft
+        fcallc  NZ, r1_WorldMapMoveCursorLeft
 
         ldh     a, [hvar_joypad_current]
         bit     PADB_RIGHT, a
-        call    NZ, r1_WorldMapMoveCursorRight
+        fcallc  NZ, r1_WorldMapMoveCursorRight
         ret
 
 .moving:
         ldh     a, [hvar_joypad_raw]
         bit     PADB_UP, a
-        call    NZ, r1_WorldMapMoveCursorUp
+        fcallc  NZ, r1_WorldMapMoveCursorUp
 
         ldh     a, [hvar_joypad_raw]
         bit     PADB_DOWN, a
-        call    NZ, r1_WorldMapMoveCursorDown
+        fcallc  NZ, r1_WorldMapMoveCursorDown
 
         ldh     a, [hvar_joypad_raw]
         bit     PADB_LEFT, a
-        call    NZ, r1_WorldMapMoveCursorLeft
+        fcallc  NZ, r1_WorldMapMoveCursorLeft
 
         ldh     a, [hvar_joypad_raw]
         bit     PADB_RIGHT, a
-        call    NZ, r1_WorldMapMoveCursorRight
+        fcallc  NZ, r1_WorldMapMoveCursorRight
         ret
 
 
@@ -1008,7 +1008,7 @@ r1_WorldMapUpdateCursor:
 
 r1_WorldMapDescribeRoom:
         ld      de, WorldMapSceneDescribeRoomVBlank
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
         ret
 
@@ -1017,25 +1017,25 @@ r1_WorldMapDescribeRoom:
 
 r1_WorldMapDescribeRoomVBlankImpl:
         ld      de, VoidVBlankFn
-        call    SceneSetVBlankFn
+        fcall   SceneSetVBlankFn
 
         VIDEO_BANK 1
         ld      hl, $9e20
         ld      a, $87
         ld      bc, 20
-        call    Memset
+        fcall   Memset
         VIDEO_BANK 0
 
         ld      hl, $9e20
         ld      a, $37
         ld      bc, 20
-        call    Memset
+        fcall   Memset
 
         ld      a, [var_world_map_cursor_x]
         ld      b, a
         ld      a, [var_world_map_cursor_y]
         ld      c, a
-        call    r1_LoadRoom     ; room pointer in hl
+        fcall   r1_LoadRoom     ; room pointer in hl
 
         RAM_BANK 1
 
@@ -1076,7 +1076,7 @@ r1_WorldMapDescribeRoomVBlankImpl:
         ld      b, a
         ld      a, [var_world_map_cursor_y]
         ld      c, a
-        call    __CollectiblesLoad ; pointer to collectibles in hl...
+        fcall   __CollectiblesLoad ; pointer to collectibles in hl...
         pop     bc
 
 
@@ -1129,15 +1129,15 @@ r1_WorldMapCursorRealY:
 
 r1_WorldMapSetCursor:
         ld      l, 0
-        call    OamLoad
+        fcall   OamLoad
 
-        call    r1_WorldMapCursorRealY
+        fcall   r1_WorldMapCursorRealY
         ld      b, a
         ld      a, [var_world_map_cursor_ty]
         add     b
         ld      [hl+], a        ; y
 
-        call    r1_WorldMapCursorRealX
+        fcall   r1_WorldMapCursorRealX
         ld      b, a
         ld      a, [var_world_map_cursor_tx]
         add     b
@@ -1149,13 +1149,13 @@ r1_WorldMapSetCursor:
         ld      [hl+], a        ; attr
 
 
-        call    r1_WorldMapCursorRealY
+        fcall   r1_WorldMapCursorRealY
         ld      b, a
         ld      a, [var_world_map_cursor_ty]
         add     b
         ld      [hl+], a        ; y
 
-        call    r1_WorldMapCursorRealX
+        fcall   r1_WorldMapCursorRealX
         ld      b, a
         ld      a, [var_world_map_cursor_tx]
         add     b
@@ -1188,14 +1188,14 @@ r1_WorldMapMoveCursorUp:
         ld      [var_world_map_cursor_ty], a
 
         ld      de, WorldMapSceneUpdateCursorUp
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
 .skip:
         ld      a, 1
         ld      [var_world_map_cursor_visible], a
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
 
-        call    r1_WorldMapDescribeRoom
+        fcall   r1_WorldMapDescribeRoom
 
         ret
 
@@ -1212,11 +1212,11 @@ r1_WorldMapSceneUpdateCursorUpImpl:
 	sub     b
         ld      [var_world_map_cursor_ty], a
 
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
         ret
 
 .done:
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
 
 
         ld      a, [var_world_map_cursor_y]
@@ -1229,13 +1229,13 @@ r1_WorldMapSceneUpdateCursorUpImpl:
 
 .skip:
 	ld      de, WorldmapSceneUpdate
-        call    SceneSetUpdateFn
-	call    r1_WorldMapDescribeRoom
+        fcall   SceneSetUpdateFn
+	fcall   r1_WorldMapDescribeRoom
 
         ret
 
 .continue:
-        call    r1_WorldMapDescribeRoom
+        fcall   r1_WorldMapDescribeRoom
 
         ld      a, 1
         ld      [var_world_map_cursor_moving], a
@@ -1262,14 +1262,14 @@ r1_WorldMapMoveCursorDown:
         jr      Z, .skip
 
         ld      de, WorldMapSceneUpdateCursorDown
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
 .skip:
         ld      a, 1
         ld      [var_world_map_cursor_visible], a
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
 
-        call    r1_WorldMapDescribeRoom
+        fcall   r1_WorldMapDescribeRoom
         ret
 
 
@@ -1286,7 +1286,7 @@ r1_WorldMapSceneUpdateCursorDownImpl:
         add     b
         ld      [var_world_map_cursor_ty], a
 
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
         ret
 
 .done:
@@ -1297,7 +1297,7 @@ r1_WorldMapSceneUpdateCursorDownImpl:
         ld      a, 0
         ld      [var_world_map_cursor_ty], a
 
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
 
         ld      a, [var_world_map_cursor_y]
         cp      15
@@ -1309,11 +1309,11 @@ r1_WorldMapSceneUpdateCursorDownImpl:
 .skip:
 
 	ld      de, WorldmapSceneUpdate
-        call    SceneSetUpdateFn
-	call    r1_WorldMapDescribeRoom
+        fcall   SceneSetUpdateFn
+	fcall   r1_WorldMapDescribeRoom
 
 .continue:
-        call    r1_WorldMapDescribeRoom
+        fcall   r1_WorldMapDescribeRoom
 
         ld      a, 1
         ld      [var_world_map_cursor_moving], a
@@ -1339,14 +1339,14 @@ r1_WorldMapMoveCursorLeft:
         ld      [var_world_map_cursor_tx], a
 
         ld      de, WorldMapSceneUpdateCursorLeft
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
 .skip:
         ld      a, 1
         ld      [var_world_map_cursor_visible], a
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
 
-        call    r1_WorldMapDescribeRoom
+        fcall   r1_WorldMapDescribeRoom
 
         ret
 
@@ -1363,11 +1363,11 @@ r1_WorldMapSceneUpdateCursorLeftImpl:
         sub     b
         ld      [var_world_map_cursor_tx], a
 
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
         ret
 
 .done:
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
 
         ld      a, [var_world_map_cursor_x]
         or      a
@@ -1379,12 +1379,12 @@ r1_WorldMapSceneUpdateCursorLeftImpl:
 .skip:
 
 	ld      de, WorldmapSceneUpdate
-        call    SceneSetUpdateFn
-	call    r1_WorldMapDescribeRoom
+        fcall   SceneSetUpdateFn
+	fcall   r1_WorldMapDescribeRoom
 
         ret
 .continue:
-        call    r1_WorldMapDescribeRoom
+        fcall   r1_WorldMapDescribeRoom
 
         ld      a, 1
         ld      [var_world_map_cursor_moving], a
@@ -1410,14 +1410,14 @@ r1_WorldMapMoveCursorRight:
         jr      Z, .skip
 
         ld      de, WorldMapSceneUpdateCursorRight
-        call    SceneSetUpdateFn
+        fcall   SceneSetUpdateFn
 
 .skip:
         ld      a, 1
         ld      [var_world_map_cursor_visible], a
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
 
-        call    r1_WorldMapDescribeRoom
+        fcall   r1_WorldMapDescribeRoom
 
         ret
 
@@ -1435,7 +1435,7 @@ r1_WorldMapSceneUpdateCursorRightImpl:
         add     b
         ld      [var_world_map_cursor_tx], a
 
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
         ret
 
 .done:
@@ -1446,7 +1446,7 @@ r1_WorldMapSceneUpdateCursorRightImpl:
         ld      a, 0
         ld      [var_world_map_cursor_tx], a
 
-        call    r1_WorldMapSetCursor
+        fcall   r1_WorldMapSetCursor
 
         ld      a, [var_world_map_cursor_x]
         cp      17
@@ -1458,13 +1458,13 @@ r1_WorldMapSceneUpdateCursorRightImpl:
 .skip:
 
 	ld      de, WorldmapSceneUpdate
-        call    SceneSetUpdateFn
-	call    r1_WorldMapDescribeRoom
+        fcall   SceneSetUpdateFn
+	fcall   r1_WorldMapDescribeRoom
 
         ret
 
 .continue:
-        call    r1_WorldMapDescribeRoom
+        fcall   r1_WorldMapDescribeRoom
 
         ld      a, 1
         ld      [var_world_map_cursor_moving], a
@@ -1536,7 +1536,7 @@ r1_Mul13Fast:
 
 
 r1_InitializeRoom:
-        call    CollectiblesLoad
+        fcall   CollectiblesLoad
 ;;; TODO: Now, we want to iterate through the collectibles, and place each item
 ;;; on the map.
 
@@ -1561,7 +1561,7 @@ r1_InitializeRoom:
 
         push    hl
         ld      hl, var_map_info
-        call    MapSetTile
+        fcall   MapSetTile
         pop     hl
 
 .skip:
@@ -1591,8 +1591,8 @@ r1_LoadRoom:
         push    bc
 
         ;; hl = y * 18 * 13
-        call    r1_l16Mul18Fast
-        call    r1_Mul13Fast
+        fcall   r1_l16Mul18Fast
+        fcall   r1_Mul13Fast
 
         pop     bc
         push    hl
@@ -1600,7 +1600,7 @@ r1_LoadRoom:
         ;; hl = x * 13
         ld      l, b
         ld      h, 0
-        call    r1_Mul13Fast
+        fcall   r1_Mul13Fast
 
         pop     bc              ; previous hl to bc
 
@@ -1631,7 +1631,7 @@ r1_SetRoomVisited:
         ld      c, a
 
 .test:
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
         ld      a, [hl]
 
         or      ROOM_VISITED
@@ -1649,7 +1649,7 @@ r1_LoadRoomEntities:
         ld      b, a
         ld      a, [var_room_y]
         ld      c, a
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         inc     hl              ; \
         inc     hl              ; | skip room header
@@ -1680,7 +1680,7 @@ r1_LoadRoomEntities:
         swap    a
         ld      b, a
 
-        call    r1_SpawnEntity
+        fcall   r1_SpawnEntity
 
         pop     bc
         pop     hl
@@ -1712,7 +1712,7 @@ r1_SpawnEntity:
         jr      Z, .spawnGreywolfDead
 
 .spawnBonfire:
-        call    r1_BonfireNew
+        fcall   r1_BonfireNew
         ret
 
 .spawnSpider:
@@ -1721,11 +1721,11 @@ r1_SpawnEntity:
 
 .spawnGreywolf:
 ;;; TODO...
-        call    r1_GreywolfNew
+        fcall   r1_GreywolfNew
         ret
 
 .spawnGreywolfDead:
-        call    r1_GreywolfDeadNew
+        fcall   r1_GreywolfDeadNew
         ret
 
 
@@ -1737,14 +1737,14 @@ r1_CurrentRoomClearEntities:
         ld      b, a
         ld      a, [var_room_y]
         ld      c, a
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
 
         ld      bc, ROOM_HEADER_SIZE
         add     hl, bc
 
         ld      a, 0
         ld      bc, ROOM_ENTITYDESC_ARRAY_SIZE
-        call    Memset
+        fcall   Memset
 
         ret
 
@@ -1766,7 +1766,7 @@ r1_CurrentRoomAppendEntityDesc:
         ld      b, a
         ld      a, [var_room_y]
         ld      c, a
-        call    r1_LoadRoom
+        fcall   r1_LoadRoom
         pop     bc
 
         inc     hl              ; skip header bytes
@@ -1805,7 +1805,7 @@ r1_CurrentRoomAppendEntityDesc:
 r1_StoreRoomEntities:
 	RAM_BANK 1
 
-        call    r1_CurrentRoomClearEntities
+        fcall   r1_CurrentRoomClearEntities
 
         ld      de, var_entity_buffer
         ld      a, [var_entity_buffer_size]
@@ -1823,7 +1823,7 @@ r1_StoreRoomEntities:
         ld      l, a            ; |
         inc     de              ; /
 
-        call    EntityGetType
+        fcall   EntityGetType
 	ld      a, b
         cp      0
         jr      Z, .skip        ; Do not store the player entity in the room
@@ -1842,7 +1842,7 @@ r1_StoreRoomEntities:
         and     $f0             ; | fetch x coordinate
         swap    a               ; /
 
-        call    r1_CurrentRoomAppendEntityDesc
+        fcall   r1_CurrentRoomAppendEntityDesc
 
 .skip:
 
@@ -1852,7 +1852,7 @@ r1_StoreRoomEntities:
 .loopEnd:
         ;; TODO: erase contents of room's entity array, serialize entities.
 
-        call    EntityBufferReset
+        fcall   EntityBufferReset
 
         ret
 
