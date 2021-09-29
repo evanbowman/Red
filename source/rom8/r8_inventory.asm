@@ -238,8 +238,19 @@ r8_ScavengeUpdate:
         and     b
         fcall   EntitySetTypeModifier
 
+        fcall   InventorySize     ; \
+        ld      h, 0              ; | We added an item, redraw the inventory
+        ld      l, c              ; | used count. First convert the number
+        ld      de, var_temp_str1 ; | to a string...
+        fcall   IntegerToString   ; /
+
         ;; Now, we'll need to re-draw the text for the item that we just took.
         fcall   VBlankIntrWait
+
+        ld      hl, var_temp_str1 + 3 ; \
+        ld      b, $88                ; | Draw the inventory-used count.
+        ld      de, $9c6f             ; |
+        call    PutText               ; /
 
         ld      a, [var_scavenge_selection]
 	ld      de, $9c41
