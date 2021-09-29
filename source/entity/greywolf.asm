@@ -131,6 +131,7 @@ GreywolfUpdateDying:
 
 
 GreywolfUpdateDead:
+        LONG_CALL r9_GreywolfUpdateDeadImpl
         jp      EntityUpdateLoopResume
 
 

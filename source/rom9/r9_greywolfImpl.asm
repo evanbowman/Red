@@ -1004,6 +1004,9 @@ r9_GreywolfUpdateDyingImpl:
         ld      a, ENTITY_TYPE_GREYWOLF_DEAD
         fcall   EntitySetType
 
+        ld      a, $03          ; Has two items
+        fcall   EntitySetTypeModifier
+
         ld      a, 4
         fcall   EntitySetPalette
 
@@ -1015,6 +1018,100 @@ r9_GreywolfUpdateDyingImpl:
         ld      hl, 10
         fcall   AddExp
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfDeadOnMessage:
+;;; bc - message pointer
+;;; de - self
+        ld      a, [bc]
+        cp      MESSAGE_PLAYER_INTERACT
+        jr      Z, .onPlayerInteract
+        ret
+
+.onPlayerInteract:
+        ld      h, d
+        ld      l, e
+
+        push    hl
+
+        fcall   EntityGetPos    ; pos -> bc
+        ld      hl, var_temp_hitbox1
+        fcall   r9_GreywolfPopulateHitbox
+
+        ld      hl, var_temp_hitbox2
+        fcall   r9_PlayerPopulateHitbox
+
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+
+        pop     hl
+
+        or      a
+        ret     Z
+
+        push    hl
+        ld      de, ScavengeSceneEnter
+        fcall   SceneSetUpdateFn
+        pop     hl
+
+	call    r9_GreywolfSetupScavenge
+
+	ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_GreywolfSetupScavenge:
+;;; hl - self
+        ld      a, h                         ; \
+        ld      [var_scavenge_target], a     ; |
+        inc     bc                           ; | Store self pointer in ram.
+        ld      a, l                         ; |
+        ld      [var_scavenge_target + 1], a ; /
+
+        ld      a, ITEM_NONE
+        ld      [var_scavenge_slot_0], a
+        ld      [var_scavenge_slot_1], a
+
+        fcall   EntityGetFullType
+        ld      b, a
+        bit     7, b
+        jr      Z, .skip0
+
+        ld      a, ITEM_RAW_MEAT ; TODO: randomize based on a seed?
+        ld      [var_scavenge_slot_0], a
+
+.skip0:
+        bit     6, b
+        ret     Z
+
+        ld      a, ITEM_RAW_MEAT
+        ld      [var_scavenge_slot_1], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_GreywolfUpdateDeadImpl:
+;;; bc - self
+        ld      h, b
+        ld      l, c
+
+        push    hl
+
+        fcall   EntityGetMessageQueue
+        fcall   MessageQueueLoad
+
+        pop     de
+        ld      bc, r9_GreywolfDeadOnMessage
+        fcall   MessageQueueDrain
         ret
 
 

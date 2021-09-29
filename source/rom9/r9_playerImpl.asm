@@ -1429,13 +1429,14 @@ r9_PlayerKnifeAttackPopulateHitbox:
         ld      b, a
         ld      [hl+], a
         ld      a, [var_player_coord_y]
+        add     6
         ld      c, a
         ld      [hl+], a
 
         ld      a, 24
         add     b
         ld      [hl+], a
-        ld      a, 32
+        ld      a, 26
         add     c
         ld      [hl], a
         ret

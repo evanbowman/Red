@@ -70,6 +70,7 @@ ENDM
 ;;; NOTE: LONG_CALL does not restore the current rom bank
 LONG_CALL: MACRO
         ASSERT (BANK(\1) != BANK(@)) ; pointless long call to current bank
+        ASSERT (BANK(@) == BANK(EntryPoint)) ; we have no bank stack implemented yet
         ld      a, BANK(\1)
         ld      hl, \1
         rst     $08
@@ -82,6 +83,10 @@ ENDM
 
 
 SET_BANK: MACRO
+        ;; Makes no sense for a bank with code in it to switch to another bank
+        ;; without a proper LONG_CALL.
+        ASSERT (BANK(@) == BANK(EntryPoint))
+
         ld      a, \1
         ld      [rROMB0], a
 ENDM
@@ -500,6 +505,7 @@ SoftReset:
         INCLUDE "roomTransitionScene.asm"
         INCLUDE "worldmapScene.asm"
         INCLUDE "constructBonfireScene.asm"
+        INCLUDE "scavengeScene.asm"
         INCLUDE "messageBus.asm"
         INCLUDE "slabTable.asm"
         INCLUDE "utility.asm"

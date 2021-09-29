@@ -211,3 +211,42 @@ r1_fatalError:
 
         fcall   SystemReboot
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_ClearOverlayBar:
+        fcall   VBlankIntrWait
+
+	ld      hl, $9c20       ; |
+        ld      bc, 20          ; |
+        ld      a, $32          ; |
+        fcall   Memset          ; |
+	ld      hl, $9c40       ; |
+        ld      bc, 20          ; |
+        ld      a, $32          ; |
+        fcall   Memset          ; |
+        ld      hl, $9c60       ; |
+        ld      bc, 20          ; |
+        ld      a, $32          ; |
+        fcall   Memset          ; | Fill rows with black tiles.
+        call    VBlankIntrWait  ; |
+        VIDEO_BANK 1            ; |
+        ld      hl, $9c20       ; |
+        ld      bc, 20          ; |
+        ld      a, $8b          ; |
+        fcall   Memset          ; |
+        ld      hl, $9c40       ; |
+        ld      bc, 20          ; |
+        ld      a, $8b          ; |
+        fcall   Memset          ; |
+        ld      hl, $9c60       ; |
+        ld      bc, 20          ; |
+        ld      a, $8b          ; |
+        fcall   Memset          ; |
+        VIDEO_BANK 0            ; /
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------

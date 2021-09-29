@@ -81,7 +81,9 @@ r1_PlayerNew:
 r1_EntityInit:
 ;;; b - x
 ;;; c - y
+;;; e - type modifier bits
 ;;; return hl - entity pointer
+        push    de
         push    bc
 
         fcall   AllocateEntity
@@ -114,6 +116,13 @@ r1_EntityInit:
         pop     hl
         fcall   EntitySetTexture
 
+        pop     de              ; \
+        swap    e               ; | Retrieve type modifier, move to lower two
+        srl     e               ; | bits of register e.
+        srl     e               ; /
+        ld      a, e
+	call    EntitySetTypeModifier
+
         ret
 
 
@@ -123,6 +132,7 @@ r1_EntityInit:
 r1_BonfireNew:
 ;;; b - x
 ;;; c - y
+;;; e - type modifier bits
         push    bc
 
         fcall   r1_EntityInit
@@ -168,6 +178,7 @@ r1_BonfireNew:
 r1_GreywolfNew:
 ;;; b - x
 ;;; c - y
+;;; e - type modifier bits
         fcall   r1_EntityInit
 
         ld      a, SPRID_GREYWOLF_RUN_L
@@ -223,6 +234,9 @@ r1_GreywolfNew:
 
 
 r1_GreywolfDeadNew:
+;;; b - x
+;;; c - y
+;;; e - type modifier bits
         fcall   r1_EntityInit
 
         ld      a, SPRID_GREYWOLF_DEAD_L

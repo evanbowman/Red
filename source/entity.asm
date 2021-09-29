@@ -54,12 +54,28 @@
 ;;;         char has_shadow_ : 1;
 ;;;     }
 ;;;     Pointer update_fn_;
-;;;     char type_;
+;;;     char type_; (modifier 2 bits, 6 type bits)
 ;;;     Mid message_bus_number_;
 ;;; };
 ;;;
+;;; NOTES:
+;;; * The type modifier bits were added retrospectively, to support the addition
+;;; of persistent properties to the existing entity framework. For example, I
+;;; wanted to attach items to dead entities, and identify which items had been
+;;; collected by the player. So I used the type modifier bits, as the entity
+;;; type byte was already stored persistently when entering/leaving a room.
+;;;
+;;; * The rendering engine will perform a VRAM copy when it sees that an
+;;; entity's texture swap flag is set. The engine then resets the flag. If too
+;;; many entities set their swap flags during the same frame, some entities
+;;; will not be processed until the next vblank.
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+ENTITY_TYPE_MASK                EQU  $3f
+ENTITY_TYPE_MODIFIER_MASK       EQU  $c0
+
 
 
 EntityBufferReset:
@@ -154,17 +170,60 @@ EntityAnimationAdvance:
 
 ;;; ----------------------------------------------------------------------------
 
-EntityGetType:
+EntityGetFullType:
 ;;; hl - entity
-;;; return b - type
+;;; return a - type
 ;;; trashes c
 ;;; preserves hl
         push    hl
         ld      bc, var_player_type - var_player_struct
         add     hl, bc
-        ld      b, [hl]
+        ld      a, [hl]
         pop     hl
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+EntityGetType:
+;;; hl - entity
+;;; return a - type
+;;; trashes c
+;;; preserves hl
+        push    hl
+        ld      bc, var_player_type - var_player_struct
+        add     hl, bc
+        ld      a, [hl]
+        and     ENTITY_TYPE_MASK
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+EntitySetTypeModifier:
+;;; hl - entity
+;;; a - modifier
+;;; trashes bc
+        push    hl
+        ld      bc, var_player_type - var_player_struct
+        add     hl, bc
+
+        push    af                        ; \
+        ld      a, [hl]                   ; |
+        and     ENTITY_TYPE_MASK          ; | Load entity type modifier into b
+        ld      b, a                      ; |
+        pop     af                        ; /
+
+        swap    a               ; \
+        sla     a               ; | Move modifier bits to upper part of register
+        sla     a               ; /
+        or      b               ; combine with previous type bits in b
+
+        ld      [hl], a
+        pop     hl
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -176,6 +235,16 @@ EntitySetType:
         push    hl
         ld      bc, var_player_type - var_player_struct
         add     hl, bc
+
+        push    af                        ; \
+        ld      a, [hl]                   ; |
+        and     ENTITY_TYPE_MODIFIER_MASK ; | Load entity type modifier into b
+        ld      b, a                      ; |
+        pop     af                        ; /
+
+        and     ENTITY_TYPE_MASK ; \ Mask out type bits from argument a, combine
+        or      b                ; / with previous type modifier bits.
+
         ld      [hl], a
         pop     hl
         ret

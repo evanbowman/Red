@@ -202,3 +202,25 @@ InventoryIsFull:
 
 
 ;;; ----------------------------------------------------------------------------
+
+InventorySize:
+;;; trashes hl
+;;; return c - inventory slots used
+        ld      hl, var_inventory
+        ld      c, 0
+.loop:
+        ld      a, INVENTORY_COUNT
+        cp      c
+        ret     Z
+
+        ld      a, [hl]
+        or      a
+        ret     Z
+.next:
+        inc     hl
+        inc     hl
+        inc     c
+        jr      .loop
+
+
+;;; ----------------------------------------------------------------------------

@@ -361,6 +361,11 @@ var_worldgen_path_flags:DS      1
 var_worldgen_remaining: DS      1
 
 
+var_scavenge_slot_0:    DS      1
+var_scavenge_slot_1:    DS      1
+var_scavenge_target:    DS      2
+
+
 ;;; ############################################################################
 
         SECTION "FADE", WRAM0

@@ -166,6 +166,61 @@ r8_InventoryGetTabText:
 
 ;;; ----------------------------------------------------------------------------
 
+
+scavenge_text::
+DB      "gather   items   /  ", 0
+
+
+r8_ScavengeShowOptions:
+        fcall   InventorySize
+        ld      h, 0
+        ld      l, c
+        ld      de, var_temp_str1
+        fcall   IntegerToString
+
+        ld      h, 0
+        ld      l, INVENTORY_COUNT
+        ld      de, var_temp_str2
+        fcall   IntegerToString
+
+        fcall   VBlankIntrWait
+
+        ld      a, [var_scavenge_slot_0]
+        ld      b, a
+        fcall   r8_InventoryItemText
+        ld      de, $9c21
+        ld      b, $88
+        fcall   PutText
+
+        ld      a, [var_scavenge_slot_1]
+        ld      b, a
+        fcall   r8_InventoryItemText
+        ld      de, $9c41
+        ld      b, $88
+        fcall   PutText
+
+        fcall   VBlankIntrWait
+	ld      hl, scavenge_text
+        ld      de, $9c60
+        ld      b, $88
+        fcall   PutText
+
+        ld      hl, var_temp_str1 + 3
+        ld      b, $88
+        ld      de, $9c6f
+        call    PutText
+
+        ld      hl, var_temp_str2 + 3
+        ld      b, $88
+        ld      de, $9c72
+        call    PutText
+
+        ret
+
+
+
+;;; ----------------------------------------------------------------------------
+
 r8_InventoryShowTabHeading:
         fcall   r8_InventoryGetTabText
 
@@ -338,6 +393,8 @@ r8_InventoryPutTextRow:
 
 r8_InventoryItemText:
 ;;; b - item typeinfo
+;;; trashes a bunch of registers
+;;; result in hl
         ld      c, b
         ld      b, 0
         fcall   r8_Mul16

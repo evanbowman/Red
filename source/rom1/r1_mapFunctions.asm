@@ -1702,6 +1702,11 @@ r1_SpawnEntity:
 ;;; c - y
 ;;; d - typeid
         ld      a, d
+        and     ENTITY_TYPE_MODIFIER_MASK
+        ld      e, a
+
+        ld      a, d
+        and     ENTITY_TYPE_MASK
         cp      ENTITY_TYPE_BONFIRE
         jr      Z, .spawnBonfire
         cp      ENTITY_TYPE_SPIDER
@@ -1818,13 +1823,13 @@ r1_StoreRoomEntities:
 
         ld      a, [de]         ; \
         ld      h, a            ; |
-        inc     de              ; |  entity pointer from buffer into hl
+        inc     de              ; | entity pointer from buffer into hl
         ld      a, [de]         ; |
         ld      l, a            ; |
         inc     de              ; /
 
-        fcall   EntityGetType
-	ld      a, b
+        fcall   EntityGetFullType
+        ld      b, a            ; cache result in b, for appendEntityDesc below
         cp      0
         jr      Z, .skip        ; Do not store the player entity in the room
 

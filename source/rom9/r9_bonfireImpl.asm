@@ -55,7 +55,7 @@ r9_BonfireUpdateImpl:
 r9_BonfireMessageLoop:
 ;;; bc - self
 ;;; trashes hl
-        push    hl
+        push    hl              ; hl -> de (see below)
 
         fcall   EntityGetMessageQueue
         fcall   MessageQueueLoad
@@ -93,7 +93,7 @@ r9_BonfireOnMessage:
         fcall   CheckIntersection
 
         or      a
-        jr      Z, .skip
+        ret     Z
 
         ld      de, InventorySceneEnter
         fcall   SceneSetUpdateFn
@@ -104,7 +104,6 @@ r9_BonfireOnMessage:
         ld      a, INVENTORY_TAB_COOK
         ld      [var_inventory_scene_tab], a
 
-.skip:
         ret
 
 
