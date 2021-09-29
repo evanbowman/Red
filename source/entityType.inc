@@ -36,14 +36,15 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-;;; Spritesheet constants (needs to match the ordering of data in bank 2)
 ENTITY_TYPE_PLAYER        EQU  0
 ENTITY_TYPE_BONFIRE       EQU  1
 ENTITY_TYPE_SPIDER        EQU  2
 ENTITY_TYPE_GREYWOLF      EQU  3
 ENTITY_TYPE_GREYWOLF_DEAD EQU  4
 ENTITY_TYPE_BOAR          EQU  5
-ENTITY_TYPE_RABBIT        EQU  6
+ENTITY_TYPE_BOAR_DEAD     EQU  6
+ENTITY_TYPE_RABBIT        EQU  7
+ENTITY_TYPE_RABBIT_DEAD   EQU  8
 ENTITY_TYPE_MAX           EQU  63
 
 

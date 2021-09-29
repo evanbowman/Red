@@ -35,21 +35,6 @@
 
 ;;; ----------------------------------------------------------------------------
 
-CarcassGetResource:
-;;; a - Entity id
-;;; a - result
-        cp      ENTITY_TYPE_GREYWOLF_DEAD
-        jr      Z, .gwd
-
-        ld      a, ITEM_NONE
-        ret
-.gwd:
-	ld      a, ITEM_RAW_MEAT
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
 ScavengeSceneEnter:
         ld      de, ScavengeSceneAnimateIn0
         fcall   SceneSetUpdateFn

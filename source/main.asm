@@ -276,6 +276,9 @@ Main:
 
         LONG_CALL r1_CopyDMARoutine
 
+        ld      a, HIGH(var_oam_back_buffer) ; \ Zero OAM, in case we came from
+        fcall   hOAMDMA                      ; / a system reboot.
+
         fcall   LoadFont
 
         fcall   LcdOn
@@ -304,7 +307,7 @@ Main:
         ldh     a, [hvar_joypad_raw]              ; \ Soft reset for A + start +
         and     PADF_SELECT | PADF_START | PADF_A ; | select.
         cp      PADF_SELECT | PADF_START | PADF_A ; |
-        jp      Z, Start                          ; /
+        fcallc  Z, SystemReboot                   ; /
 
         ld      de, var_scene_update_fn ; \
         ld      a, [de]                 ; |
@@ -493,6 +496,7 @@ SoftReset:
         INCLUDE "animation.asm"
         INCLUDE "cutscene.asm"
         INCLUDE "entity.asm"
+        INCLUDE "boar.asm"
         INCLUDE "bonfire.asm"
         INCLUDE "player.asm"
         INCLUDE "greywolf.asm"

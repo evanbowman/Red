@@ -763,7 +763,7 @@ LoadFont:
 
         ld      hl, r7_FontTiles
         ld      bc, r7_FontTilesEnd - r7_FontTiles
-        ld      de, $9320
+        ld      de, $9310
 
         ld	a, 1
 	ld	[rVBK], a

@@ -176,7 +176,7 @@ DB      "gather   items   /  ", 0
 r8_ScavengeUpdate:
         ld      a, [hvar_joypad_current]
         bit     PADB_B, a
-        jr      NZ, .exit
+        jp      NZ, .exit
 
         bit     PADB_A, a
         jr      NZ, .takeItem
@@ -186,11 +186,28 @@ r8_ScavengeUpdate:
 
         ld      a, 0
         ld      [var_scavenge_selection], a
+
+        call    VBlankIntrWait
+        ld      de, $9c20       ; \
+        ld      a, $31          ; | selector icon
+        ld      [de], a         ; /
+        ld      de, $9c40       ; \
+        ld      a, $32          ; | selector icon
+        ld      [de], a         ; /
+
         ret
 
 .checkDown:
         bit     PADB_DOWN, a
         ret     Z
+
+        call    VBlankIntrWait
+        ld      de, $9c20       ; \
+        ld      a, $32          ; | selector icon
+        ld      [de], a         ; /
+        ld      de, $9c40       ; \
+        ld      a, $31          ; | selector icon
+        ld      [de], a         ; /
 
         ld      a, 1
         ld      [var_scavenge_selection], a
@@ -261,7 +278,6 @@ r8_ScavengeUpdate:
         ld      hl, r8_InventoryItemTextTable.null
         ld      b, $88
         fcall   PutText
-
         ret
 
 .exit:
@@ -318,6 +334,13 @@ r8_ScavengeShowOptions:
         ld      b, $88
         ld      de, $9c72
         call    PutText
+
+	ld      de, $9c20       ; \
+        ld      a, $31          ; | selector icon
+        ld      [de], a         ; /
+        ld      de, $9c40       ; \
+        ld      a, $32          ; | selector icon
+        ld      [de], a         ; /
 
         ret
 

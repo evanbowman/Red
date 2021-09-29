@@ -1065,6 +1065,20 @@ r9_PlayerWalkDepleteStamina:
 
 ;;; ----------------------------------------------------------------------------
 
+r9_PlayerBoarAttackDepleteStamina:
+        push    hl
+        ld      hl, BOAR_ATTACK_BASE_DAMAGE
+        ld      a, [var_level]
+        ld      c, a
+        ld      b, BOAR_ATTACK_LEVEL
+        fcall   CalculateDamage
+        fcall   FormatDamage
+        pop     hl
+        fcall   r9_PlayerDepleteStamina
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 r9_PlayerWolfAttackDepleteStamina:
         ld      b, 20

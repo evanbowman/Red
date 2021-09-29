@@ -47,6 +47,7 @@ SECTION "ROM9_CODE", ROMX, BANK[9]
         INCLUDE "r9_playerImpl.asm"
         INCLUDE "r9_greywolfImpl.asm"
         INCLUDE "r9_bonfireImpl.asm"
+        INCLUDE "r9_boarImpl.asm"
 
 
 ;;; SECTION ROM3_CODE

@@ -131,7 +131,7 @@ r9_GreywolfIdleSetFacing:
 ;;; ----------------------------------------------------------------------------
 
 
-r9_GreywolfUpdateColor:
+r9_EnemyUpdateColor:
         ld      bc, GREYWOLF_VAR_COLOR_COUNTER
         fcall   EntityGetSlack
         ld      a, [bc]
@@ -169,7 +169,7 @@ r9_GreywolfUpdateIdleImpl:
 
         fcall   r9_GreywolfIdleTryAttack
 
-        fcall   r9_GreywolfUpdateColor
+        fcall   r9_EnemyUpdateColor
         fcall   r9_GreywolfMessageLoop
 
         ret
@@ -298,7 +298,7 @@ r9_GreywolfUpdateStunnedImpl:
         ld      h, b                    ; \ Update functions are invoked through
         ld      l, c                    ; / hl, so it can't be a param :/
 
-	fcall   r9_GreywolfUpdateColor
+	fcall   r9_EnemyUpdateColor
 
         fcall   r9_GreywolfApplyKnockback
 
@@ -312,7 +312,7 @@ r9_GreywolfUpdateStunnedImpl:
         cp      24
         jr      Z, .idle
 
-        fcall   r9_GreywolfUpdateColor
+        fcall   r9_EnemyUpdateColor
         fcall   r9_GreywolfMessageLoop
 
         ret
@@ -411,8 +411,12 @@ r9_GreywolfMoveX:
 ;;; but only when entities are moving from one row to another, entities will
 ;;; never settle in the same row for extended periods of time.
 r9_GetDestSlab:
+;;; FIXME: This function is used by a number of different enemy entities.
+;;; Therefore, the slot number for the slab member variable needs to match.
 ;;; d - result
 ;;; trashes bc
+        ASSERT GREYWOLF_VAR_SLAB == BOAR_VAR_SLAB
+
         push    hl
 
         ld      bc, GREYWOLF_VAR_SLAB
@@ -555,7 +559,7 @@ r9_GreywolfUpdateRunXImpl:
 
 
 
-        fcall   r9_GreywolfUpdateColor
+        fcall   r9_EnemyUpdateColor
         fcall   r9_GreywolfMessageLoop
 
         ret
@@ -607,7 +611,7 @@ r9_GreywolfUpdateRunYImpl:
         jr      Z, .idle
 
 
-        fcall   r9_GreywolfUpdateColor
+        fcall   r9_EnemyUpdateColor
         fcall   r9_GreywolfMessageLoop
 
         ret
@@ -891,8 +895,8 @@ r9_GreywolfPopulateHitbox:
 
 ;;; ----------------------------------------------------------------------------
 
-
-r9_GreywolfDepleteStamina:
+r9_EnemyDepleteStamina:
+;;; hl - enemy
 ;;; b - amount
 ;;; c - fraction
         push    hl
@@ -921,7 +925,21 @@ r9_GreywolfDepleteStamina:
 
         cp      d               ; if higher bits changed, we dropped below zero
         jr      NZ, .staminaExhausted
+        ld      a, 1
+        ret
+.staminaExhausted:
+        ld      a, 0
+        ret
 
+
+;;; ----------------------------------------------------------------------------
+
+r9_GreywolfDepleteStamina:
+;;; b - amount
+;;; c - fraction
+        fcall   r9_EnemyDepleteStamina
+        or      a
+        jr      Z, .staminaExhausted
 
 	push    hl
         push    af              ; heh, yeah I know
@@ -964,7 +982,7 @@ r9_GreywolfUpdateDyingImpl:
         ld      h, b
         ld      l, c
 
-	fcall   r9_GreywolfUpdateColor
+	fcall   r9_EnemyUpdateColor
 
         fcall   r9_GreywolfApplyKnockback
 
@@ -1090,7 +1108,7 @@ r9_GreywolfSetupScavenge:
         bit     7, b
         ret     Z
 
-        ld      a, ITEM_RAW_MEAT
+        ld      a, ITEM_WOLF_PELT
         ld      [var_scavenge_slot_1], a
 
         ret

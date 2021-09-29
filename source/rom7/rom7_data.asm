@@ -8,6 +8,10 @@ SECTION "MISC_SPRITES", ROMX, BANK[7]
 
 
 r7_FontTiles::
+.circle:
+DB $FF,$FF,$C3,$C3,$81,$81,$81,$81
+DB $81,$81,$81,$81,$C3,$C3,$FF,$FF
+.font:
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$E7,$E7,$DB,$DB

@@ -33,6 +33,25 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+r1_EnemyInitStamina:
+        ;; NOTE: assumes that the stamina fixnum is in the same locate in each
+        ;; entity struct.
+        push    hl
+        ld      bc, GREYWOLF_VAR_STAMINA
+        fcall   EntityGetSlack
+
+        push    bc              ; \ bc -> hl
+        pop     hl              ; /
+
+        ld      bc, $ffff
+        ld      a, $ff
+        fcall   FixnumInit
+
+        pop     hl
+
+        ret
+
+
 r1_PlayerNew:
         ld      hl, var_player_struct
         ld      bc, var_player_struct_end - var_player_struct
@@ -213,25 +232,56 @@ r1_GreywolfNew:
         fcall   SlabTableBind
         pop     hl
 
-
-        push    hl
-        ld      bc, GREYWOLF_VAR_STAMINA
-        fcall   EntityGetSlack
-
-        push    bc              ; \ bc -> hl
-        pop     hl              ; /
-
-        ld      bc, $ffff
-        ld      a, $ff
-        fcall   FixnumInit
-
-        pop     hl
+	fcall   r1_EnemyInitStamina
 
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
+r1_BoarNew:
+;;; b - x
+;;; c - y
+;;; e - type modifier bits
+        fcall   r1_EntityInit
+
+        ld      a, SPRID_BOAR_L
+        fcall   EntitySetFrameBase
+
+        ld      a, 3
+        fcall   EntitySetPalette
+
+        ld      a, ENTITY_TYPE_BOAR
+        fcall   EntitySetType
+
+        ld      de, BoarUpdate
+        fcall   EntitySetUpdateFn
+
+        ld      a, 1 | SPRITE_SHAPE_SQUARE_32
+        fcall   EntitySetDisplayFlags
+
+        ld      bc, BOAR_VAR_SLAB
+        fcall   EntityGetSlack
+
+	push    bc              ; \ bc -> de
+        pop     de              ; /
+
+        push    hl
+        ld      d, 6
+        fcall   SlabTableFindAnyUnused
+        ld      a, c
+        ld      [de], a         ; store slab in slack var
+
+        ld      d, 6            ; our weight
+        fcall   SlabTableBind
+        pop     hl
+
+	fcall   r1_EnemyInitStamina
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 r1_GreywolfDeadNew:
 ;;; b - x
@@ -255,6 +305,32 @@ r1_GreywolfDeadNew:
         fcall   EntitySetDisplayFlags
 
         ;; TODO: add ourself to slab table...
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_BoarDeadNew:
+;;; b - x
+;;; c - y
+;;; e - type modifier bits
+        fcall   r1_EntityInit
+
+        ld      a, SPRID_BOAR_DEAD_L
+        fcall   EntitySetFrameBase
+
+        ld      a, 4
+        fcall   EntitySetPalette
+
+        ld      a, ENTITY_TYPE_BOAR_DEAD
+        fcall   EntitySetType
+
+        ld      de, BoarUpdateDead
+        fcall   EntitySetUpdateFn
+
+        ld      a, SPRITE_SHAPE_T
+        fcall   EntitySetDisplayFlags
 
         ret
 

@@ -35,8 +35,8 @@
 
 ;;; Red uses huge character animations, and the engine needs to prevent too many
 ;;; entities from ending up on the same line. We use a datastructure that we're
-;;; calling a slab table, which represents subsections of the current in the
-;;; game world.
+;;; calling a slab table, which represents subsections of the current room in
+;;; the game world.
 ;;; At maximum size, an entity may take up as much as 32x32 pixels (eight oam),
 ;;; i.e. four oam wide. But entities have drop shadows too, so, really, an
 ;;; an entity uses six oam at its widest point. We can really only allow two

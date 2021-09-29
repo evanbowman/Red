@@ -1715,6 +1715,10 @@ r1_SpawnEntity:
         jr      Z, .spawnGreywolf
         cp      ENTITY_TYPE_GREYWOLF_DEAD
         jr      Z, .spawnGreywolfDead
+        cp      ENTITY_TYPE_BOAR
+        jr      Z, .spawnBoar
+        cp      ENTITY_TYPE_BOAR_DEAD
+        jr      Z, .spawnBoarDead
 
 .spawnBonfire:
         fcall   r1_BonfireNew
@@ -1731,6 +1735,14 @@ r1_SpawnEntity:
 
 .spawnGreywolfDead:
         fcall   r1_GreywolfDeadNew
+        ret
+
+.spawnBoar:
+        fcall   r1_BoarNew
+        ret
+
+.spawnBoarDead:
+        fcall   r1_BoarDeadNew
         ret
 
 

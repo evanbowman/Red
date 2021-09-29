@@ -127,14 +127,15 @@ EntityAnimationGetKeyframe:
 ;;; ----------------------------------------------------------------------------
 
 
-;;; Set entity keyframe to zero
+;;; Set entity keyframe to zero, reset animation timer to zero.
 EntityAnimationResetKeyframe:
 ;;; hl - entity
 ;;; trashes bc
         push    hl
-        ld      bc, 8
+        ld      bc, 7
         add     hl, bc
         ld      a, 0
+        ld      [hl+], a
         ld      [hl], a
         pop     hl
         ret
