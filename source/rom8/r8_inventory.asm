@@ -171,6 +171,99 @@ scavenge_text::
 DB      "gather   items   /  ", 0
 
 
+;;; ----------------------------------------------------------------------------
+
+r8_ScavengeUpdate:
+        ld      a, [hvar_joypad_current]
+        bit     PADB_B, a
+        jr      NZ, .exit
+
+        bit     PADB_A, a
+        jr      NZ, .takeItem
+
+        bit     PADB_UP, a
+        jr      Z, .checkDown
+
+        ld      a, 0
+        ld      [var_scavenge_selection], a
+        ret
+
+.checkDown:
+        bit     PADB_DOWN, a
+        ret     Z
+
+        ld      a, 1
+        ld      [var_scavenge_selection], a
+
+        ret
+
+.takeItem:
+        ld      hl, var_scavenge_slot_0     ; \
+        ld      a, [var_scavenge_selection] ; |
+        ld      c, a                        ; | Pick slot
+        ld      b, 0                        ; |
+        add     hl, bc                      ; /
+
+        ld      a, [hl]         ; Load item
+        or      a
+        ret     Z               ; empty item slot
+
+        push    hl
+        ld      b, a
+        fcall   InventoryAddItem
+        pop     hl
+
+        ld      a, ITEM_NONE    ; \ Remove contents of item slot
+        ld      [hl], a         ; /
+
+        ld      a, [var_scavenge_target]     ; \
+        ld      h, a                         ; | Load pointer to entity that's
+        ld      a, [var_scavenge_target + 1] ; | holding the items.
+        ld      l, a                         ; /
+
+	ld      a, [var_scavenge_selection] ; \
+        add     a, 1                        ; | Because there are only two
+        cpl                                 ; | scavenge slots, compute mask by
+        and     $03                         ; / flipping bits.
+
+        push    af
+
+        fcall   EntityGetFullType         ; \
+        and     ENTITY_TYPE_MODIFIER_MASK ; | Retrieve existing entity type modifier
+        swap    a                         ; | flags.
+        srl     a                         ; |
+        srl     a                         ; /
+
+        pop     bc
+        and     b
+        fcall   EntitySetTypeModifier
+
+        ;; Now, we'll need to re-draw the text for the item that we just took.
+        fcall   VBlankIntrWait
+
+        ld      a, [var_scavenge_selection]
+	ld      de, $9c41
+        or      a
+        jr      NZ, .row1
+        ld      de, $9c21
+.row1:
+        ld      hl, r8_InventoryItemTextTable.null
+        ld      b, $88
+        fcall   PutText
+
+        ret
+
+.exit:
+        ld      a, 0
+        ld      [var_scene_counter], a
+
+        ld      de, ScavengeSceneAnimateOut0
+        fcall   SceneSetUpdateFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r8_ScavengeShowOptions:
         fcall   InventorySize
         ld      h, 0
@@ -1813,6 +1906,7 @@ r8_VramSafeMemset:
 ;;; and because we pad the strings, we don't need to worry about zero-ing out
 ;;; stuff when writing different strings to a spot onscreen.
 r8_InventoryItemTextTable::
+.null:
 DB      "--             ", 0
 DB      "wolf pelt      ", 0
 DB      "dagger         ", 0

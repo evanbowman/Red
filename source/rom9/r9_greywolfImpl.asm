@@ -1080,14 +1080,14 @@ r9_GreywolfSetupScavenge:
 
         fcall   EntityGetFullType
         ld      b, a
-        bit     7, b
+        bit     6, b
         jr      Z, .skip0
 
         ld      a, ITEM_RAW_MEAT ; TODO: randomize based on a seed?
         ld      [var_scavenge_slot_0], a
 
 .skip0:
-        bit     6, b
+        bit     7, b
         ret     Z
 
         ld      a, ITEM_RAW_MEAT

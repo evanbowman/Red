@@ -302,6 +302,8 @@ var_crafting_dependency_set:  DS      ITEM_SIZE * 3
 var_crafting_dependency_set_end:
 
         NEXTU
+var_scavenge_selection:         DS      1
+        NEXTU
         ENDU
 var_scene_union_end:
 

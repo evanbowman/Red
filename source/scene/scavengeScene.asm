@@ -133,6 +133,9 @@ ScavengeSceneAnimateIn1:
         ld      [var_overlay_y_offset], a
         ret
 .next:
+        ld      a, 0
+        ld      [var_scavenge_selection], a
+
         ld      de, ScavengeSceneUpdate
         fcall   SceneSetUpdateFn
         ret
@@ -142,16 +145,7 @@ ScavengeSceneAnimateIn1:
 
 ScavengeSceneUpdate:
         ;; fcall   OverworldSceneAnimateWater
-        ld      a, [hvar_joypad_current]
-        bit     PADB_B, a
-        jr      NZ, .next
-        ret
-.next:
-        ld      a, 0
-        ld      [var_scene_counter], a
-
-        ld      de, ScavengeSceneAnimateOut0
-        fcall   SceneSetUpdateFn
+        LONG_CALL r8_ScavengeUpdate
         ret
 
 
