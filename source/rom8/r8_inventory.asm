@@ -550,13 +550,19 @@ r8_InventoryAdjustOffset:
 ;;; a - input
         push    af
 	ld      a, [var_inventory_scene_page]
-        or      a
-        jr      NZ, .secondPage
+        cp      a, 1
+        jr      Z, .secondPage
+        cp      a, 2
+        jr      Z, .thirdPage
         pop     af
         ret
 .secondPage:
         pop     af
         add     7
+        ret
+.thirdPage:
+        pop     af
+        add     14
         ret
 
 
@@ -1511,7 +1517,7 @@ r8_InventoryMoveCursorDown:
         ret
 .nextPage:
         ld      a, [var_inventory_scene_page]
-        cp      1
+        cp      2
         jr      Z, .skip
 
         inc     a

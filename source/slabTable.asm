@@ -102,6 +102,35 @@ SlabTableBind:
 
 ;;; ----------------------------------------------------------------------------
 
+SlabTableRowWeight:
+;;; c - row
+;;; a - result weight
+;;; trashes b, hl
+        ld      hl, var_map_slabs
+        ld      b, 0
+        add     hl, bc
+
+        ld      a, [hl]
+        ld      d, a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+SlabTableIsRowFull:
+;;; c - row
+;;; a - bool result
+;;; trashes b, hl
+        fcall   SlabTableRowWeight
+        cp      (SLAB_MAX_WEIGHT - 1)
+        ld      a, 0            ; \ If less than max weight, ret 0
+        ret     C               ; /
+        ld      a, 1
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 
 SlabTableRebindNearest:
 ;;; b - current row

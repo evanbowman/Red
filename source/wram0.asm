@@ -65,7 +65,7 @@ var_player_stamina:     DS      FIXNUM_SIZE
 
 
 ITEM_SIZE EQU 2
-INVENTORY_COUNT EQU 14
+INVENTORY_COUNT EQU 21
 var_inventory:  DS      ITEM_SIZE * (INVENTORY_COUNT - 1)
 var_inventory_last_item:        DS      ITEM_SIZE
 

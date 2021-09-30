@@ -419,29 +419,99 @@ r9_GetDestSlab:
 
         push    hl
 
-        ld      bc, GREYWOLF_VAR_SLAB
-        fcall   EntityGetSlack
-        ld      a, [bc]
-        ld      b, a
+        push    hl
+        ld      bc, GREYWOLF_VAR_SLAB ; \
+        fcall   EntityGetSlack        ; | Fetch current slab num
+        ld      a, [bc]               ; |
+        ld      b, a                  ; /
 
-        ld      a, [var_player_coord_y]
-        add     16
-        fcall   GetSlabNum
-
-        ld      c, a
-
-        ld      d, 6
-        fcall   SlabTableRebindNearest
-
-        ld      d, c
-
+        push    bc              ; \
+        ld      c, b            ; |
+        ld      d, 6            ; | Remove current slab from table
+        fcall   SlabTableUnbind ; |
+        pop     bc              ; /
         pop     hl
 
-        ld      bc, GREYWOLF_VAR_SLAB
-        fcall   EntityGetSlack
-        ld      a, d
-        ld      [bc], a
-        ld      d, a
+        ;; Now, calculate our actual current slab
+        push    bc
+        fcall   EntityGetPos
+        ld      a, c            ; y value -> a
+        fcall   GetSlabNum      ; slab num in register a
+        pop     bc
+
+	ld      d, a            ; current effective slab in d
+
+        ld      a, [var_player_coord_y] ; \
+        add     16                      ; | Slab containing player
+        fcall   GetSlabNum              ; /
+
+        ld      e, a            ; desired slab in e
+
+        cp      d
+        jr      C, .playerAbove
+        jr      Z, .playerSameSlab
+
+.playerBelow:
+        inc     d
+.startBelow:
+        push    de
+        ld      c, d
+        ld      d, 6
+        fcall   SlabTableBind
+        pop     de
+        or      a
+        jr      Z, .retryBelow
+        jr      .assign
+.retryBelow:
+        dec     d
+        jr      .startBelow
+
+
+.playerAbove:
+        dec     d
+.startAbove:
+        push    de
+        ld      c, d
+        ld      d, 6
+        fcall   SlabTableBind
+        pop     de
+        or      a
+        jr      Z, .retryAbove
+        jr      .assign
+.retryAbove:
+        inc     d
+        jr      .startAbove
+
+
+.assign:
+        pop     hl
+        ld      bc, GREYWOLF_VAR_SLAB ; \
+        fcall   EntityGetSlack        ; | Set slab number in entity
+        ld      a, d                  ; |
+        ld      [bc], a               ; /
+        ret
+
+
+.playerSameSlab:
+        push    de
+        ld      c, e
+        ld      d, 6
+        fcall   SlabTableBind
+        ld      d, e            ; result in d
+        or      a
+        jr      Z, .foo
+        pop     de
+
+        pop     hl              ; see push at function top
+        ld      bc, GREYWOLF_VAR_SLAB ; \
+        fcall   EntityGetSlack        ; | set slab number in entity
+        ld      a, d                  ; |
+        ld      [bc], a               ; /
+        ret
+.foo:
+        pop     de
+        ;; How'd we end up in this situation? TODO above or below based on player y.
+        jr      .playerBelow
 
         ret
 
@@ -464,7 +534,7 @@ r9_GreywolfMoveY:
         fcall   r9_absdiff      ; \ Because otherwise, we can flop back and
         cp      2               ; / forth if we teeter on a fractional pixel.
         pop     bc
-        jr      C, .tryMoveHorizontally
+        jr      C, .alignSlabAndTryMoveHorizontally
         pop     af
 
         cp      c
@@ -482,6 +552,27 @@ r9_GreywolfMoveY:
         fcall   FixnumAdd
         pop     hl
 	ret
+
+.alignSlabAndTryMoveHorizontally:
+        ;; We've detected that we moved into a new slab. Pin our y-position to
+        ;; the slab boundary, just in case it isn't exactly aligned.
+        ;; (Entity movement uses fixnums, we could be not exactly aligned to the
+        ;; beginning/end of a slab, and the overlapping pixels could create
+        ;; graphical artifacts, besides breaking the program logic).
+        fcall   EntityGetPos
+
+        push    bc
+        ld      bc, GREYWOLF_VAR_SLAB ; \
+        fcall   EntityGetSlack        ; | Fetch current slab num
+        ld      a, [bc]               ; |
+        pop     bc
+
+        swap    a               ; \ slab_num * 32 == slab_y
+        sla     a               ; /
+
+        ld      c, a            ; adjusted y back into y coord
+        fcall   EntitySetPos    ; b still holds result of EntityGetPos
+
 
 .tryMoveHorizontally:
         pop     af
@@ -997,6 +1088,19 @@ r9_GreywolfUpdateDyingImpl:
         ret
 
 .dead:
+        push    hl
+        ld      bc, GREYWOLF_VAR_SLAB ; \
+        fcall   EntityGetSlack        ; | Fetch current slab num
+        ld      a, [bc]               ; |
+        ld      b, a                  ; /
+
+        push    bc              ; \
+        ld      c, b            ; |
+        ld      d, 6            ; | Remove current slab from table
+        fcall   SlabTableUnbind ; |
+        pop     bc              ; /
+        pop     hl
+
         ld      a, 0 | SPRITE_SHAPE_T
         fcall   EntitySetDisplayFlags
 

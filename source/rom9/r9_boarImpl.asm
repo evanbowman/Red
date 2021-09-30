@@ -39,7 +39,7 @@ r9_BoarUpdateImpl:
         ld      h, b
         ld      l, c
 
-        ld      bc, GREYWOLF_VAR_COUNTER
+        ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, [bc]
         inc     a
@@ -51,7 +51,7 @@ r9_BoarUpdateImpl:
         fcall   r9_BoarMessageLoop
         ret
 .next:
-        ld      bc, GREYWOLF_VAR_COUNTER
+        ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, 0
         ld      [bc], a
@@ -84,7 +84,7 @@ r9_BoarUpdateChargingImpl:
         ld      h, b
         ld      l, c
 
-        ld      bc, GREYWOLF_VAR_COUNTER
+        ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, [bc]
         inc     a
@@ -320,7 +320,7 @@ r9_BoarUpdateRechargeAfterCollisionImpl:
         ld      h, b
         ld      l, c
 
-        ld      bc, GREYWOLF_VAR_COUNTER
+        ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, [bc]
         inc     a
@@ -332,7 +332,7 @@ r9_BoarUpdateRechargeAfterCollisionImpl:
         fcall   r9_BoarMessageLoop
         ret
 .next:
-        ld      bc, GREYWOLF_VAR_COUNTER
+        ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, 0
         ld      [bc], a
@@ -374,7 +374,7 @@ r9_BoarDepleteStamina:
         push    af              ; heh, yeah I know
         push    de
 
-        ld      bc, GREYWOLF_VAR_STAMINA
+        ld      bc, BOAR_VAR_STAMINA
         fcall   EntityGetSlack
         ld      a, [bc]
         fcall   OverlayShowEnemyHealth
@@ -406,7 +406,7 @@ r9_BoarUpdateDyingImpl:
 
         push    af
 
-        ld      bc, GREYWOLF_VAR_COUNTER
+        ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, 0
         ld      [bc], a
@@ -438,7 +438,7 @@ r9_BoarUpdateDyingImpl:
 
         fcall   r9_EnemyUpdateColor
 
-        ld      bc, GREYWOLF_VAR_COUNTER
+        ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, [bc]
         inc     a
@@ -574,7 +574,7 @@ r9_BoarMoveY:
         fcall   r9_absdiff      ; \ Because otherwise, we can flop back and
         cp      2               ; / forth if we teeter on a fractional pixel.
         pop     bc
-        jr      C, .tryMoveHorizontally
+        jr      C, .alignSlabAndTryMoveHorizontally
         pop     af
 
         cp      c
@@ -593,10 +593,35 @@ r9_BoarMoveY:
         pop     hl
 	ret
 
+.alignSlabAndTryMoveHorizontally:
+        fcall   EntityGetPos
+
+        push    bc
+        ld      bc, BOAR_VAR_SLAB     ; \
+        fcall   EntityGetSlack        ; | Fetch current slab num
+        ld      a, [bc]               ; /
+        pop     bc
+
+        push    af
+        swap    a               ; \ slab_num * 32 == slab_y
+        sla     a               ; /
+
+        ld      c, a            ; adjusted y back into y coord
+        fcall   EntitySetPos    ; b still holds result of EntityGetPos
+
+        ld      a, [var_player_coord_y] ; \
+        add     16                      ; | Slab containing player
+        fcall   GetSlabNum              ; /
+
+        ld      b, a                    ; \
+	pop     af                      ; | If we aren't in the same slab as the
+        cp      b                       ; | player, then do not attack yet.
+        jr      NZ, .earlyExit          ; /
+
 .tryMoveHorizontally:
         pop     af
 
-        ld      bc, GREYWOLF_VAR_COUNTER
+        ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, 0
         ld      [bc], a
@@ -608,8 +633,27 @@ r9_BoarMoveY:
 
         ret
 
+.earlyExit:
+        pop     af
+
+        ld      bc, BOAR_VAR_COUNTER
+        fcall   EntityGetSlack
+        ld      a, [bc]
+        inc     a
+        ld      [bc], a
+        cp      60
+        jr      Z, .transition
+        ret
+
+.transition:
+        ld      a, 0
+        ld      [bc], a
+        ld      de, BoarUpdateRechargeAfterCollision
+        fcall   EntitySetUpdateFn
+        ret
+
 .idle:
-        ld      bc, GREYWOLF_VAR_COUNTER
+        ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, 0
         ld      [bc], a

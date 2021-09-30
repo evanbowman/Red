@@ -223,9 +223,11 @@ r1_GreywolfNew:
         pop     de              ; /
 
         push    hl
+        push    de
         ld      d, 6
         fcall   SlabTableFindAnyUnused
         ld      a, c
+        pop     de
         ld      [de], a         ; store slab in slack var
 
         ld      d, 6            ; our weight
@@ -267,9 +269,11 @@ r1_BoarNew:
         pop     de              ; /
 
         push    hl
+        push    de
         ld      d, 6
         fcall   SlabTableFindAnyUnused
         ld      a, c
+        pop     de
         ld      [de], a         ; store slab in slack var
 
         ld      d, 6            ; our weight
