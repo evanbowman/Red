@@ -989,7 +989,7 @@ GetFadeToTanSprLut:
 
 SetFadeBank:
         ld      a, [var_fade_bank]
-        ld      [rROMB0], a
+        SET_BANK_FROM_A
         ret
 
 

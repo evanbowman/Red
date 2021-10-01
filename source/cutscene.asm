@@ -119,7 +119,7 @@ CutscenePlay:
 .end:
         pop     de              ; Restore exit rom bank number in e
         ld      a, e            ; \ Set the result ROM bank. Allows the function
-        ld      [rROMB0], a     ; / to be called safely from anywhere.
+        SET_BANK_FROM_A         ; / to be called safely from anywhere.
         ret
 
 
@@ -155,7 +155,7 @@ CutsceneWriteFrame:
         push    de              ; Store e (frame number) for later
 
         ld      a, [var_cutscene_map_bank] ; \ Switch to bank with cutscene
-	ld      [rROMB0], a                ; / map data.
+	SET_BANK_FROM_A                    ; / map data.
 
 
         ;; n * 512 + n * 64
@@ -196,7 +196,7 @@ CutsceneWriteFrame:
 
 
 	ld      a, [var_cutscene_tile_current_bank] ; \ Switch to bank with cutscene
-	ld      [rROMB0], a                         ; / texture data.
+	SET_BANK_FROM_A                             ; / texture data.
 
         pop     de              ; See fn top, where we store frame num on stack
         ld      a, 0            ; \

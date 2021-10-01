@@ -82,13 +82,20 @@ INVOKE_HL: MACRO
 ENDM
 
 
+SET_BANK_FROM_A: MACRO
+        ldh     [hvar_bank], a
+        ld      [rROMB0], a
+ENDM
+
+
 SET_BANK: MACRO
         ;; Makes no sense for a bank with code in it to switch to another bank
         ;; without a proper LONG_CALL.
         ASSERT (BANK(@) == BANK(EntryPoint))
 
         ld      a, \1
-        ld      [rROMB0], a
+        SET_BANK_FROM_A
+
 ENDM
 
 
@@ -118,7 +125,7 @@ ENDM
 ;; #############################################################################
 
         SECTION "RESTART_VECTOR_08",ROM0[$0008]
-        ld      [rROMB0], a
+        SET_BANK_FROM_A
         jp      hl
 
 
@@ -160,23 +167,20 @@ ENDM
 
 ;; #############################################################################
 
-        SECTION "VBL", ROM0[$0040]
-	jp	Vbl_isr
-
-;;; ----------------------------------------------------------------------------
-
-Vbl_isr:
-        push    af
-        ld      a, 1
-        ldh     [hvar_vbl_flag], a
-        pop     af
-        reti
-
-
-;;; ----------------------------------------------------------------------------
+        SECTION "VBLANK", ROM0[$0040]
+        jp      VBlankISR
 
 
 ;;; SECTION VBL
+
+
+;;; ############################################################################
+
+        SECTION "TIMER", ROM0[$0050]
+	jp      TimerISR
+
+
+;;; SECTION TIMER
 
 
 ;;; ############################################################################
@@ -359,6 +363,7 @@ Main:
 
         jr      Main.loop
 
+
 ;;; This is just some debugging code. I'm trying to figure out how much stuff
 ;;; that I can copy within the vblank window.
 .vbl_window_exceeded:
@@ -459,7 +464,7 @@ MapSpriteBlock:
         ld      d, a            ; save a in d for later use
 
         add     SPRITESHEET1_ROM_BANK ; Add calculated offset to base bank
-        ld      [rROMB0], a     ; set rom bank
+        SET_BANK_FROM_A         ; set rom bank
 
 
         swap    d               ; \
@@ -491,12 +496,63 @@ MapSpriteBlock:
 
 ;;; ----------------------------------------------------------------------------
 
-
 SoftReset:
         jp      Start
 
 
 ;;; ----------------------------------------------------------------------------
+
+VBlankISR:
+;;; The VBlank interrupt handler jumps here.
+        push    af
+        ld      a, 1
+        ldh     [hvar_vbl_flag], a
+
+        ld      a, $80                    ; \
+        ld      [rTMA], a                 ; | Setup timer, should fire around
+        ld      [rTIMA], a                ; | rLY == 133.
+        ld      a, TACF_START | TACF_4KHZ ; |
+        ld      [rTAC], a                 ; /
+
+        ld	a, IEF_VBLANK | IEF_TIMER ; \ Prep timer interrupt
+	ld	[rIE], a                  ; /
+
+        pop     af
+        reti
+
+
+;;; ----------------------------------------------------------------------------
+
+TimerISR:
+;;; The Timer interrupt handler jumps here.
+        push    af
+        push    bc
+        push    hl
+        push    de
+
+        ld      a, TACF_STOP    ; \ Stop the timer from counting.
+        ld      [rTAC], a       ; /
+
+        ld	a, IEF_VBLANK   ; \ Disable timer interrupt, set vblank irq
+	ld	[rIE], a	; /
+
+        ;; Eventually, we will be running audio code here.
+
+        ld      a, 42           ; \ Just a test, to make sure that we restore
+	ld      [rROMB0], a     ; / the correct rom bank.
+
+        ld      a, [hvar_bank]  ; \ Restore mapped bank from before timer ISR
+        ld      [rROMB0], a     ; /
+
+        pop     de
+        pop     hl
+        pop     bc
+        pop     af
+        reti
+
+
+;;; ----------------------------------------------------------------------------
+
 
 
 ;;; I ran into issues where the I see illegal instruction errors when separating
@@ -562,3 +618,11 @@ hOAMDMA::
 
 
 ;;; ############################################################################
+
+
+;;; (1) We dedicate a portion of the frame time to processing audio. During this
+;;; time, no code is allowed to run. The vblank interrupt sets up a timer
+;;; interrupt to fire near the end of the next frame. The timer interrupt runs
+;;; audio code. In this way, the audio gives the appearance of running
+;;; asynchronously, allowing us to safely call VBlankIntrWait anywhere in the
+;;; code, for copying graphics.

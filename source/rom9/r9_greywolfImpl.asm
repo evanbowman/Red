@@ -1094,11 +1094,12 @@ r9_GreywolfUpdateDyingImpl:
         ld      a, [bc]               ; |
         ld      b, a                  ; /
 
-        push    bc              ; \
-        ld      c, b            ; |
-        ld      d, 6            ; | Remove current slab from table
-        fcall   SlabTableUnbind ; |
-        pop     bc              ; /
+        ;; eh, maybe not worth the graphical glitches
+        ;; push    bc              ; \
+        ;; ld      c, b            ; |
+        ;; ld      d, 6            ; | Remove current slab from table
+        ;; fcall   SlabTableUnbind ; |
+        ;; pop     bc              ; /
         pop     hl
 
         ld      a, 0 | SPRITE_SHAPE_T

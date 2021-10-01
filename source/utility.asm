@@ -128,7 +128,7 @@ ForceSleepOverworld:
         dec     e
         ld      a, e
         cp      0
-        jr      NZ, ForceSleep
+        jr      NZ, ForceSleepOverworld
         ret
 
 

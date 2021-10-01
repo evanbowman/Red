@@ -848,6 +848,10 @@ r1_WorldMapInitBorder:
         ld      bc, 20          ; |
         fcall   Memset          ; /
 
+        ld      hl, $9e20       ; \
+        ld      a, 0            ; | Zero out attribs for bottom row
+        ld      bc, 20          ; |
+        fcall   Memset          ; /
 
         ld      a, 0
         ld      [rVBK], a

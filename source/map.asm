@@ -141,7 +141,7 @@ GetRoomData__rom0_only:
         ld      hl, .roomDataBankTab    ; \
         add     hl, de                  ; | Set bank where we'll look for the
         ld      a, [hl]                 ; | map data.
-        ld      [rROMB0], a             ; /
+        SET_BANK_FROM_A                 ; /
 
         sla     e                       ; Two bytes per pointer in roomdata lut
 
@@ -225,72 +225,5 @@ MapLoad2__rom0_only:
 
         ret
 
-
-;;; ----------------------------------------------------------------------------
-
-;;; This code is a bit complicated. Basically, we need to pass in the caller's
-;;; rom bank, so that we can safely return from this function call. The level
-;;; map data exists in a multitude of different rom banks, so we need to switch
-;;; the bank.
-FindEmptyTileInRoom:
-;;; b - room x
-;;; c - room y
-;;; a - caller's rom bank
-;;; return b - result
-
-        push    af
-
-        fcall   GetRoomData__rom0_only ; returns pointer to tiles in hl
-
-        ld      e, 0            ; retry counter
-
-.retry:
-        ld      a, 30
-        cp      e
-        jr      Z, .failed
-
-        push    hl
-
-        fcall   GetRandom       ; random junk in hl
-        ld      a, l
-        and     15              ; mod 16
-        ld      b, a
-
-        ld      a, h
-        and     15              ; mod 16
-        ld      c, a
-
-        pop     hl
-
-        ;; Now, we have random x,y coords, let's look into the map tile data,
-        ;; to see whether our random selection is an available map slot
-
-        push    bc
-        push    hl
-        ld      a, b
-        ld      b, c
-        fcall   MapGetTile
-        pop     hl
-
-	inc     e
-
-        ld      a, 57
-        cp      a, b
-
-        pop     bc
-
-        jr      NZ, .retry
-
-.done:
-        pop     af
-
-        ld      [rROMB0], a
-
-        ret
-
-
-.failed:
-        ld      bc, 0
-        jr      .done
 
 ;;; ----------------------------------------------------------------------------
