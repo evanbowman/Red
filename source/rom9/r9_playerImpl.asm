@@ -1448,7 +1448,7 @@ r9_PlayerKnifeAttackPopulateHitbox:
         ld      a, 24
         add     b
         ld      [hl+], a
-        ld      a, 22
+        ld      a, 19
         add     c
         ld      [hl], a
         ret

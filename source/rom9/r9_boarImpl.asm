@@ -620,7 +620,7 @@ r9_BoarMoveY:
 
 .tryMoveHorizontally:
         pop     af
-
+.moveHorizontally:
         ld      bc, BOAR_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, 0
@@ -641,8 +641,8 @@ r9_BoarMoveY:
         ld      a, [bc]
         inc     a
         ld      [bc], a
-        cp      60
-        jr      Z, .transition
+        cp      10
+        jr      Z, .moveHorizontally
         ret
 
 .transition:
