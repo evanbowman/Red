@@ -69,8 +69,17 @@ ENDM
 
 ;;; NOTE: LONG_CALL does not restore the current rom bank
 LONG_CALL: MACRO
-        ASSERT (BANK(\1) != BANK(@)) ; pointless long call to current bank
-        ASSERT (BANK(@) == BANK(EntryPoint)) ; we have no bank stack implemented yet
+        ASSERT (BANK(\1) != BANK(@))
+
+        ;; I do not implement a bank stack or anything, longcalls must
+        ;; originate from bank zero. ROMX banks cannot initiate a longcall.
+        ;; I actually don't really think maintaining a stack of banks is
+        ;; worth the call overhead that it adds to longcalls, although I'm sure
+        ;; that plenty of people would disagree. As this project grows, I may
+        ;; ultimately be forced to add infrastructure for allowing code in one
+        ;; ROMX bank to call code in a different ROMX bank, but so far, I have
+        ;; not needed to do so, and the project is already fairly large.
+        ASSERT (BANK(@) == BANK(EntryPoint))
         ld      a, BANK(\1)
         ld      hl, \1
         rst     $08
