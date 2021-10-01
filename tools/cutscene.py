@@ -150,8 +150,8 @@ while True:
                 map_file.write("$00, ")
             map_file.write("\n")
 
-    if len(unique_tiles) > 89:
-        raise Exception("too many unique tiles in frame, excess " + str(-1 * (89 - len(unique_tiles))))
+    if len(unique_tiles) > 86:
+        raise Exception("too many unique tiles in frame, excess " + str(-1 * (86 - len(unique_tiles))))
 
     print(len(unique_tiles))
 

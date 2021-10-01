@@ -46,7 +46,7 @@
 OverworldSceneFadeInVBlank:
         ld      a, [var_scene_counter]
 	ld      c, a
-        sub     4
+        sub     3
         jr      C, .transition
 	jr      .continue
 

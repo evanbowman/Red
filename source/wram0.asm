@@ -117,7 +117,6 @@ var_entity_buffer:      DS      ENTITY_POINTER_SIZE * ENTITY_BUFFER_CAPACITY
 var_last_entity_y:      DS      1
 var_last_entity_idx:    DS      1
 
-
 ;;; SECTION ENTITY_BUFFER
 
 
