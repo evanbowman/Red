@@ -76,6 +76,14 @@
 ENTITY_TYPE_MASK                EQU  $3f
 ENTITY_TYPE_MODIFIER_MASK       EQU  $c0
 
+ENTITY_ATTR_HAS_SHADOW          EQU  $01
+;;; I suppose the shadow parity warrants some explanation. Entity drop shadows
+;;; flicker in order to achieve translucency via interframe blending. Because
+;;; drop-shadows are only visible half of the time anyway, we can fit more
+;;; objects in a row without graphical glitches by assigning different 'parity'
+;;; attributes, so that their shadows never display during the same frame.
+ENTITY_ATTR_SHADOW_EVEN_PARITY  EQU  $02
+
 
 
 EntityBufferReset:
@@ -189,7 +197,7 @@ EntityGetFullType:
 EntityGetType:
 ;;; hl - entity
 ;;; return a - type
-;;; trashes c
+;;; trashes bc
 ;;; preserves hl
         push    hl
         ld      bc, var_player_type - var_player_struct
@@ -457,6 +465,19 @@ EntitySetUpdateFn:
 
 
 DrawEntities:
+
+        ld      a, [hvar_shadow_state]
+        xor     $ff
+        ld      [hvar_shadow_state], a
+        cp      $ff
+        ld      a, 1
+        jr      NZ, .skip
+        ld      a, 0
+.skip:
+        ld      [hvar_shadow_parity], a
+
+
+
         ld      a, 255
         ld      [var_last_entity_y], a
         ld      [var_last_entity_idx], a
@@ -481,6 +502,7 @@ EntityDrawLoop:
         inc     de
 
 	push    de              ; save entity buffer pointer on stack
+
 
 
 	inc     hl              ; hl now points to y coord in entity struct
@@ -586,10 +608,18 @@ EntitySwapResume:
         ld      a, c
         ld      [var_last_entity_y], a
 
-        ld      a, [hl]
-        and     $0f
-        or      a
-        jr      Z, .skipShadow
+        ld      a, [hl]                ; \
+        and     ENTITY_ATTR_HAS_SHADOW ; | Skip shadow rendering if shadow attr
+        or      a                      ; | not set.
+        jr      Z, .skipShadow         ; /
+
+        ld      a, [hl]                        ; \
+        and     ENTITY_ATTR_SHADOW_EVEN_PARITY ; |
+        srl     a                              ; | | shift bit(1) to lsb
+        ld      l, a                           ; | If entity shadow parity !=
+        ld      a, [hvar_shadow_parity]        ; | current parity, skip.
+        cp      l                              ; |
+        jr      NZ, .skipShadow                ; /
 
         ld      a, c
         add     17

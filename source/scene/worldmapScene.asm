@@ -56,7 +56,7 @@ WorldmapSceneEnter:
         ld      [var_world_map_cursor_y], a
 
 
-	ld      de, VoidVBlankFn
+	ld      de, DrawonlyUpdateFn
         fcall   SceneSetUpdateFn
 
         ld      de, WorldmapSceneFadeinVBlank
@@ -72,8 +72,9 @@ WorldmapSceneUpdate:
 
         ldh     a, [hvar_joypad_current]
         bit     PADB_SELECT, a
-        jr      Z, .idle
+        ret     Z
 
+.exitScene:
         ld      a, 255
         ld      [var_scene_counter], a
 
@@ -107,10 +108,9 @@ WorldmapSceneUpdate:
 	ld      de, WorldmapSceneFadeOutVBlank
         fcall   SceneSetVBlankFn
 
-        ld      de, VoidUpdateFn
+        ld      de, DrawonlyUpdateFn
         fcall   SceneSetUpdateFn
 
-.idle:
         ret
 
 

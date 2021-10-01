@@ -109,6 +109,31 @@ ScheduleSleep:
 
 ;;; ----------------------------------------------------------------------------
 
+;;; Version of ForceSleep that calls per-frame update code required during the
+;;; overworld scene.
+ForceSleepOverworld:
+;;; e - frames to sleep
+        push    de
+        push    bc
+        fcall   DrawEntities
+        pop     bc
+        pop     de
+
+        fcall   VBlankIntrWait
+        push    bc
+        ld      a, HIGH(var_oam_back_buffer)
+        fcall   hOAMDMA
+        pop     bc
+
+        dec     e
+        ld      a, e
+        cp      0
+        jr      NZ, ForceSleep
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 ForceSleep:
 ;;; e - frames to sleep
         fcall   VBlankIntrWait

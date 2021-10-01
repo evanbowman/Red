@@ -117,6 +117,7 @@ var_entity_buffer:      DS      ENTITY_POINTER_SIZE * ENTITY_BUFFER_CAPACITY
 var_last_entity_y:      DS      1
 var_last_entity_idx:    DS      1
 
+
 ;;; SECTION ENTITY_BUFFER
 
 
@@ -251,6 +252,12 @@ var_texture_slots_end::
 
 var_view_x:    DS      1
 var_view_y:    DS      1
+
+
+;;; Shake parameters, reserved for future use
+var_shake_x:   DS      1
+var_shake_y:   DS      1
+
 
 var_overlay_alternate_pos:    DS      1
 var_stamina_last_val:         DS      1

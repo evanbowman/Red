@@ -52,6 +52,8 @@ ScavengeSceneEnter:
 ScavengeSceneAnimateIn0:
         fcall   OverworldSceneAnimateWater
 
+        fcall   DrawEntities
+
         ld      a, [var_scene_counter]
         inc     a
         ld      [var_scene_counter], a
@@ -94,6 +96,8 @@ ScavengeSceneAnimateIn0:
 ScavengeSceneAnimateIn1:
         fcall   OverworldSceneAnimateWater
 
+        fcall   DrawEntities
+
         ld      a, [var_scene_counter]
         inc     a
         inc     a
@@ -129,7 +133,8 @@ ScavengeSceneAnimateIn1:
 ;;; ----------------------------------------------------------------------------
 
 ScavengeSceneUpdate:
-        ;; fcall   OverworldSceneAnimateWater
+        fcall   DrawEntities    ; Should be called to update flickering shadows
+
         LONG_CALL r8_ScavengeUpdate
         ret
 
@@ -137,6 +142,7 @@ ScavengeSceneUpdate:
 ;;; ----------------------------------------------------------------------------
 
 ScavengeSceneAnimateOut1:
+        fcall   DrawEntities
         fcall   OverworldSceneAnimateWater
 
         ld      a, [var_scene_counter]
@@ -167,6 +173,7 @@ ScavengeSceneAnimateOut1:
 ;;; ----------------------------------------------------------------------------
 
 ScavengeSceneAnimateOut0:
+        fcall   DrawEntities
         fcall   OverworldSceneAnimateWater
 
         ld      a, [var_scene_counter]

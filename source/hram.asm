@@ -83,6 +83,16 @@ hvar_exp_levelup_ready_flag:    DS      1
 hvar_temp_loop_counter1:         DS      1
 hvar_temp_loop_counter2:         DS      1
 
+
+;;; Controls the shadow flicker. $ff for even, $00 for odd. Switches back and
+;;; forth between even and odd. When even, even numbered entities in the display
+;;; queue will have visible shadows. When odd, odd numbered entities in the
+;;; display queue will have visible shadows.
+hvar_shadow_parity:    DS      1
+hvar_shadow_state:     DS      1
+hvar_current_entity_parity:     DS      1
+
+
 ;;; SECTION MISC_HRAM
 
 

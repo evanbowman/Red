@@ -195,12 +195,12 @@ r9_PlayerAnimate:
         ret
 
 .frameChangedLR:
-        ld      a, 1 | SPRITE_SHAPE_T
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_T
         ld      [var_player_display_flag], a
         jr      .frameChanged
 
 .frameChangedUD:
-        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
 
 .frameChanged:
@@ -393,7 +393,7 @@ r9_PlayerUpdateImpl:
 
         ld      a, SPRID_PLAYER_SD
         ld      [var_player_fb], a
-        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
@@ -411,7 +411,7 @@ r9_PlayerUpdateImpl:
 
         ld      a, SPRID_PLAYER_SU
         ld      [var_player_fb], a
-        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
@@ -429,7 +429,7 @@ r9_PlayerUpdateImpl:
 
         ld      a, SPRID_PLAYER_SL
         ld      [var_player_fb], a
-        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
@@ -447,7 +447,7 @@ r9_PlayerUpdateImpl:
 
         ld      a, SPRID_PLAYER_SR
         ld      [var_player_fb], a
-        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
@@ -640,7 +640,7 @@ r9_PlayerUpdatePickupItemImpl:
         ret
 
 .frameChanged:
-        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
 
         ld      a, ENTITY_TEXTURE_SWAP_FLAG
@@ -731,13 +731,11 @@ r9_PlayerAddItemToInventory:
 
 
 r9_CollectMapItem:
-        ld      b, 7
-.waitLoop:
-        fcall   VBlankIntrWait
-        dec     b
-        ld      a, 0
-        cp      b
-        jr      NZ, .waitLoop
+
+        push    de
+        ld      e, 7
+        fcall   ForceSleepOverworld
+        pop     de
 
 
         fcall   InventoryIsFull
@@ -812,7 +810,7 @@ r9_PlayerAttackInit:
         ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
-        ld      a, 1 | SPRITE_SHAPE_SQUARE_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_SQUARE_32
         ld      [var_player_display_flag], a
 
 
@@ -1314,7 +1312,7 @@ r9_PlayerAttackTryExit:
         ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
-        ld      a, 1 | SPRITE_SHAPE_TALL_16_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
 
         ret
@@ -1443,14 +1441,14 @@ r9_PlayerKnifeAttackPopulateHitbox:
         ld      b, a
         ld      [hl+], a
         ld      a, [var_player_coord_y]
-        add     6
+        add     10
         ld      c, a
         ld      [hl+], a
 
         ld      a, 24
         add     b
         ld      [hl+], a
-        ld      a, 26
+        ld      a, 22
         add     c
         ld      [hl], a
         ret

@@ -212,7 +212,7 @@ r1_GreywolfNew:
         ld      de, GreywolfUpdate
         fcall   EntitySetUpdateFn
 
-        ld      a, 1 | SPRITE_SHAPE_SQUARE_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | ENTITY_ATTR_SHADOW_EVEN_PARITY | SPRITE_SHAPE_SQUARE_32
         fcall   EntitySetDisplayFlags
 
 
@@ -259,7 +259,7 @@ r1_BoarNew:
         ld      de, BoarUpdate
         fcall   EntitySetUpdateFn
 
-        ld      a, 1 | SPRITE_SHAPE_SQUARE_32
+        ld      a, ENTITY_ATTR_HAS_SHADOW | ENTITY_ATTR_SHADOW_EVEN_PARITY | SPRITE_SHAPE_SQUARE_32
         fcall   EntitySetDisplayFlags
 
         ld      bc, BOAR_VAR_SLAB

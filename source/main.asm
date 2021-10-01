@@ -296,6 +296,9 @@ Main:
 
         fcall   CreateWorld
 
+        ld      a, $ff
+        ld      [hvar_shadow_state], a
+
 .loop:
         fcall   GetRandom
 
@@ -317,16 +320,14 @@ Main:
         ld      l, a                    ; /
         INVOKE_HL                       ; Jump to scene update code
 
-
 .sched_sleep:
-        ldh     a, [hvar_sleep_counter]
+        ld      a, [hvar_sleep_counter]
         or      a
-        jr      z, .vsync
-        dec     a
-        ldh     [hvar_sleep_counter], a
-        fcall   VBlankIntrWait
-        jr      .sched_sleep
-
+        jr      Z, .vsync
+        ld      e, a
+        fcall   ForceSleepOverworld
+        ld      a, 0
+        ld      [hvar_sleep_counter], a
 
 .vsync:
         fcall   VBlankIntrWait          ; vsync
@@ -423,6 +424,13 @@ VoidVBlankFn:
 ;;; ----------------------------------------------------------------------------
 
 VoidUpdateFn:
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+DrawonlyUpdateFn:
+        fcall   DrawEntities
         ret
 
 

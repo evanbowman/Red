@@ -47,7 +47,7 @@ InventorySceneEnter:
         ld      a, 0
         ld      [var_scene_counter], a
 
-	ld      de, VoidVBlankFn
+	ld      de, DrawonlyUpdateFn
         fcall   SceneSetUpdateFn
 
         ld      de, InventorySceneFadeinVBlank
@@ -82,7 +82,7 @@ InventorySceneExit:
 	ld      de, InventorySceneFadeOutVBlank
         fcall   SceneSetVBlankFn
 
-        ld      de, VoidUpdateFn
+        ld      de, DrawonlyUpdateFn
         fcall   SceneSetUpdateFn
         ret
 
@@ -107,6 +107,10 @@ InventorySceneUpdate:
 ;;; ----------------------------------------------------------------------------
 
 InventorySceneFadeinVBlank:
+
+        ld      a, HIGH(var_oam_back_buffer)
+        fcall   hOAMDMA
+
         SET_BANK 7
 
         ld      a, [var_overlay_y_offset]
@@ -151,6 +155,10 @@ InventorySceneFadeinVBlank:
 ;;; ----------------------------------------------------------------------------
 
 InventorySceneFadeOutVBlank:
+
+        ld      a, HIGH(var_oam_back_buffer)
+        fcall   hOAMDMA
+
         SET_BANK 7
 
         ld      a, [var_scene_counter]
