@@ -66,14 +66,31 @@ fcallc: MACRO
 ENDM
 
 
-
-;;; NOTE: LONG_CALL does not restore the current rom bank
+;;; NOTE: LONG_CALL allows you to call from bank0 into a romx bank. Does not allow
+;;; a romx function to call another romx function.
+;;; NOTE: trashes hl and a prior to invocation.
 LONG_CALL: MACRO
         ASSERT (BANK(\1) != BANK(@)) ; pointless long call to current bank
-        ASSERT (BANK(@) == BANK(EntryPoint)) ; we have no bank stack implemented yet
+        ASSERT (BANK(@) == BANK(EntryPoint)) ; Only works from bank0
         ld      a, BANK(\1)
         ld      hl, \1
         rst     $08
+ENDM
+
+
+;;; Allows you to call code anywhere in ROM. Fairly large overhead, though. If
+;;; you are in bank0 already, there's no reason to use this macro instead of
+;;; LONG_CALL.
+;;; NOTE: trashes hl and a both prior to invocation, and after invocation.
+WIDE_CALL: MACRO
+        ASSERT (BANK(\1) != BANK(@)) ; pointless call to current bank
+        ASSERT (BANK(@) != BANK(EntryPoint)) ; Wasteful to call from bank0
+        ld      a, BANK(@)
+        push    af              ; Put bank on stack for widecall implementation.
+        ld      a, BANK(\1)
+        ld      hl, \1
+        call    __Widecall
+        pop     af
 ENDM
 
 
@@ -125,6 +142,7 @@ ENDM
 ;; #############################################################################
 
         SECTION "RESTART_VECTOR_08",ROM0[$0008]
+__LongcallImpl:
         SET_BANK_FROM_A
         jp      hl
 
@@ -132,6 +150,7 @@ ENDM
 ;; #############################################################################
 
         SECTION "RESTART_VECTOR_10",ROM0[$0010]
+__InvokeHLImpl:
         jp      hl
 
 
@@ -370,6 +389,9 @@ Main:
         stop
 
 
+
+
+
 ;;; ----------------------------------------------------------------------------
 
 
@@ -496,8 +518,16 @@ MapSpriteBlock:
 
 ;;; ----------------------------------------------------------------------------
 
-SoftReset:
-        jp      Start
+__Widecall:
+;;; hl - function pointer
+;;; a - target bank
+;;; NOTE: assumes that the caller pushed its own bank onto the stack. Only
+;;; intended to be invoked using the WIDE_CALL macro.
+        rst     $08
+        ld      hl, sp + 3      ; Location of caller's bank on the stack.
+        ld      a, [hl]
+        SET_BANK_FROM_A
+        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -618,11 +648,3 @@ hOAMDMA::
 
 
 ;;; ############################################################################
-
-
-;;; (1) We dedicate a portion of the frame time to processing audio. During this
-;;; time, no code is allowed to run. The vblank interrupt sets up a timer
-;;; interrupt to fire near the end of the next frame. The timer interrupt runs
-;;; audio code. In this way, the audio gives the appearance of running
-;;; asynchronously, allowing us to safely call VBlankIntrWait anywhere in the
-;;; code, for copying graphics.
