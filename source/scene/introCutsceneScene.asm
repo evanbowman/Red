@@ -64,6 +64,9 @@ DB      $BF,$73, $0B,$21, $1A,$20, $00,$04,
 intro_credits_bkg_palette::
 DB      $BF,$73, $0B,$21, $00,$04, $1A,$20,
 
+intro_credits_bkg_palette_2::
+DB      $BF,$73, $d3,$3d, $00,$04, $1A,$20,
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -161,6 +164,8 @@ IntroCutsceneSceneUpdate:
 
         ;; Play the first cutscene, wolf turns to look at camera
 	ld      d, 12           ; number of frames
+        ld      e, BANK(@)      ; our own bank
+        ld      c, 6            ; framerate
         fcall   CutscenePlay
 
 	ld      e, 30           ; \ frames to sleep
@@ -194,12 +199,34 @@ IntroCutsceneSceneUpdate:
 
         ;; Play second cutscene sequence
         ld      d, 24
+        ld      e, BANK(@)      ; our own bank
+        ld      c, 6            ; framerate
         fcall   CutscenePlay
 
 
-        ld      e, 30           ; \ frames to sleep
+        ld      e, 23           ; \ frames to sleep
         fcall   ForceSleep      ; /
 
+
+        ;; Third second cutscene sequence
+        ld      d, 14           ; \ bank containing map data
+        ld      e, 22           ; | bank containing tile textures
+        ld      bc, r22_cutscene_face_texture_offsets
+        fcall   CutsceneInit    ; /
+
+
+	fcall   VBlankIntrWait                  ; \
+        ld      hl, intro_credits_bkg_palette_2 ; |
+        ld      b, 8                            ; | Swap palette and display the
+        fcall   LoadBackgroundColors            ; | first frame of the next
+        ld      e, 0                            ; | sequence.
+        fcall   CutsceneWriteFrame              ; /
+
+
+        ld      d, 11
+        ld      e, BANK(@)      ; our own bank
+        ld      c, 11           ; framerate
+        fcall   CutscenePlay
 
         fcall   OverworldSceneUpdateView
 

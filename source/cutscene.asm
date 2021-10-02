@@ -71,6 +71,7 @@ CutsceneInit:
 
 ;;; NOTE: this code must be placed in ROM0
 CutscenePlay:
+;;; c - framerate (# of frames to pause before rendering the next frame)
 ;;; d - number of frames
 ;;; e - rom bank to jump back to upon exit
 
@@ -83,10 +84,7 @@ CutscenePlay:
         ld      e, 0            ; frame number
 .outerloop:
 
-        ;; NOTE: The screen refreshes at 60 frames per second. Our animation
-        ;; runs at 10 frames per second. So we want to display a new frame once
-        ;; every six frames.
-        ld      b, 6            ; frame timer
+        ld      b, c            ; reload frame timer with framerate param
 
         ld      a, e
         cp      d               ; \ We've reached the desired frame count,
@@ -110,9 +108,11 @@ CutscenePlay:
         jr      NZ, .innerloop
 
         inc     e               ; inc frame number
+        push    bc              ; preserve framerate param on stack
         push    de
         fcall   CutsceneWriteFrame
         pop     de
+        pop     bc
 
         jr      .outerloop
 

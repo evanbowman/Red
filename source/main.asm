@@ -627,8 +627,10 @@ TimerISR:
         INCLUDE "rom11_data.asm"
         INCLUDE "rom12_intro_cutscene_data.asm"
         INCLUDE "rom13_intro_cutscene_data.asm"
+        INCLUDE "rom14_intro_cutscene_data.asm"
         INCLUDE "rom20_intro_cutscene_texture_data.asm"
         INCLUDE "rom21_intro_cutscene_texture_data.asm"
+        INCLUDE "rom22_intro_cutscene_texture_data.asm"
 
 
 ;;; SECTION START
