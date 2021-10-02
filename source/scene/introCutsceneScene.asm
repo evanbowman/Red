@@ -167,6 +167,11 @@ IntroCutsceneSceneUpdate:
         ld      e, BANK(@)      ; our own bank
         ld      c, 6            ; framerate
         fcall   CutscenePlay
+        ld      a, d
+        or      a
+        jr      NZ, .nextScene
+
+
 
 	ld      e, 30           ; \ frames to sleep
         fcall   ForceSleep      ; /
@@ -202,9 +207,12 @@ IntroCutsceneSceneUpdate:
         ld      e, BANK(@)      ; our own bank
         ld      c, 6            ; framerate
         fcall   CutscenePlay
+	ld      a, d
+        or      a
+        jr      NZ, .nextScene
 
 
-        ld      e, 23           ; \ frames to sleep
+        ld      e, 40           ; \ frames to sleep
         fcall   ForceSleep      ; /
 
 
@@ -223,11 +231,19 @@ IntroCutsceneSceneUpdate:
         fcall   CutsceneWriteFrame              ; /
 
 
-        ld      d, 11
+        ld      d, 13
         ld      e, BANK(@)      ; our own bank
         ld      c, 11           ; framerate
         fcall   CutscenePlay
+	ld      a, d
+        or      a
+        jr      NZ, .nextScene
 
+
+        ld      e, 40
+        fcall   ForceSleep
+
+.nextScene:
         fcall   OverworldSceneUpdateView
 
         ld      de, OverworldSceneEnter

@@ -91,16 +91,17 @@ CutscenePlay:
         jr      Z, .end         ; / return.
 
 .innerloop:
+        push    de
+	push    bc
+        LONG_CALL r1_ReadKeys
+        ld      a, [hvar_joypad_raw]
+        pop     bc
+        pop     de
+        and     PADF_B
+        or      a
+        jr      NZ, .skipped
+
         fcall   VBlankIntrWait
-
-        ;; push    bc
-        ;; LONG_CALL r1_ReadKeys
-        ;; ld      a, b
-        ;; pop     bc
-        ;; and     PADF_A | PADF_B
-        ;; or      a
-        ;; jr      NZ, .end
-
 
         dec     b
         ld      a, 0
@@ -118,9 +119,16 @@ CutscenePlay:
 
 .end:
         pop     de              ; Restore exit rom bank number in e
+        ld      d, 0
+.return:
         ld      a, e            ; \ Set the result ROM bank. Allows the function
         SET_BANK_FROM_A         ; / to be called safely from anywhere.
         ret
+
+.skipped:
+        pop     de              ; Restore exit rom bank number in e
+        ld      d, 1
+        jr      .return
 
 
 ;;; ----------------------------------------------------------------------------
