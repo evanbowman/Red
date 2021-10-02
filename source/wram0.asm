@@ -253,9 +253,8 @@ var_view_x:    DS      1
 var_view_y:    DS      1
 
 
-;;; Shake parameters, reserved for future use
-var_shake_x:   DS      1
-var_shake_y:   DS      1
+var_shake_magnitude:    DS      1
+var_shake_timer:        DS      1
 
 
 var_overlay_alternate_pos:    DS      1

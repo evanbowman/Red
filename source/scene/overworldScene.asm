@@ -188,6 +188,32 @@ OverworldSceneUpdateView:
 
 .done:
         fcall   UpdateStaminaBar
+
+;;; !!!!FALLTHROUGH!!!!
+
+ScreenShakeUpdate:
+        ld      a, [var_shake_magnitude]
+        or      a
+        ret     Z
+        ld      b, a
+
+        ld      a, [var_shake_timer]
+        cp      32
+        jr      Z, .done
+        ld      c, a
+.run:
+        LONG_CALL r1_Screenshake
+
+        ld      a, [var_shake_timer]
+        inc     a
+        ld      [var_shake_timer], a
+
+        ret
+
+.done:
+        ld      a, 0
+        ld      [var_shake_magnitude], a
+        ld      [var_shake_timer], a
         ret
 
 

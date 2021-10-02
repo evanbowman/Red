@@ -89,7 +89,7 @@ ShowSpriteSquare16:
 
         dec     a
         or      a
-        jr      z, .done
+        ret     Z
 
         push    hl
         ld      hl, $0800
@@ -98,10 +98,9 @@ ShowSpriteSquare16:
         pop     hl
 
         jr      .loop
-.done:
-        ret
 
 
+;;; ----------------------------------------------------------------------------
 
 ShowSpriteTall16x32:
 ;;; l - oam start
@@ -189,7 +188,7 @@ ShowSpriteTall16x32:
         inc     e
 
         or      a                       ; test whether a has reached zero
-        jr      z, .done
+        ret     Z
         dec     a
 
         push    hl
@@ -199,12 +198,9 @@ ShowSpriteTall16x32:
         ld      b, h
         pop     hl
         jr      .loop_inner2
-.done
-        ret
 
 
-
-
+;;; ----------------------------------------------------------------------------
 
 ;;; Note: 32x32 Square sprite consumes eight hardware sprites, given 8x16
 ;;; sprites.
@@ -292,7 +288,7 @@ ShowSpriteSquare32:
         inc     e
 
         or      a                       ; test whether a has reached zero
-        jr      z, .done
+        ret     Z
         dec     a
 
         push    hl
@@ -302,10 +298,9 @@ ShowSpriteSquare32:
         ld      b, h
         pop     hl
         jr      .loop_inner2
-.done
-        ret
 
 
+;;; ----------------------------------------------------------------------------
 
 ShowSpriteT:
 ; l - oam start
@@ -395,7 +390,7 @@ ShowSpriteT:
         inc     e
 
         or      a                       ; test whether a has reached zero
-        jr      z, .done
+        ret     Z
         dec     a
 
         push    hl
@@ -405,8 +400,6 @@ ShowSpriteT:
         ld      b, h
         pop     hl
         jr      .loop_inner2
-.done
-        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -671,7 +664,7 @@ SetBackgroundTile32x32:
 
         ld      a, c
         or      a
-        jr      Z, .done
+        ret     Z
 
         push    bc
         ld      bc, 28          ; go to next row
@@ -679,11 +672,6 @@ SetBackgroundTile32x32:
         pop     bc
 
         jr      .outerLoop
-
-.done:
-
-
-        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -836,7 +824,7 @@ PutText:
 .loop:
         ld      a, [hl]
         cp      0
-	jr      Z, .done
+	ret     Z
 
         fcall   AsciiToGlyph
         ld      [de], a
@@ -852,8 +840,6 @@ PutText:
         inc     de
 
         jr      .loop
-.done:
-        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -866,7 +852,7 @@ PutTextSimple:
 .loop:
         ld      a, [hl+]
         cp      0
-	jr      Z, .done
+        ret     Z
 
         fcall   AsciiToGlyph
         ld      [de], a
@@ -874,8 +860,6 @@ PutTextSimple:
         inc     de
 
         jr      .loop
-.done:
-        ret
 
 
 ;;; ----------------------------------------------------------------------------

@@ -53,7 +53,7 @@ RoomTransitionSceneDownVBlank:
 ;;; scrolls. We will finish up the rest of the rows after the transition.
         cp      30
 
-	jr      Z, .done
+	ret     Z
 
         ld      c, a
 

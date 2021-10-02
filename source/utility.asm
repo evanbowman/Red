@@ -308,3 +308,26 @@ SmallStrlen:
 
 
 ;;; ----------------------------------------------------------------------------
+
+Clamp:
+;;; a - value
+;;; b - upper
+;;; c - lower
+;;; trashes b, c
+;;; result in a
+        cp      c               ; \ If value less than lower, goto .fixLower
+        jr      C, .fixLower    ; /
+
+        ld      c, a            ; \
+        ld      a, b            ; | If upper < value, return upper.
+        cp      c               ; |
+        ret     C               ; /
+
+        ld      a, c            ; Result: value
+        ret
+.fixLower:
+        ld      a, c            ; Result: lower
+        ret
+
+
+;;; ----------------------------------------------------------------------------

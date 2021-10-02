@@ -497,7 +497,7 @@ r8_InventoryPutTextRow:
 .loop:
         ld      a, 0
         cp      c
-        jr      Z, .done
+        ret     Z
 
         ld      a, $32
 	ld      [de], a
@@ -512,8 +512,6 @@ r8_InventoryPutTextRow:
         dec     c
         inc     de
         jr      .loop
-.done:
-        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -1166,7 +1164,7 @@ r8_CraftableItemsListInsert:
 .loop:
         ld      a, CRAFTABLE_ITEMS_COUNT
         cp      c
-        jr      Z, .done
+        ret     Z
 
         ld      a, [hl]
         or      a
@@ -1175,16 +1173,13 @@ r8_CraftableItemsListInsert:
         ld      [hl], d
         inc     hl
         ld      [hl], e
-        jr      .done
+        ret
 
 .next:
         inc     c
         inc     hl
         inc     hl
         jr      .loop
-
-.done:
-        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -1252,11 +1247,11 @@ r8_PutTruncatedItemText:
 .loop:
         ld      a, 0
         cp      c
-        jr      Z, .done
+        ret     Z
 
         ld      a, [hl]
         cp      0
-	jr      Z, .done
+        ret     Z
 
         fcall   AsciiToGlyph
         ld      [de], a
@@ -1273,9 +1268,6 @@ r8_PutTruncatedItemText:
         inc     de
 
         jr      .loop
-.done:
-
-        ret
 
 
 ;;; ----------------------------------------------------------------------------
@@ -1641,11 +1633,10 @@ r8_InventoryUpdate:
 .checkRight:
         ldh     a, [hvar_joypad_current]
         bit     PADB_RIGHT, a
-        jr      Z, .done
+        ret     Z
 
         fcall   r8_InventoryTabRight
 
-.done:
         ret
 
 

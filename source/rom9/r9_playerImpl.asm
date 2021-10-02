@@ -356,6 +356,9 @@ r9_PlayerOnMessage:
 
         ld      a, 25
         ld      [var_player_color_counter], a
+
+        ld      b, 3
+        WIDE_CALL r1_StartScreenshake
 .skip:
         ret
 

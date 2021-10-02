@@ -816,6 +816,11 @@ r9_GreywolfOnMessage:
         ld      a, 7
         fcall   EntitySetPalette
 
+        push    hl
+        ld      b, 1
+        WIDE_CALL r1_StartScreenshake
+        pop     hl
+
 
         ld      bc, GREYWOLF_VAR_COLOR_COUNTER
         fcall   EntityGetSlack

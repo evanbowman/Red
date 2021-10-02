@@ -167,13 +167,11 @@ EntityAnimationAdvance:
 
         ld      d, a                    ; return frameChanged:true/false in d
         or      a
-        jr      Z, .done
+        ret     Z
 
         ld      a, [hl]
         or      ENTITY_TEXTURE_SWAP_FLAG
         ld      [hl], a
-
-.done:
         ret
 
 
@@ -652,7 +650,7 @@ EntityDrawLoopDone:
 .unusedOAMZeroLoop:
         ld      a, [var_oam_bottom_counter]
         cp      b
-        jr      Z, .done
+        ret     Z
 
 ;;; Move unused object to (0,0), effectively hiding it
         ld      [hl], c
@@ -664,9 +662,6 @@ EntityDrawLoopDone:
 
         inc     b
         jr      .unusedOAMZeroLoop
-
-.done:
-        ret
 
 
 
