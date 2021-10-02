@@ -178,8 +178,11 @@ r9_BoarUpdateDashLeftImpl:
         ;; fallthrough
 
 .collideWall:
+        push    hl
+        ld      b, 2
+        WIDE_CALL r1_StartScreenshake
+        pop     hl
 
-        ;; TODO: screenshake
         ld      de, BoarUpdateRechargeAfterCollision
         fcall   EntitySetUpdateFn
         ret
@@ -245,6 +248,11 @@ r9_BoarDashCheckPlayerCollision:
         fcall   r9_PlayerBoarAttackDepleteStamina
         pop     hl
 
+        push    hl
+        ld      b, 4
+        WIDE_CALL r1_StartScreenshake
+        pop     hl
+
 .skip:
         pop     hl
 
@@ -288,6 +296,11 @@ r9_BoarUpdateDashRightImpl:
         ;; fallthrough
 
 .collideWall:
+
+        push    hl
+        ld      b, 2
+        WIDE_CALL r1_StartScreenshake
+        pop     hl
 
         ;; TODO: screenshake
         ld      de, BoarUpdateRechargeAfterCollision
@@ -518,6 +531,11 @@ r9_BoarOnMessage:
         fcall   FormatDamage
         pop     hl
         fcall   r9_BoarDepleteStamina
+
+        push    hl
+        ld      b, 1
+        WIDE_CALL r1_StartScreenshake
+        pop     hl
 
         ret
 

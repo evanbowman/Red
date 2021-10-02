@@ -268,6 +268,7 @@ r1_StartScreenshake:
         ld      a, [var_shake_magnitude]
         cp      b
         jr      C, .update
+        jr      Z, .update
         ret
 .update:
         ld      a, b

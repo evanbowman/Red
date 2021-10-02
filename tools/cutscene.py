@@ -99,6 +99,9 @@ while True:
             return 3
         elif rgb == (8, 4, 23):
             return 2
+        # I used different colors in a few sequences
+        elif rgb == (152, 117, 124):
+            return 1
         elif rgb == (95, 65, 71):
             return 1
         else:
