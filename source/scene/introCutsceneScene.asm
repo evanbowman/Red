@@ -212,7 +212,7 @@ IntroCutsceneSceneUpdate:
         jr      NZ, .nextScene
 
 
-        ld      e, 40           ; \ frames to sleep
+        ld      e, 35           ; \ frames to sleep
         fcall   ForceSleep      ; /
 
 
