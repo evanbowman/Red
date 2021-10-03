@@ -473,14 +473,19 @@ r9_PlayerUpdateImpl:
         or      a
         jr      Z, .tryInteractEntities
         fcall   r9_PlayerTryInteract
-        jr      .done
+        jr      .return
 
 .checkB:
         bit     PADB_B, a
         jr      Z, .done
         fcall   r9_PlayerAttackInit
+        ret
 
 .done:
+        ldh     a, [hvar_joypad_raw]
+        and     PADF_LEFT | PADF_RIGHT | PADF_UP | PADF_DOWN
+        fcallc  Z, r9_PlayerSetIdleSprite
+.return:
         ret
 
 .tryInteractEntities:
@@ -596,6 +601,10 @@ r9_PlayerInteractTile:
         fcall   MapGetTile
 
         ld      a, b
+
+        fcall   IsTileLockedDoor
+        jr      Z, .tryOpenDoor
+
         fcall   IsTileCollectible
         jr      NZ, .tryInteractEntities
 
@@ -614,6 +623,16 @@ r9_PlayerInteractTile:
         pop     de
         ret
 
+.tryOpenDoor:
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdateUnlockDoor
+        fcall   EntitySetUpdateFn
+
+        fcall   r9_PlayerSetIdleSprite
+
+        pop     de
+        ret
+
 
 ;;; ----------------------------------------------------------------------------
 
@@ -628,6 +647,44 @@ r9_PlayerPickupAnimationInit:
         ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [var_player_swap_spr], a
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+no_keys_str::
+DB      "key required", 0
+
+used_key_str::
+DB      "used key", 0
+
+
+r9_PlayerUpdateUnlockDoorImpl:
+        ld      b, ITEM_KEY
+        fcall   InventoryCountOccurrences
+        ld      a, d
+        or      a
+        jr      Z, .noKeys
+
+        ld      hl, used_key_str
+        fcall   OverlayPutText
+
+        ld      b, ITEM_KEY
+        fcall   InventoryConsumeItem
+
+        fcall   r9_RemoveMapItem
+
+        jr      .return
+
+.noKeys:
+        ld      hl, no_keys_str
+        fcall   OverlayPutText
+
+
+.return:
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdate
+        fcall   EntitySetUpdateFn
         ret
 
 
@@ -743,6 +800,45 @@ r9_PlayerAddItemToInventory:
 
 ;;; ----------------------------------------------------------------------------
 
+r9_RemoveMapItem:
+        push    de
+        ld      e, 7
+        fcall   ForceSleepOverworld
+        pop     de
+
+        ld      a, [var_collect_item_xy]
+        and     $0f
+        ld      d, a
+        ld      a, [var_collect_item_xy]
+        and     $f0
+        swap    a
+
+        push    af                      ; \ Store coordinate
+        push    de                      ; /
+
+        sla     a                       ; 2x2 background meta tiles
+        sla     d                       ;
+
+        ld      e, EMPTY_TILE_ADDR
+        ld      c, $0a
+
+        fcall   SetBackgroundTile16x16
+
+	pop     de                      ; \ Restore coordinate
+        pop     af                      ; /
+
+        ld      b, d                    ; Pass y in reg b
+
+        ld      hl, var_map_info
+        ld      d, EMPTY_TILE
+        fcall   MapSetTile
+
+        fcall   CollectibleItemErase
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 r9_CollectMapItem:
 
@@ -1511,6 +1607,74 @@ r9_PlayerKnifeAttackPopulateHitbox:
 ;; .down:
 ;;         fcall   r9_PlayerPopulateHitbox ;todo
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_PlayerSetIdleSprite:
+;;; trashes a, bc, hl
+        ld      hl, var_player_struct
+        fcall   EntityGetFrameBase
+        ld      a, b
+
+        cp      SPRID_PLAYER_SR
+        ret     Z
+        cp      SPRID_PLAYER_SL
+        ret     Z
+        cp      SPRID_PLAYER_SU
+        ret     Z
+        cp      SPRID_PLAYER_SD
+        ret     Z
+
+        fcall   EntityAnimationResetKeyframe
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      b, [hl]
+        or      b
+        ld      [hl], a
+
+        fcall   EntityGetFrameBase
+        ld      a, b
+
+        cp      SPRID_PLAYER_WR
+        jr      Z, .idle_right
+
+        cp      SPRID_PLAYER_WL
+        jr      Z, .idle_left
+
+        cp      SPRID_PLAYER_WU
+        jr      Z, .idle_up
+
+        cp      SPRID_PLAYER_KNIFE_ATK_R
+        jr      Z, .idle_right
+
+        cp      SPRID_PLAYER_KNIFE_ATK_L
+        jr      Z, .idle_left
+
+        cp      SPRID_PLAYER_KNIFE_ATK_U
+        jr      Z, .idle_up
+
+.idle_down:
+        ;; NOTE: player face down as the base case, so we do not compare any of
+        ;; the down-facing sprites above.
+        ld      a, SPRID_PLAYER_SD
+        fcall   EntitySetFrameBase
+        ret
+
+.idle_right:
+        ld      a, SPRID_PLAYER_SR
+        fcall   EntitySetFrameBase
+        ret
+
+.idle_left:
+        ld      a, SPRID_PLAYER_SL
+        fcall   EntitySetFrameBase
+        ret
+
+.idle_up:
+        ld      a, SPRID_PLAYER_SU
+        fcall   EntitySetFrameBase
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------

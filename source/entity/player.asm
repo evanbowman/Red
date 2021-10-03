@@ -65,6 +65,14 @@ PlayerUpdatePickupItem:
 ;;; ----------------------------------------------------------------------------
 
 
+PlayerUpdateUnlockDoor:
+        LONG_CALL r9_PlayerUpdateUnlockDoorImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
 PlayerUpdateAttack1:
         LONG_CALL r9_PlayerUpdateAttack1Impl
         jp      EntityUpdateLoopResume

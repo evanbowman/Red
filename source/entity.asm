@@ -50,7 +50,8 @@
 ;;;     char attributes_;
 ;;;     char flags_; {
 ;;;         char sprite_shape_ : 4;
-;;;         char reserved_ : 3;
+;;;         char reserved_ : 2;
+;;;         char shadow_parity_: : 1;
 ;;;         char has_shadow_ : 1;
 ;;;     }
 ;;;     Pointer update_fn_;

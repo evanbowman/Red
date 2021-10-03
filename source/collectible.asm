@@ -35,6 +35,21 @@
 
 ;;; ----------------------------------------------------------------------------
 
+;;; Collectibles: persistent tiles, typically corresponding to items that the
+;;; player can pick up. In a few cases, I'm mis-using the collectible tile
+;;; engine for other things, like locked doors, for which changes need to be
+;;; persistent, but which don't yield actual items.
+
+
+COLLECTIBLE_TILE_POTATO EQU 15
+COLLECTIBLE_TILE_STICK  EQU 16
+COLLECTIBLE_TILE_KEY    EQU 22
+COLLECTIBLE_TILE_DOOR   EQU 23
+COLLECTIBLE_TILE_NULL   EQU 0
+
+
+;;; ----------------------------------------------------------------------------
+
 CollectiblesLoad:
 ;;; no arguments
 ;;; returns a pointer to an array of collectible items
