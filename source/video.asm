@@ -64,6 +64,28 @@ GDMABlockCopy:
 
 ;;; ----------------------------------------------------------------------------
 
+ShowSpriteSingle:
+;;; l - oam start
+;;; b - x
+;;; c - y
+;;; d - palette
+;;; e - start tile
+        push    de
+        fcall   OamLoad
+        pop     de
+
+        ld      [hl], c
+        inc     hl
+        ld      [hl], b
+        inc     hl
+        ld      [hl], e
+        inc     hl
+        ld      [hl], d
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 ShowSpriteSquare16:
 ; l - oam start
 ; b - x

@@ -81,6 +81,8 @@ OverworldSceneInitOverlayVRam:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
 OverworldSceneLoadTiles:
 
         fcall   OverworldSceneInitOverlayVRam ; Sets rom bank 7
@@ -101,8 +103,15 @@ OverworldSceneLoadTiles:
         ld      bc, r7_SpriteDropShadowEnd - r7_SpriteDropShadow
         ld      de, $87c0
         fcall   VramSafeMemcpy
+
+        ld      hl, r7_SpriteSmallDropShadow
+        ld      bc, r7_SpriteSmallDropShadowEnd - r7_SpriteSmallDropShadow
+        ld      de, $87b0
+        fcall   VramSafeMemcpy
         ret
 
+
+;;; ----------------------------------------------------------------------------
 
 OverworldSceneEnter:
         fcall   VBlankIntrWait
@@ -487,7 +496,6 @@ OverworldSceneAnimateWater:
 
 ;;; ----------------------------------------------------------------------------
 
-
 OverworldSceneStartTransition:
 ;;; de - transition fn
 	fcall   SceneSetUpdateFn
@@ -515,6 +523,8 @@ OverworldSceneStartTransition:
 
         ret
 
+
+;;; ----------------------------------------------------------------------------
 
 OverworldSceneTryRoomTransition:
         ld      a, [var_player_coord_y]

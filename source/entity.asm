@@ -53,8 +53,9 @@
 ;;;     char attributes_;
 ;;;     char display_flags_; {
 ;;;         char sprite_shape_ : 4;
-;;;         char reserved_ : 2;
-;;;         char shadow_parity_: : 1;
+;;;         char reserved_ : 1;
+;;;         char shadow_size_ : 1;  (zero for large, one for small).
+;;;         char shadow_parity_ : 1;
 ;;;         char has_shadow_ : 1;
 ;;;     }
 ;;;     Pointer update_fn_;
@@ -87,6 +88,7 @@ ENTITY_ATTR_HAS_SHADOW          EQU  $01
 ;;; objects in a row without graphical glitches by assigning different 'parity'
 ;;; attributes, so that their shadows never display during the same frame.
 ENTITY_ATTR_SHADOW_EVEN_PARITY  EQU  $02
+ENTITY_ATTR_SMALL_SHADOW        EQU  $04
 
 
 
@@ -571,7 +573,20 @@ EntityDrawLoop:
         jr      Z, .putSquare32Sprite
 
 .putSquare16Sprite:
-        ;; TODO...
+        ld      a, [var_oam_top_counter]
+        ld      l, a
+        add     2               ; Uses two oam
+        ld      [var_oam_top_counter], a
+        push    bc
+        ld      a, e            ; \ Most of the ShowSprite... implementations
+        add     10              ; | adjust for the empty tiles that they skip,
+        ld      e, a            ; / but ShowSpriteSquare16 does not. Skip row0+1
+
+        ld      a, c            ; \ Because we skipped the first row of Oam,
+        add     8              ; | jump the y coordinate down one row.
+        ld      c, a            ; /
+        fcall   ShowSpriteSquare16
+        pop     bc
         jr      .putSpriteFinished
 
 .putTSprite:
@@ -622,17 +637,40 @@ EntitySwapResume:
 
         ld      a, [hl]                ; \
         and     ENTITY_ATTR_HAS_SHADOW ; | Skip shadow rendering if shadow attr
-        or      a                      ; | not set.
         jr      Z, .skipShadow         ; /
 
         ld      a, [hl]                        ; \
         and     ENTITY_ATTR_SHADOW_EVEN_PARITY ; |
         srl     a                              ; | | shift bit(1) to lsb
-        ld      l, a                           ; | If entity shadow parity !=
+        ld      d, a                           ; | If entity shadow parity !=
         ld      a, [hvar_shadow_parity]        ; | current parity, skip.
-        cp      l                              ; |
+        cp      d                              ; |
         jr      NZ, .skipShadow                ; /
 
+        ld      a, [hl]
+        and     ENTITY_ATTR_SMALL_SHADOW
+        jr      Z, .fullsizeShadow
+.here:
+        ld      a, c
+        add     10
+        ld      c, a
+
+        ld      a, b
+        add     4
+        ld      b, a
+
+        ld      a, [var_oam_bottom_counter]
+        dec     a
+        ld      l, a
+        ld      [var_oam_bottom_counter], a
+
+        ld      e, $7a
+        ld      d, 2
+        fcall   ShowSpriteSingle
+
+        jr      .afterShadow
+
+.fullsizeShadow:
         ld      a, c
         add     17
         ld      c, a
@@ -646,6 +684,7 @@ EntitySwapResume:
         fcall   ShowSpriteSquare16
 
 .skipShadow:
+.afterShadow:
 
         pop     de              ; restore entity buffer pointer
         pop     af              ; restore loop counter

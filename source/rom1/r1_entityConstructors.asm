@@ -248,10 +248,10 @@ r1_SpiderNew:
 ;;; e - type modifier bits
         fcall   r1_EntityInit
 
-        ld      a, SPRID_SPIDER_L
+        ld      a, SPRID_SPIDER_R
         fcall   EntitySetFrameBase
 
-        ld      a, 3
+        ld      a, 2
         fcall   EntitySetHWGraphicsAttributes
 
         ld      a, ENTITY_TYPE_SPIDER
@@ -260,13 +260,13 @@ r1_SpiderNew:
         ld      de, SpiderUpdate
         fcall   EntitySetUpdateFn
 
-        ld      a, SPRITE_SHAPE_SQUARE_16
+        ld      a, SPRITE_SHAPE_SQUARE_16 | ENTITY_ATTR_HAS_SHADOW | ENTITY_ATTR_SHADOW_EVEN_PARITY | ENTITY_ATTR_SMALL_SHADOW
         fcall   EntitySetDisplayFlags
 
         ld      bc, SPIDER_VAR_SLAB
         fcall   EntityGetSlack
 
-        push    bc              ; \ bc -> de
+	push    bc              ; \ bc -> de
         pop     de              ; /
 
         push    hl
@@ -277,7 +277,7 @@ r1_SpiderNew:
         pop     de
         ld      [de], a         ; store slab in slack var
 
-        ld      d, 6            ; our weight
+        ld      d, 2            ; our weight
         fcall   SlabTableBind
         pop     hl
 

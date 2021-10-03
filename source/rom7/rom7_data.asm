@@ -740,6 +740,12 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 r7_SpriteDropShadowEnd::
 
 
+r7_SpriteSmallDropShadow::
+DB $00,$00,$00,$00,$00,$00,$7E,$00
+DB $FF,$00,$FF,$00,$7E,$00,$00,$00
+r7_SpriteSmallDropShadowEnd::
+
+
 ;;; Requires 8-byte alignement for DMA copies.
 align 8
 r7_BackgroundTilesWaterAnim::

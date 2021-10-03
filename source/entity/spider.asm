@@ -44,7 +44,13 @@ SPIDER_VAR_SLAB          EQU 5
 ;;; ----------------------------------------------------------------------------
 
 SpiderUpdate:
-        ;; TODO
+        ld      h, b
+        ld      l, c
+
+        ld      e, 6
+        ld      d, 5
+        fcall   EntityAnimationAdvance
+
         jp      EntityUpdateLoopResume
 
 
