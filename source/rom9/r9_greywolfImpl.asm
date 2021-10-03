@@ -108,8 +108,7 @@ r9_GreywolfIdleSetFacing:
 
         fcall   EntitySetFrameBase
 
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
-        ld      [hl], a
+        fcall   EntitySetTextureSwapFlag
 
         ret
 
@@ -121,8 +120,7 @@ r9_GreywolfIdleSetFacing:
         ld      a, SPRID_GREYWOLF_L
         fcall   EntitySetFrameBase
 
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
-        ld      [hl], a
+        fcall   EntitySetTextureSwapFlag
 
 .skip:
         ret
@@ -139,7 +137,7 @@ r9_EnemyUpdateColor:
         jr      NZ, .decColorCounter
 
 	ld      a, 3
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
         ret
 
@@ -181,9 +179,7 @@ r9_GreywolfUpdateIdleImpl:
         ld      de, GreywolfUpdateRunSeekX
         fcall   EntitySetUpdateFn
 
-        ld      a, [hl]
-        or      ENTITY_TEXTURE_SWAP_FLAG
-        ld      [hl], a
+        fcall   EntitySetTextureSwapFlag
 
         fcall   EntityGetFrameBase
         ld      a, SPRID_GREYWOLF_L
@@ -814,7 +810,7 @@ r9_GreywolfOnMessage:
         jr      Z, .skip
 
         ld      a, 7
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
         push    hl
         ld      b, 1
@@ -877,9 +873,7 @@ r9_GreywolfOnMessage:
 	ld      a, SPRID_GREYWOLF_STUN_R
         fcall   EntitySetFrameBase
 
-        ld      a, [hl]
-        or      ENTITY_TEXTURE_SWAP_FLAG
-        ld      [hl], a
+        fcall   EntitySetTextureSwapFlag
 
         ret
 
@@ -887,9 +881,7 @@ r9_GreywolfOnMessage:
 	ld      a, SPRID_GREYWOLF_STUN_L
         fcall   EntitySetFrameBase
 
-        ld      a, [hl]
-        or      ENTITY_TEXTURE_SWAP_FLAG
-        ld      [hl], a
+        fcall   EntitySetTextureSwapFlag
 
         ret
 .skip:
@@ -1126,8 +1118,7 @@ r9_GreywolfUpdateDyingImpl:
         ld      de, GreywolfUpdateDead
         fcall   EntitySetUpdateFn
 
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
-        ld      [hl], a
+        fcall   EntitySetTextureSwapFlag
 
         ld      a, ENTITY_TYPE_GREYWOLF_DEAD
         fcall   EntitySetType
@@ -1136,7 +1127,7 @@ r9_GreywolfUpdateDyingImpl:
         fcall   EntitySetTypeModifier
 
         ld      a, 4
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
         fcall   EntityGetXPos
         ld      b, 1

@@ -120,7 +120,7 @@ r1_EntityInit:
         pop     hl
         pop     bc
 
-        ld      a, 1
+        ld      a, ENTITY_TEXTURE_SWAP_FLAG
         ld      [hl], a
 
         fcall   EntitySetPos
@@ -160,7 +160,7 @@ r1_BonfireNew:
         fcall   EntitySetFrameBase
 
         ld      a, 1
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
         ld      a, 0
         fcall   EntitySetDisplayFlags
@@ -204,7 +204,7 @@ r1_GreywolfNew:
         fcall   EntitySetFrameBase
 
         ld      a, 3
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
         ld      a, ENTITY_TYPE_GREYWOLF
         fcall   EntitySetType
@@ -241,6 +241,54 @@ r1_GreywolfNew:
 
 ;;; ----------------------------------------------------------------------------
 
+
+r1_SpiderNew:
+;;; b - x
+;;; c - y
+;;; e - type modifier bits
+        fcall   r1_EntityInit
+
+        ld      a, SPRID_SPIDER_L
+        fcall   EntitySetFrameBase
+
+        ld      a, 3
+        fcall   EntitySetHWGraphicsAttributes
+
+        ld      a, ENTITY_TYPE_SPIDER
+        fcall   EntitySetType
+
+        ld      de, SpiderUpdate
+        fcall   EntitySetUpdateFn
+
+        ld      a, SPRITE_SHAPE_SQUARE_16
+        fcall   EntitySetDisplayFlags
+
+        ld      bc, SPIDER_VAR_SLAB
+        fcall   EntityGetSlack
+
+        push    bc              ; \ bc -> de
+        pop     de              ; /
+
+        push    hl
+        push    de
+        ld      d, 6
+        fcall   SlabTableFindAnyUnused
+        ld      a, c
+        pop     de
+        ld      [de], a         ; store slab in slack var
+
+        ld      d, 6            ; our weight
+        fcall   SlabTableBind
+        pop     hl
+
+	fcall   r1_EnemyInitStamina
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r1_BoarNew:
 ;;; b - x
 ;;; c - y
@@ -251,7 +299,7 @@ r1_BoarNew:
         fcall   EntitySetFrameBase
 
         ld      a, 3
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
         ld      a, ENTITY_TYPE_BOAR
         fcall   EntitySetType
@@ -297,7 +345,7 @@ r1_GreywolfDeadNew:
         fcall   EntitySetFrameBase
 
         ld      a, 4
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
         ld      a, ENTITY_TYPE_GREYWOLF_DEAD
         fcall   EntitySetType
@@ -325,7 +373,7 @@ r1_BoarDeadNew:
         fcall   EntitySetFrameBase
 
         ld      a, 4
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
         ld      a, ENTITY_TYPE_BOAR_DEAD
         fcall   EntitySetType

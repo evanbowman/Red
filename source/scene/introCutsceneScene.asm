@@ -233,7 +233,7 @@ IntroCutsceneSceneUpdate:
 
         ld      d, 13
         ld      e, BANK(@)      ; our own bank
-        ld      c, 11           ; framerate
+        ld      c, 10           ; framerate
         fcall   CutscenePlay
 	ld      a, d
         or      a

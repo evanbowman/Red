@@ -41,14 +41,17 @@
 ;;;
 ;;;
 ;;; struct Entity {
-;;;     char texture_swap_flag_;
+;;;     char flags0_; {
+;;;         char texture_swap_flag_ : 1;
+;;;         char reserved_ : 7;
+;;;     }
 ;;;     Fixnum coord_y_; // (three bytes)
 ;;;     Fixnum coord_x_; // (three bytes)
 ;;;     Animation anim_; // (two bytes)
 ;;;     char base_frame_;
 ;;;     char vram_index_;
 ;;;     char attributes_;
-;;;     char flags_; {
+;;;     char display_flags_; {
 ;;;         char sprite_shape_ : 4;
 ;;;         char reserved_ : 2;
 ;;;         char shadow_parity_: : 1;
@@ -147,6 +150,17 @@ EntityAnimationResetKeyframe:
         ld      [hl+], a
         ld      [hl], a
         pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+EntitySetTextureSwapFlag:
+;;; hl - entity
+;;; trashes a
+        ld      a, [hl]
+        or      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      [hl], a
         ret
 
 
@@ -303,7 +317,7 @@ EntitySetTexture:
 
 ;;; ----------------------------------------------------------------------------
 
-EntitySetPalette:
+EntitySetHWGraphicsAttributes:
 ;;; hl - entity
 ;;; a - palette
 ;;; trashes bc
@@ -546,18 +560,18 @@ EntityDrawLoop:
         push    hl                      ; Store entity pointer
 
         and     $f0
-        ld      h, SPRITE_SHAPE_TALL_16_32
-        cp      h
+
+        ;; NOTE: I thought about re-writing this as a jump table, but with only
+        ;; four cases, it would be slower and trash a bunch of registers.
+        cp      SPRITE_SHAPE_TALL_16_32
         jr      Z, .putTall16x32Sprite
-
-        ld      h, SPRITE_SHAPE_T
-        cp      h
+        cp      SPRITE_SHAPE_T
         jr      Z, .putTSprite
-
-        ld      h, SPRITE_SHAPE_SQUARE_32
-        cp      h
+        cp      SPRITE_SHAPE_SQUARE_32
         jr      Z, .putSquare32Sprite
 
+.putSquare16Sprite:
+        ;; TODO...
         jr      .putSpriteFinished
 
 .putTSprite:
@@ -588,7 +602,6 @@ EntityDrawLoop:
         push    bc
         fcall   ShowSpriteTall16x32
         pop     bc
-
 
 .putSpriteFinished:
         pop     hl                      ; Restore entity pointer

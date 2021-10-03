@@ -36,9 +36,9 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-
 SPRITE_SHAPE_SQUARE_32 EQU $f0
 SPRITE_SHAPE_T EQU $e0
+SPRITE_SHAPE_SQUARE_16 EQU $d0
 SPRITE_SHAPE_TALL_16_32 EQU $00
 
 
@@ -84,7 +84,13 @@ ENDM
 ;;; NOTE: trashes hl and a both prior to invocation, and after invocation.
 WIDE_CALL: MACRO
         ASSERT (BANK(\1) != BANK(@)) ; pointless call to current bank
-        ASSERT (BANK(@) != BANK(EntryPoint)) ; Wasteful to call from bank0
+
+        ;; Wasteful to call from bank0... Or is it? I suppose I could see some
+        ;; usefullness in being able to call ROMX functions without messing with
+        ;; the currently-assigned ROM bank. But I think it's ultimately best to
+        ;; discourage doing this, hence the assertion.
+        ASSERT (BANK(@) != BANK(EntryPoint))
+
         ld      a, BANK(@)
         push    af              ; Put bank on stack for widecall implementation.
         ld      a, BANK(\1)
@@ -100,14 +106,16 @@ ENDM
 
 
 SET_BANK_FROM_A: MACRO
+        ;; Makes no sense for a ROMX bank to manually switch to another bank.
+	ASSERT (BANK(@) == BANK(EntryPoint))
+
         ldh     [hvar_bank], a
         ld      [rROMB0], a
 ENDM
 
 
 SET_BANK: MACRO
-        ;; Makes no sense for a bank with code in it to switch to another bank
-        ;; without a proper LONG_CALL.
+        ;; Makes no sense for a ROMX bank to manually switch to another bank.
         ASSERT (BANK(@) == BANK(EntryPoint))
 
         ld      a, \1
@@ -181,6 +189,7 @@ __InvokeHLImpl:
 ;;; ############################################################################
 
         SECTION "RESTART_VECTOR_38",ROM0[$0038]
+__RST_FATAL_JUMP:
         LONG_CALL r1_fatalError
 
 
@@ -594,6 +603,7 @@ TimerISR:
         INCLUDE "bonfire.asm"
         INCLUDE "player.asm"
         INCLUDE "greywolf.asm"
+        INCLUDE "spider.asm"
         INCLUDE "scene.asm"
         INCLUDE "rect.asm"
         INCLUDE "inventory.asm"

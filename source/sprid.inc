@@ -30,9 +30,6 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 ;;;
-;;; tl;dr: Do whatever you want with the code, just don't blame me if something
-;;; goes wrong.
-;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
@@ -93,3 +90,4 @@ SPRID_BOAR_DYING_L       EQU 164
 SPRID_BOAR_DYING_R       EQU 165
 SPRID_BOAR_DEAD_L        EQU 166
 SPRID_BOAR_DEAD_R        EQU 167
+SPRID_SPIDER_L           EQU 168

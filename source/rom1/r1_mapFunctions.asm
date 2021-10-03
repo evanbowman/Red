@@ -1668,45 +1668,42 @@ r1_SpawnEntity:
         and     ENTITY_TYPE_MODIFIER_MASK
         ld      e, a
 
+        push    bc
+
+        ld      hl, .spawnEntityJumpTable
+
         ld      a, d
         and     ENTITY_TYPE_MASK
-        cp      ENTITY_TYPE_BONFIRE
-        jr      Z, .spawnBonfire
-        cp      ENTITY_TYPE_SPIDER
-        jr      Z, .spawnSpider
-        cp      ENTITY_TYPE_GREYWOLF
-        jr      Z, .spawnGreywolf
-        cp      ENTITY_TYPE_GREYWOLF_DEAD
-        jr      Z, .spawnGreywolfDead
-        cp      ENTITY_TYPE_BOAR
-        jr      Z, .spawnBoar
-        cp      ENTITY_TYPE_BOAR_DEAD
-        jr      Z, .spawnBoarDead
+        ld      c, a
+        ld      b, 0
+        sla     c               ; type * 2 (two bytes per table entry)
 
-.spawnBonfire:
-        fcall   r1_BonfireNew
-        ret
+        add     hl, bc          ; \
+        ld      b, [hl]         ; |
+        inc     hl              ; | Fetch constructor from table
+        ld      h, [hl]         ; |
+        ld      l, b            ; /
 
-.spawnSpider:
-;;; TODO...
-        ret
+        pop     bc
 
-.spawnGreywolf:
-;;; TODO...
-        fcall   r1_GreywolfNew
-        ret
+        INVOKE_HL
 
-.spawnGreywolfDead:
-        fcall   r1_GreywolfDeadNew
-        ret
+	ret
 
-.spawnBoar:
-        fcall   r1_BoarNew
-        ret
+.spawnEntityJumpTable:
+DW      .err_spawn_player
+DW      r1_BonfireNew
+DW      r1_SpiderNew
+DW      r1_GreywolfNew
+DW      r1_GreywolfDeadNew
+DW      r1_BoarNew
+DW      r1_BoarDeadNew
+.spawnEntityJumpTableEnd:
+ASSERT((.spawnEntityJumpTableEnd - .spawnEntityJumpTable) / 2 == ENTITY_TYPE_COUNT)
 
-.spawnBoarDead:
-        fcall   r1_BoarDeadNew
-        ret
+.err_spawn_player:
+        ;; Invalid operation.
+        jr .err_spawn_player
 
 
 ;;; ----------------------------------------------------------------------------

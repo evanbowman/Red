@@ -67,15 +67,13 @@ r9_BoarUpdateImpl:
 .faceRight:
 	ld      a, SPRID_BOAR_RUN_R
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
+        fcall   EntitySetTextureSwapFlag
         ret
 
 .faceLeft:
 	ld      a, SPRID_BOAR_RUN_L
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
+        fcall   EntitySetTextureSwapFlag
 	ret
 
 ;;; ----------------------------------------------------------------------------
@@ -103,15 +101,13 @@ r9_BoarUpdateChargingImpl:
 .faceRight:
         ld      a, SPRID_BOAR_R
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
+        fcall   EntitySetTextureSwapFlag
         ret
 
 .faceLeft:
         ld      a, SPRID_BOAR_L
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
+        fcall   EntitySetTextureSwapFlag
         ret
 
 .next:
@@ -123,8 +119,7 @@ r9_BoarUpdateChargingImpl:
 .moveRight:
 	ld      a, SPRID_BOAR_RUN_R
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
+        fcall   EntitySetTextureSwapFlag
 
         ld      de, BoarUpdateDashRight
         fcall   EntitySetUpdateFn
@@ -133,8 +128,7 @@ r9_BoarUpdateChargingImpl:
 .moveLeft:
 	ld      a, SPRID_BOAR_RUN_L
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
+        fcall   EntitySetTextureSwapFlag
 
         ld      de, BoarUpdateDashLeft
         fcall   EntitySetUpdateFn
@@ -362,15 +356,13 @@ r9_BoarUpdateRechargeAfterCollisionImpl:
 .idleR:
         ld      a, SPRID_BOAR_R
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
+        fcall   EntitySetTextureSwapFlag
         ret
+
 .idleL:
         ld      a, SPRID_BOAR_L
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
-
+        fcall   EntitySetTextureSwapFlag
         ret
 
 
@@ -435,16 +427,13 @@ r9_BoarUpdateDyingImpl:
 
         ld      a, SPRID_BOAR_DYING_R
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
+        fcall   EntitySetTextureSwapFlag
 
         jr      .afterAssignFrame
 .left:
 	ld      a, SPRID_BOAR_DYING_L
         fcall   EntitySetFrameBase
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
-
+        fcall   EntitySetTextureSwapFlag
 
 .skipAssignFrame:
 .afterAssignFrame:
@@ -474,10 +463,9 @@ r9_BoarUpdateDyingImpl:
         fcall   EntitySetTypeModifier
 
         ld      a, 4
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
-        ld      a, 1            ; swap texture
-        ld      [hl], a         ;
+        fcall   EntitySetTextureSwapFlag
 
         fcall   EntityGetFrameBase
         ld      a, b
@@ -515,7 +503,7 @@ r9_BoarOnMessage:
         ret     Z
 
         ld      a, 7
-        fcall   EntitySetPalette
+        fcall   EntitySetHWGraphicsAttributes
 
         ld      bc, BOAR_VAR_COLOR_COUNTER
         fcall   EntityGetSlack
