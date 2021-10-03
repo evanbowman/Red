@@ -705,6 +705,8 @@ got_potato_str::
 DB      "got potato", 0
 got_stick_str::
 DB      "got stick", 0
+got_key_str::
+DB      "got key", 0
 
 
 r9_PlayerAddItemToInventory:
@@ -713,6 +715,8 @@ r9_PlayerAddItemToInventory:
         jr      Z, .potato
         cp      COLLECTIBLE_TILE_STICK
         jr      Z, .stick
+        cp      COLLECTIBLE_TILE_KEY
+        jr      Z, .key
         ret
 
 .potato:
@@ -726,6 +730,13 @@ r9_PlayerAddItemToInventory:
         ld      b, ITEM_STICK
         fcall   InventoryAddItem
         ld      hl, got_stick_str
+        fcall   OverlayPutText
+        ret
+
+.key:
+        ld      b, ITEM_KEY
+        fcall   InventoryAddItem
+        ld      hl, got_key_str
         fcall   OverlayPutText
         ret
 

@@ -824,7 +824,7 @@ DB      ITEM_CATEGORY_FOOD,       90, $00, $00
 DB      ITEM_CATEGORY_FOOD,      120, $00, $00
 
 .stew:
-DB      ITEM_CATEGORY_FOOD,      $00, $00, $00
+DB      ITEM_CATEGORY_FOOD,      220, $00, $00
 
 .bundle:
 DB      ITEM_CATEGORY_MISC,      $00, $00, $00
@@ -832,6 +832,8 @@ DB      ITEM_CATEGORY_MISC,      $00, $00, $00
 .firewood:
 DB      ITEM_CATEGORY_MISC,      $00, $00, $00
 
+.key:
+DB      ITEM_CATEGORY_MISC,      $00, $00, $00
 
 r8_ItemDescsEnd::
 STATIC_ASSERT((r8_ItemDescsEnd - r8_ItemDescs) / 4 == ITEM_COUNT)
@@ -1951,6 +1953,7 @@ DB      "soup           ", 0
 DB      "stew           ", 0
 DB      "bundle         ", 0
 DB      "firewood       ", 0
+DB      "key            ", 0
 r8_InventoryItemTextTableEnd::
 STATIC_ASSERT((r8_InventoryItemTextTableEnd - r8_InventoryItemTextTable) / 16 == ITEM_COUNT)
 
@@ -2047,6 +2050,12 @@ DB $83, $83, $83, $83
 DB $83, $83, $83, $83
 DB $83, $83, $83, $83
 .firewoodEnd::
+.key::
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+DB $83, $83, $83, $83
+.keyEnd::
 r8_InventoryItemAttributesEnd::
 STATIC_ASSERT((r8_InventoryItemAttributesEnd - r8_InventoryItemAttributes) / 16 == ITEM_COUNT)
 
@@ -2186,6 +2195,16 @@ DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 .firewoodEnd::
+.key::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $ad,$4d, $ff,$7f, $81,$20,
+DB $fa,$46, $ad,$4d, $d1,$21, $81,$20,
+DB $fa,$46, $ad,$24, $d1,$21, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.keyEnd::
 r8_InventoryItemPalettesEnd::
 STATIC_ASSERT((r8_InventoryItemPalettesEnd - r8_InventoryItemPalettes) / 64 == ITEM_COUNT)
 
@@ -2634,5 +2653,39 @@ DB $81,$81,$00,$00,$00,$00,$00,$00
 DB $00,$F0,$00,$F8,$00,$FC,$00,$FC
 DB $80,$F8,$F0,$F0,$00,$00,$00,$00
 .firewoodEnd::
+.key::
+DB $07,$00,$1F,$00,$3F,$00,$3F,$01
+DB $7C,$00,$78,$00,$F0,$80,$F0,$80
+DB $F0,$00,$EC,$10,$FA,$04,$FD,$E2
+DB $3F,$30,$1F,$18,$0F,$08,$0F,$0C
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $80,$00,$80,$00,$80,$00,$80,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $F0,$80,$D0,$A0,$D0,$A0,$E8,$90
+DB $F4,$A8,$FB,$D4,$7F,$68,$3F,$30
+DB $07,$04,$03,$00,$03,$00,$07,$00
+DB $0F,$00,$1F,$00,$FF,$00,$FF,$00
+DB $80,$00,$80,$00,$80,$00,$80,$00
+DB $00,$00,$00,$00,$80,$00,$C0,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $1F,$1C,$07,$07,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $FF,$0C,$FF,$FE,$03,$03,$01,$01
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $E0,$00,$F0,$00,$F8,$00,$FC,$80
+DB $FE,$C0,$7F,$60,$3E,$31,$1F,$18
+DB $00,$00,$00,$00,$20,$00,$70,$00
+DB $E4,$00,$CE,$00,$9F,$00,$BE,$40
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $0F,$0E,$03,$02,$03,$03,$01,$01
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $DE,$20,$EC,$10,$F8,$00,$F8,$80
+DB $F8,$E0,$30,$30,$00,$00,$00,$00
+.keyEnd::
 r8_InventoryItemIconsEnd::
 STATIC_ASSERT((r8_InventoryItemIconsEnd - r8_InventoryItemIcons) / 256 == ITEM_COUNT)

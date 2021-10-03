@@ -139,83 +139,116 @@ r1_MapExpandRow:
 ;;; ----------------------------------------------------------------------------
 
 
+r1_TileAttrLookupTab:
+.bank0:
+DB      $02, $02, $02, $02,
+DB      $02, $02, $02, $02,
+DB      $02, $02, $02, $02,
+DB      $02, $02, $02, $02,
+DB      $02, $04, $05, $05,
+DB      $04, $04, $02, $02,
+DB      $02, $02, $02, $02,
+.bank1:
+DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
+DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
+DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
+DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
+DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
+DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
+DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
+DB      ($08 | $02), ($08 | $02), ($08 | $06), ($08 | $05),
+r1_TileAttrLookupTabEnd:
+
+
 r1_SetTileColor:
 ;;; a - tile
 ;;; hl - dest
 ;;; trashes a
-        push    af
-        fcall   .check_cliff_tile
-        pop     af
-
-        cp      a, 28
-        ret     C
-
-        ld      a, [hl]         ; \ If our tile is greater than a certain
-        or      $08             ; | number, then we need to tell the hardware
-        ld      [hl], a         ; / to look for the tile in vram bank 2.
-        ret
-
-.check_cliff_tile:
-        cp      a, 17
-        jr      NZ, .check_cliff_tile2
-
-        ld      a, 4
+        push    hl
+        push    bc
+        ld      hl, r1_TileAttrLookupTab
+        ld      b, 0
+        ld      c, a
+        add     hl, bc
+        ld      a, [hl]
+        pop     bc
+        pop     hl
         ld      [hl], a
-        ret
+	ret
 
-.check_cliff_tile2:
-        cp      a, 59
-        jr      NZ, .check_water_tile1
+;;         push    af
+;;         fcall   .check_cliff_tile
+;;         pop     af
 
-        ld      a, 5
-        ld      [hl], a
-        ret
+;;         cp      a, 28
+;;         ret     C
 
-.check_water_tile1:
-        cp      a, 18
-        jr      NZ, .check_water_tile2
+;;         ld      a, [hl]         ; \ If our tile is greater than a certain
+;;         or      $08             ; | number, then we need to tell the hardware
+;;         ld      [hl], a         ; / to look for the tile in vram bank 2.
+;;         ret
 
-        ld      a, 5
-        ld      [hl], a
-        ret
+;; .check_cliff_tile:
+;;         cp      a, 17
+;;         jr      NZ, .check_cliff_tile2
 
-.check_water_tile2:
-        cp      a, 19
-        jr      NZ, .check_bridge_tile
+;;         ld      a, 4
+;;         ld      [hl], a
+;;         ret
 
-        ld      a, 5
-        ld      [hl], a
-        ret
+;; .check_cliff_tile2:
+;;         cp      a, 59
+;;         jr      NZ, .check_water_tile1
 
-.check_bridge_tile:
-        cp      a, 58
-        jr      NZ, .check_bridge_tile_edge
+;;         ld      a, 5
+;;         ld      [hl], a
+;;         ret
 
-        ld      a, 6
-        ld      [hl], a
-        ret
+;; .check_water_tile1:
+;;         cp      a, 18
+;;         jr      NZ, .check_water_tile2
 
-.check_bridge_tile_edge:
-        cp      a, 20
-        jr      NZ, .check_rock_tile
+;;         ld      a, 5
+;;         ld      [hl], a
+;;         ret
 
-        ld      a, 5
-        ld      [hl], a
-        ret
+;; .check_water_tile2:
+;;         cp      a, 19
+;;         jr      NZ, .check_bridge_tile
 
-.check_rock_tile:
-        cp      a, 21
-        jr      NZ, .regular_tile
+;;         ld      a, 5
+;;         ld      [hl], a
+;;         ret
 
-        ld      a, 4
-        ld      [hl], a
-        ret
+;; .check_bridge_tile:
+;;         cp      a, 58
+;;         jr      NZ, .check_bridge_tile_edge
+
+;;         ld      a, 6
+;;         ld      [hl], a
+;;         ret
+
+;; .check_bridge_tile_edge:
+;;         cp      a, 20
+;;         jr      NZ, .check_rock_tile
+
+;;         ld      a, 5
+;;         ld      [hl], a
+;;         ret
+
+;; .check_rock_tile:
+;;         cp      a, 21
+;;         jr      NZ, .regular_tile
+
+;;         ld      a, 4
+;;         ld      [hl], a
+;;         ret
 
 
-.regular_tile:
-        ld      a, 2
-        ld      [hl], a
-        ret
+;; .regular_tile:
+;;         ld      a, 2
+;;         ld      [hl], a
+;;         ret
 
 
 ;;; ----------------------------------------------------------------------------

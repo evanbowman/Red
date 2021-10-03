@@ -52,6 +52,8 @@ IsTileCollectible:
         ret     Z
         cp      COLLECTIBLE_TILE_STICK
         ret     Z
+        cp      COLLECTIBLE_TILE_KEY
+        ret     Z
         ret
 
 
