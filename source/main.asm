@@ -30,9 +30,6 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 ;;;
-;;; tl;dr: Do whatever you want with the code, just don't blame me if something
-;;; goes wrong.
-;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
@@ -50,6 +47,7 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
         INCLUDE "room.inc"
         INCLUDE "message.inc"
         INCLUDE "combat.inc"
+        INCLUDE "charmap.inc"
 
 
 fcall: MACRO                    ; fast call, as opposed to a long call
@@ -472,60 +470,6 @@ DrawonlyUpdateFn:
 
 ;;; ----------------------------------------------------------------------------
 
-MapSpriteBlock:
-; h target sprite index
-; b vram index
-; overwrites de
-;;; Sprite blocks are 32x32 in size. Because 32x32 sprites occupy 256 bytes,
-;;; indexing is super easy.
-
-;;; TODO: We currently only support 256 keyframes. Support more than 256. I have
-;;; not decided yet how to support more sprites, as we use a single byte for our
-;;; sprite indices. Maybe, use some bits in an entity header, to allow the base
-;;; spritesheet rom bank to be adjusted. Currently, we use rom banks 2, 3, 4,
-;;; and 5 for our regular spritesheet, and we more-or-less just calculate which
-;;; rom bank to load the sprite data from by dividing the sprite index by 64.
-
-        ld      a, h            ; \
-        srl     a               ; |
-        srl     a               ; | Divide sprite index by 64 to determine bank.
-        and     $30             ; |
-        swap    a               ; /
-
-        ld      d, a            ; save a in d for later use
-
-        add     SPRITESHEET1_ROM_BANK ; Add calculated offset to base bank
-        SET_BANK_FROM_A         ; set rom bank
-
-
-        swap    d               ; \
-        sla     d               ; | Multiply back up by 64
-        sla     d               ; /
-
-        ld      a, h            ; We have 64 sprite blocks per rom bank. So, we
-        sub     d               ; need to subtract 64 * bank from our sprite num
-
-        ld      h, a
-
-
-        ld      de, r2_SpriteSheetData
-        ld      l, 0
-        add     hl, de                  ; h is in upper bits, so x256 for free
-
-        push    hl
-        ld      hl, _VRAM
-        ld      c, 0
-        add     hl, bc
-        ld      d, h
-        ld      e, l
-        pop     hl
-
-        ld      b, 15
-        fcall   GDMABlockCopy
-        ret
-
-
-;;; ----------------------------------------------------------------------------
 
 __Widecall:
 ;;; hl - function pointer

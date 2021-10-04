@@ -384,10 +384,15 @@ VBlankCopySpriteTextures:
         inc     de
 
         ld      a, [hl]         ; load texture swap flag from entity
-        and     ENTITY_TEXTURE_SWAP_FLAG
+        and     ENTITY_FLAG0_TEXTURE_SWAP
         jr      Z, .noTextureCopy ; swap flag false, nothing to do
-        ld      a, 0
-        ld      [hl], a         ; We're swapping the texture, zero the flag
+
+        ld      a, [hl]
+        and     LOW(~ENTITY_FLAG0_TEXTURE_SWAP) ; \ We're swapping the texture,
+        ld      [hl], a                         ; / zero the flag.
+
+        and     ENTITY_FLAG0_SPRITESHEET_MASK ; \ Bind the current spritesheet.
+        ldh     [hvar_spritesheet], a         ; /
 
         push    de              ; store entity buffer pointer on stack
 

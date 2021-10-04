@@ -43,27 +43,39 @@
 ;;; struct Entity {
 ;;;     char flags0_; {
 ;;;         char texture_swap_flag_ : 1;
-;;;         char reserved_ : 7;
+;;;         char reserved_ : 3;
+;;;         char spritesheet_number_ : 4;
 ;;;     }
 ;;;     Fixnum coord_y_; // (three bytes)
 ;;;     Fixnum coord_x_; // (three bytes)
 ;;;     Animation anim_; // (two bytes)
 ;;;     char base_frame_;
-;;;     char vram_index_;
-;;;     char attributes_;
+;;;     char vram_index_; (1)
+;;;     char attributes_; (2)
 ;;;     char display_flags_; {
 ;;;         char sprite_shape_ : 4;
 ;;;         char reserved_ : 1;
-;;;         char shadow_size_ : 1;  (zero for large, one for small).
+;;;         char shadow_size_ : 1; (3)
 ;;;         char shadow_parity_ : 1;
 ;;;         char has_shadow_ : 1;
 ;;;     }
 ;;;     Pointer update_fn_;
 ;;;     char type_; (modifier 2 bits, 6 type bits)
 ;;;     Mid message_bus_number_;
+;;;     char slack_space_[32 - sizeof(Entity)]; (4)
 ;;; };
 ;;;
 ;;; NOTES:
+;;;
+;;; (1) ID of the entity's texture in vram.
+;;;
+;;; (2) GBC hardware attributes, mainly used to set palette.
+;;;
+;;; (3) Zero for large, one for small.
+;;;
+;;; (4) Entities occupy 32 bytes in memory. The remaining space after the entity
+;;; header may be used by entity implementations for member variables.
+;;;
 ;;; * The type modifier bits were added retrospectively, to support the addition
 ;;; of persistent properties to the existing entity framework. For example, I
 ;;; wanted to attach items to dead entities, and identify which items had been
@@ -75,7 +87,17 @@
 ;;; many entities set their swap flags during the same frame, some entities
 ;;; will not be processed until the next vblank.
 ;;;
+;;; * As base-frame is only a single byte, we are not able to index more than
+;;; 256 frames with this variable. Instead, we include some bits in the entity
+;;; header, allowing us to select between different spritesheets, each of which
+;;; contains up to 256 keyframes. A spritesheet takes up four rom banks, which
+;;; must be contiguous!
+;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+ENTITY_FLAG0_TEXTURE_SWAP       EQU $80
+ENTITY_FLAG0_SPRITESHEET_MASK   EQU  $0f
 
 
 ENTITY_TYPE_MASK                EQU  $3f
@@ -157,11 +179,24 @@ EntityAnimationResetKeyframe:
 
 ;;; ----------------------------------------------------------------------------
 
+EntitySetSpritesheet:
+;;; hl - entity
+;;; b - spritesheet (0 - 16)
+;;; trashes a
+        ld      a, [hl]
+        and     LOW(~ENTITY_FLAG0_SPRITESHEET_MASK)
+        or      b
+        ld      [hl], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 EntitySetTextureSwapFlag:
 ;;; hl - entity
 ;;; trashes a
         ld      a, [hl]
-        or      a, ENTITY_TEXTURE_SWAP_FLAG
+        or      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [hl], a
         ret
 
@@ -187,7 +222,7 @@ EntityAnimationAdvance:
         ret     Z
 
         ld      a, [hl]
-        or      ENTITY_TEXTURE_SWAP_FLAG
+        or      ENTITY_FLAG0_TEXTURE_SWAP
         ld      [hl], a
         ret
 
@@ -650,7 +685,8 @@ EntitySwapResume:
         ld      a, [hl]
         and     ENTITY_ATTR_SMALL_SHADOW
         jr      Z, .fullsizeShadow
-.here:
+
+.smallShadow:
         ld      a, c
         add     10
         ld      c, a

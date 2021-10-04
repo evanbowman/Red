@@ -72,10 +72,10 @@ r1_PlayerNew:
         ld      a, SPRID_PLAYER_SD
         ld      [var_player_fb], a
 
-        ld      a, 1
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
-        or      SPRITE_SHAPE_T
+        ld      a, SPRITE_SHAPE_T | ENTITY_ATTR_HAS_SHADOW
         ld      [var_player_display_flag], a
 
         ld      hl, var_player_struct
@@ -120,7 +120,7 @@ r1_EntityInit:
         pop     hl
         pop     bc
 
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [hl], a
 
         fcall   EntitySetPos
@@ -248,7 +248,7 @@ r1_SpiderNew:
 ;;; e - type modifier bits
         fcall   r1_EntityInit
 
-        ld      a, SPRID_SPIDER_R
+        ld      a, SPRID_SPIDER_L
         fcall   EntitySetFrameBase
 
         ld      a, 2

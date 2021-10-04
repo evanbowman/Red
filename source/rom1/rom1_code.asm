@@ -68,7 +68,6 @@ r1_DMGPutText:
         cp      0
 	jr      Z, .done
 
-        fcall   AsciiToGlyph
         ld      [de], a
 
         inc     hl

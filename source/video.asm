@@ -43,6 +43,8 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+;;; ----------------------------------------------------------------------------
+
 GDMABlockCopy:
 ; hl - sprite start address
 ; de - destination
@@ -60,6 +62,87 @@ GDMABlockCopy:
         ld      a, b
         ldh     [rHDMA5], a             ; start DMA transfer
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+MapSpriteBlock:
+; h target sprite index
+; b vram index
+; overwrites de
+;;; Sprite blocks are 32x32 in size. Because 32x32 sprites occupy 256 bytes,
+;;; indexing is super easy.
+
+;;; NOTE: The sprite will be copied from the spritesheet bound to
+;;; hvar_spritesheet. Remember to assign the spritesheet var before calling
+;;; MapSpriteBlock.
+
+        ld      a, h            ; \
+        srl     a               ; |
+        srl     a               ; | Divide sprite index by 64 to determine bank.
+        and     $30             ; |
+        swap    a               ; /
+
+        ld      d, a            ; save a in d for later use
+
+	push    hl                      ; \
+        push    de                      ; |
+        ldh     a, [hvar_spritesheet]   ; |
+        ld      e, a                    ; | Look up the starting rom bank for
+        ld      d, 0                    ; | the currently bound spritesheet.
+        ld      hl, .spritesheetBankLut ; |
+        add     de                      ; |
+        ld      a, [hl]                 ; |
+        pop     de                      ; |
+        pop     hl                      ; /
+
+        add     a, d            ; \ Add the starting rom bank to the bank number
+        SET_BANK_FROM_A         ; / calculated above, assign the current bank.
+
+        swap    d               ; \
+        sla     d               ; | Multiply back up by 64
+        sla     d               ; /
+
+        ld      a, h            ; We have 64 sprite blocks per rom bank. So, we
+        sub     d               ; need to subtract 64 * bank from our sprite num
+
+        ld      h, a
+
+
+        ld      de, r2_SpriteSheetData
+        ld      l, 0
+        add     hl, de                  ; h is in upper bits, so x256 for free
+
+        push    hl
+        ld      hl, _VRAM
+        ld      c, 0
+        add     hl, bc
+        ld      d, h
+        ld      e, l
+        pop     hl
+
+        ld      b, 15
+        fcall   GDMABlockCopy
+        ret
+
+.spritesheetBankLut:
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+DB      SPRITESHEET1_ROM_BANK
+.spritesheetBankLutEnd:
 
 
 ;;; ----------------------------------------------------------------------------
@@ -789,55 +872,6 @@ LoadFont:
 ;;; ----------------------------------------------------------------------------
 
 
-AsciiToGlyph:
-;;; a - ascii char
-;;; return glyph in a
-        cp      32
-        jr      Z, .space
-        cp      46
-        jr      Z, .period
-        cp      44
-        jr      Z, .comma
-        cp      45
-        jr      Z, .dash
-        cp      $2f
-        jr      Z, .slash
-        cp      58
-        jr      C, .numeral
-	cp      91
-        jr      C, .uppercase
-        cp      123
-        jr      C, .lowercase
-
-        ret
-
-.slash:
-        ld      a, $7e
-        ret
-.dash:
-        ld      a, $7D
-        ret
-.space:
-        ld      a, $32
-        ret
-.numeral:
-	add     3
-        ret
-.period:
-        ld      a, $56
-        ret
-.comma:
-        ld      a, $57
-        ret
-.uppercase:
-        add     $18
-        ret
-.lowercase:
-        sub     $24
-        ret
-
-
-
 PutText:
 ;;; hl - text
 ;;; de - screen ptr
@@ -848,7 +882,6 @@ PutText:
         cp      0
 	ret     Z
 
-        fcall   AsciiToGlyph
         ld      [de], a
 
         ld      a, 1
@@ -876,7 +909,6 @@ PutTextSimple:
         cp      0
         ret     Z
 
-        fcall   AsciiToGlyph
         ld      [de], a
 
         inc     de

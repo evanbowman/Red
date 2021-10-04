@@ -30,21 +30,85 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 ;;;
-;;; tl;dr: Do whatever you want with the code, just don't blame me if something
-;;; goes wrong.
-;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-ENTITY_TYPE_PLAYER        EQU  0
-ENTITY_TYPE_BONFIRE       EQU  1
-ENTITY_TYPE_SPIDER        EQU  2
-ENTITY_TYPE_GREYWOLF      EQU  3
-ENTITY_TYPE_GREYWOLF_DEAD EQU  4
-ENTITY_TYPE_BOAR          EQU  5
-ENTITY_TYPE_BOAR_DEAD     EQU  6
-ENTITY_TYPE_COUNT         EQU  7 ; NOTE: increase count when adding new types.
-ENTITY_TYPE_MAX           EQU  63
-
-
-ENTITY_TYPE_NULL         EQU ENTITY_TYPE_PLAYER
+NEWCHARMAP RedCharset
+CHARMAP " ", $32
+CHARMAP "0", $33
+CHARMAP "1", $34
+CHARMAP "2", $35
+CHARMAP "3", $36
+CHARMAP "4", $37
+CHARMAP "5", $38
+CHARMAP "6", $39
+CHARMAP "7", $3A
+CHARMAP "8", $3B
+CHARMAP "9", $3C
+CHARMAP "a", $3D
+CHARMAP "b", $3E
+CHARMAP "c", $3F
+CHARMAP "d", $40
+CHARMAP "e", $41
+CHARMAP "f", $42
+CHARMAP "g", $43
+CHARMAP "h", $44
+CHARMAP "i", $45
+CHARMAP "j", $46
+CHARMAP "k", $47
+CHARMAP "l", $48
+CHARMAP "m", $49
+CHARMAP "n", $4A
+CHARMAP "o", $4B
+CHARMAP "p", $4C
+CHARMAP "q", $4D
+CHARMAP "r", $4E
+CHARMAP "s", $4F
+CHARMAP "t", $50
+CHARMAP "u", $51
+CHARMAP "v", $52
+CHARMAP "w", $53
+CHARMAP "x", $54
+CHARMAP "y", $55
+CHARMAP "z", $56
+CHARMAP ".", $57
+CHARMAP ",", $58
+CHARMAP "A", $59
+CHARMAP "B", $5A
+CHARMAP "C", $5B
+CHARMAP "D", $5C
+CHARMAP "E", $5D
+CHARMAP "F", $5E
+CHARMAP "G", $5F
+CHARMAP "H", $60
+CHARMAP "I", $61
+CHARMAP "J", $62
+CHARMAP "K", $63
+CHARMAP "L", $64
+CHARMAP "M", $65
+CHARMAP "N", $66
+CHARMAP "O", $67
+CHARMAP "P", $68
+CHARMAP "Q", $69
+CHARMAP "R", $6A
+CHARMAP "S", $6B
+CHARMAP "T", $6C
+CHARMAP "U", $6D
+CHARMAP "V", $6E
+CHARMAP "W", $6F
+CHARMAP "X", $70
+CHARMAP "Y", $71
+CHARMAP "Z", $72
+CHARMAP "\"", $73
+CHARMAP "'", $74
+CHARMAP "[", $75
+CHARMAP "]", $76
+CHARMAP "(", $77
+CHARMAP ")", $78
+CHARMAP ":", $79
+CHARMAP "!", $7A
+CHARMAP "?", $7B
+CHARMAP "+", $7C
+CHARMAP "-", $7D
+CHARMAP "/", $7E
+CHARMAP "=", $7F

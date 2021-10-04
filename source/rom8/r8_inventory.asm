@@ -1255,7 +1255,6 @@ r8_PutTruncatedItemText:
         cp      0
         ret     Z
 
-        fcall   AsciiToGlyph
         ld      [de], a
 
         ld      a, 1

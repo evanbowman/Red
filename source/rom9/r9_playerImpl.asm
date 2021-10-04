@@ -204,7 +204,7 @@ r9_PlayerAnimate:
         ld      [var_player_display_flag], a
 
 .frameChanged:
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
         ret
 
@@ -232,7 +232,7 @@ r9_PlayerJoypadResponse:
         cp      e
         jr      Z, .setSpeed    ; the base frame is unchanged
 
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
         ld      a, e
@@ -260,7 +260,7 @@ r9_PlayerJoypadResponse:
         ld      a, [var_player_kf]
         sub     5
         ld      [var_player_kf], a
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
 .setSpeed:
@@ -400,7 +400,7 @@ r9_PlayerUpdateImpl:
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
 .checkUpReleased:
@@ -418,7 +418,7 @@ r9_PlayerUpdateImpl:
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
 .checkLeftReleased:
@@ -436,7 +436,7 @@ r9_PlayerUpdateImpl:
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
 .checkRightReleased:
@@ -454,7 +454,7 @@ r9_PlayerUpdateImpl:
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
 .animate:
@@ -644,7 +644,7 @@ r9_PlayerPickupAnimationInit:
         ld      a, 0
         ld      [var_player_kf], a
 
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
         ret
@@ -703,7 +703,7 @@ r9_PlayerUpdatePickupItemImpl:
         ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
 
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
         ld      a, [var_player_kf]
@@ -917,7 +917,7 @@ r9_PlayerAttackInit:
         ld      a, 0
         ld      [var_player_kf], a
 
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
         ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_SQUARE_32
@@ -1224,7 +1224,7 @@ r9_PlayerUpdateAttack1Impl:
         ret
 
 .frameChanged:
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
         ld      a, [var_player_kf]
@@ -1280,7 +1280,7 @@ r9_PlayerUpdateAttack2Impl:
         ret
 
 .frameChanged:
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
         ld      a, [var_player_kf]
@@ -1336,7 +1336,7 @@ r9_PlayerUpdateAttack3Impl:
         ret
 
 .frameChanged:
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
         ld      a, [var_player_kf]
@@ -1419,7 +1419,7 @@ r9_PlayerAttackTryExit:
         ld      de, PlayerUpdate
         fcall   EntitySetUpdateFn
 
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
         ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
@@ -1627,7 +1627,7 @@ r9_PlayerSetIdleSprite:
         ret     Z
 
         fcall   EntityAnimationResetKeyframe
-        ld      a, ENTITY_TEXTURE_SWAP_FLAG
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      b, [hl]
         or      b
         ld      [hl], a
