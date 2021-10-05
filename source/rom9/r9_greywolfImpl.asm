@@ -54,7 +54,7 @@ r9_GreywolfIdleTryAttack:
         ld      b, a
         ld      a, 24
         cp      b
-        jr      C, .skip
+        ret     C
 
         fcall   EntityGetPos
         ld      a, [var_player_coord_y]
@@ -63,7 +63,7 @@ r9_GreywolfIdleTryAttack:
         ld      b, a
         ld      a, 24
         cp      b
-        jr      C, .skip
+        ret     C
 
         fcall   EntityAnimationResetKeyframe
 
@@ -85,9 +85,6 @@ r9_GreywolfIdleTryAttack:
 .faceLeft:
         ld      a, SPRID_GREYWOLF_ATTACK_L
         fcall   EntitySetFrameBase
-
-
-.skip:
 	ret
 
 

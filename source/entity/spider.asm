@@ -50,6 +50,13 @@ SpiderUpdate:
 
 ;;; ----------------------------------------------------------------------------
 
+SpiderUpdateAttacking:
+        LONG_CALL r9_SpiderUpdateAttackingImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
 SpiderUpdateSeekX:
         LONG_CALL r9_SpiderUpdateSeekXImpl
         jp      EntityUpdateLoopResume

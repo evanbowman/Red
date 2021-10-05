@@ -244,9 +244,7 @@ r9_BoarDashCheckPlayerCollision:
 
         push    hl
         fcall   r9_PlayerBoarAttackDepleteStamina
-        pop     hl
 
-        push    hl
         ld      b, 4
         WIDE_CALL r1_StartScreenshake
         pop     hl
