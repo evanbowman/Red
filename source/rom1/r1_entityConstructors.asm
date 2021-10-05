@@ -177,9 +177,9 @@ r1_BonfireNew:
         srl     b
         srl     b
         dec     b
-        dec     b
-        ld      a, b
-        srl     c
+        dec     b               ; lol wtf does this code do? I don't remember
+        ld      a, b            ; I think it's doing a division of some kind
+        srl     c               ; TODO: add comments.
         srl     c
         srl     c
         dec     c
