@@ -107,12 +107,40 @@ r9_WallCollisionTileCoord:
 ;;; ----------------------------------------------------------------------------
 
 r9_WallCollisionCheck:
+;;; NOTE:
+;;; Trashes a whole bunch of registers.
+;;; Parameters configued via hvar_wall_collision_source_x, etc.
         ld      a, 0
-        ld      [hvar_wall_collision_result], a
-
+        ldh     [hvar_wall_collision_result], a
 
         fcall   r9_WallCollisionCheckLeft
         fcall   r9_WallCollisionCheckRight
+        fcall   r9_WallCollisionCheckUp
+        fcall   r9_WallCollisionCheckDown
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_WallCollisionCheckHorizontalOnly:
+;;; Like r9_WallCollisionCheck, but only performs half of the work
+;;; (use if you are only moving horizontally).
+        ld      a, 0
+        ldh     [hvar_wall_collision_result], a
+
+        fcall   r9_WallCollisionCheckLeft
+        fcall   r9_WallCollisionCheckRight
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_WallCollisionCheckVerticalOnly:
+;;; Like r9_WallCollisionCheck, but only performs half of the work
+;;; (use if you are only moving vertically).
+        ld      a, 0
+        ldh     [hvar_wall_collision_result], a
+
         fcall   r9_WallCollisionCheckUp
         fcall   r9_WallCollisionCheckDown
         ret

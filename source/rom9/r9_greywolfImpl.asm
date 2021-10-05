@@ -400,17 +400,10 @@ r9_GreywolfMoveX:
 ;;; ----------------------------------------------------------------------------
 
 
-;;; NOTE: movement is constrained to grids in the y direction. We need to ask
-;;; the engine if we have enough capacity in a specific map row before
-;;; occupying that map row, otherwise, we may exceed the oam-per-scanline
-;;; limit. The current code already does exceed the scanline limits sometimes,
-;;; but only when entities are moving from one row to another, entities will
-;;; never settle in the same row for extended periods of time.
 r9_GetDestSlab:
-;;; FIXME: This function is used by a number of different enemy entities.
-;;; Therefore, the slot number for the slab member variable needs to match.
 ;;; d - result
 ;;; trashes bc
+;;; var_entity_slab_weight must be assigned
         ASSERT GREYWOLF_VAR_SLAB == BOAR_VAR_SLAB
 
         push    hl
@@ -421,9 +414,11 @@ r9_GetDestSlab:
         ld      a, [bc]               ; |
         ld      b, a                  ; /
 
+        ld      a, [var_entity_slab_weight]
+
         push    bc              ; \
         ld      c, b            ; |
-        ld      d, 6            ; | Remove current slab from table
+        ld      d, a            ; | Remove current slab from table
         fcall   SlabTableUnbind ; |
         pop     bc              ; /
         pop     hl
@@ -452,7 +447,8 @@ r9_GetDestSlab:
 .startBelow:
         push    de
         ld      c, d
-        ld      d, 6
+        ld      a, [var_entity_slab_weight]
+        ld      d, a
         fcall   SlabTableBind
         pop     de
         or      a
@@ -468,7 +464,8 @@ r9_GetDestSlab:
 .startAbove:
         push    de
         ld      c, d
-        ld      d, 6
+        ld      a, [var_entity_slab_weight]
+        ld      d, a
         fcall   SlabTableBind
         pop     de
         or      a
@@ -491,7 +488,8 @@ r9_GetDestSlab:
 .playerSameSlab:
         push    de
         ld      c, e
-        ld      d, 6
+        ld      a, [var_entity_slab_weight]
+        ld      d, a
         fcall   SlabTableBind
         ld      d, e            ; result in d
         or      a
@@ -516,6 +514,8 @@ r9_GetDestSlab:
 
 
 r9_GreywolfMoveY:
+        ld      a, 6
+        ld      [var_entity_slab_weight], a
         fcall   r9_GetDestSlab
 
         ld      a, d
@@ -807,7 +807,7 @@ r9_GreywolfOnMessage:
 
         fcall   r9_GreywolfCheckKnifeAttackCollision
         or      a
-        jr      Z, .skip
+        ret     Z
 
         ld      a, 7
         fcall   EntitySetHWGraphicsAttributes
@@ -883,8 +883,6 @@ r9_GreywolfOnMessage:
 
         fcall   EntitySetTextureSwapFlag
 
-        ret
-.skip:
         ret
 
 
@@ -1091,12 +1089,6 @@ r9_GreywolfUpdateDyingImpl:
         ld      a, [bc]               ; |
         ld      b, a                  ; /
 
-        ;; eh, maybe not worth the graphical glitches
-        ;; push    bc              ; \
-        ;; ld      c, b            ; |
-        ;; ld      d, 6            ; | Remove current slab from table
-        ;; fcall   SlabTableUnbind ; |
-        ;; pop     bc              ; /
         pop     hl
 
         ld      a, 0 | SPRITE_SHAPE_T

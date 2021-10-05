@@ -141,15 +141,19 @@ r9_BoarUpdateDashLeftImpl:
         ld      h, b
         ld      l, c
 
-        fcall   r9_BoarDashCheckPlayerCollision
+        push    hl
+        fcall   r9_BoarSetupCollisionRect
+        ld      a, 0
+        ldh     [hvar_wall_collision_result], a
+        fcall   r9_WallCollisionCheckLeft
+        pop     hl
+
 
         fcall   r9_EnemyUpdateColor
 
         ld      e, 4
         ld      d, 4
         fcall   EntityAnimationAdvance
-
-        fcall   r9_BoarCheckCollisions
 
         ld      a, [hvar_wall_collision_result]
         and     COLLISION_LEFT
@@ -267,7 +271,12 @@ r9_BoarUpdateDashRightImpl:
         ld      d, 4
         fcall   EntityAnimationAdvance
 
-        fcall   r9_BoarCheckCollisions
+        push    hl
+        fcall   r9_BoarSetupCollisionRect
+        ld      a, 0
+        ldh     [hvar_wall_collision_result], a
+        fcall   r9_WallCollisionCheckRight
+        pop     hl
 
         ld      a, [hvar_wall_collision_result]
         and     COLLISION_RIGHT
@@ -304,20 +313,16 @@ r9_BoarUpdateDashRightImpl:
 
 ;;; ----------------------------------------------------------------------------
 
-r9_BoarCheckCollisions:
-;;; hl - self
-        push    hl
-        fcall   EntityGetPos
+r9_BoarSetupCollisionRect:
+	fcall   EntityGetPos
         ld      a, b
         ld      [hvar_wall_collision_source_x], a
         ld      a, c
         ld      [hvar_wall_collision_source_y], a
-        ld      a, 4
+        ld      a, 8
         ld      [hvar_wall_collision_size_x], a
         ld      a, 2
         ld      [hvar_wall_collision_size_y], a
-        fcall   r9_WallCollisionCheck
-        pop     hl
         ret
 
 
@@ -550,7 +555,11 @@ r9_BoarUpdateRunYImpl:
         ld      h, b
         ld      l, c
 
-        fcall   r9_BoarCheckCollisions
+        push    hl
+        fcall   r9_BoarSetupCollisionRect
+        fcall   r9_WallCollisionCheckVerticalOnly
+        pop     hl
+
 
         ld      e, 5
         ld      d, 4
@@ -566,6 +575,8 @@ r9_BoarUpdateRunYImpl:
 ;;; ----------------------------------------------------------------------------
 
 r9_BoarMoveY:
+        ld      a, 6
+        ld      [var_entity_slab_weight], a
         fcall   r9_GetDestSlab
 
         ld      a, d

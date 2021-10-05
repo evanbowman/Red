@@ -44,13 +44,21 @@ SPIDER_VAR_SLAB          EQU 5
 ;;; ----------------------------------------------------------------------------
 
 SpiderUpdate:
-        ld      h, b
-        ld      l, c
+        LONG_CALL r9_SpiderUpdateImpl
+        jp      EntityUpdateLoopResume
 
-        ld      e, 6
-        ld      d, 5
-        fcall   EntityAnimationAdvance
 
+;;; ----------------------------------------------------------------------------
+
+SpiderUpdateSeekY:
+        LONG_CALL r9_SpiderUpdateSeekYImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+SpiderUpdateDead:
+        LONG_CALL r9_SpiderUpdateDeadImpl
         jp      EntityUpdateLoopResume
 
 

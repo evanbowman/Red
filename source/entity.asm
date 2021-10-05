@@ -103,6 +103,8 @@ ENTITY_FLAG0_SPRITESHEET_MASK   EQU  $0f
 ENTITY_TYPE_MASK                EQU  $3f
 ENTITY_TYPE_MODIFIER_MASK       EQU  $c0
 
+
+ENTITY_ATTR_SPRITE_SHAPE_MASK   EQU  $f0
 ENTITY_ATTR_HAS_SHADOW          EQU  $01
 ;;; I suppose the shadow parity warrants some explanation. Entity drop shadows
 ;;; flicker in order to achieve translucency via interframe blending. Because
@@ -111,6 +113,7 @@ ENTITY_ATTR_HAS_SHADOW          EQU  $01
 ;;; attributes, so that their shadows never display during the same frame.
 ENTITY_ATTR_SHADOW_EVEN_PARITY  EQU  $02
 ENTITY_ATTR_SMALL_SHADOW        EQU  $04
+ENTOTY_ATTR_INVISIBLE           EQU  $08
 
 
 
@@ -596,7 +599,7 @@ EntityDrawLoop:
         ld      a, [hl]                 ; Load flags
         push    hl                      ; Store entity pointer
 
-        and     $f0
+        and     ENTITY_ATTR_SPRITE_SHAPE_MASK
 
         ;; NOTE: I thought about re-writing this as a jump table, but with only
         ;; four cases, it would be slower and trash a bunch of registers.
@@ -606,6 +609,10 @@ EntityDrawLoop:
         jr      Z, .putTSprite
         cp      SPRITE_SHAPE_SQUARE_32
         jr      Z, .putSquare32Sprite
+        cp      SPRITE_SHAPE_SQUARE_16
+        jr      Z, .putSquare16Sprite
+
+        jr      .putSpriteFinished ; Invisible
 
 .putSquare16Sprite:
         ld      a, [var_oam_top_counter]

@@ -373,6 +373,9 @@ var_scavenge_slot_1:    DS      1
 var_scavenge_target:    DS      2
 
 
+var_entity_slab_weight: DS      1
+
+
 ;;; ############################################################################
 
         SECTION "FADE", WRAM0
