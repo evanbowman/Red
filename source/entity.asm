@@ -118,31 +118,31 @@ ENTOTY_ATTR_INVISIBLE           EQU  $08
 
 
 EntityBufferReset:
-        ld      a, 0
+        xor     a
         ld      [var_entity_buffer_size], a
 
 ;;; Because only the entity buffer is allowed to retain pointers to entity
 ;;; memory, we might as well free everything in bulk.
         ld      hl, var_entity_mem_used
         ld      bc, var_entity_mem_used_end - var_entity_mem_used
-        ld      a, 0
+        xor     a
         fcall   Memset
 
 ;;; Same here, we just cleared all entities, let's free the associated textures.
         ld      hl, var_texture_slots
         ld      bc, var_texture_slots_end - var_texture_slots
-        ld      a, 0
+        xor     a
         fcall   Memset
 
 ;;; And, we can clear out message queues as well.
         ld      hl, var_message_queues
         ld      bc, var_message_queues_end - var_message_queues
-        ld      a, 0
+        xor     a
         fcall   Memset
 
         ld      hl, var_message_queue_memory
         ld      bc, var_message_queue_memeory_end - var_message_queue_memory
-        ld      a, 0
+        xor     a
         fcall   Memset
 
         ret
@@ -173,7 +173,7 @@ EntityAnimationResetKeyframe:
         push    hl
         ld      bc, 7
         add     hl, bc
-        ld      a, 0
+        xor     a
         ld      [hl+], a
         ld      [hl], a
         pop     hl
@@ -391,7 +391,7 @@ EntitySetPos:
 ;;; c - y
         push    hl
         inc     hl
-        ld      a, 0
+        xor     a
 
         ld      [hl], c
         inc     hl
@@ -525,7 +525,7 @@ DrawEntities:
         cp      $ff
         ld      a, 1
         jr      NZ, .skip
-        ld      a, 0
+        xor     a
 .skip:
         ld      [hvar_shadow_parity], a
 
@@ -535,7 +535,7 @@ DrawEntities:
         ld      [var_last_entity_y], a
         ld      [var_last_entity_idx], a
 
-        ld      a, 0
+        xor     a
         ld      [var_oam_top_counter], a
         ld      a, 40
         ld      [var_oam_bottom_counter], a
@@ -871,7 +871,7 @@ AllocateEntity:
         push    hl
 
         ld      bc, 32
-        ld      a, 0
+        xor     a
         fcall   Memset
 
         pop     hl

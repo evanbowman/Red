@@ -94,7 +94,7 @@ FixnumAddClamped:
 .clamp:
         ld      a, 255
         ld      [hl+], a
-        ld      a, 0
+        xor     a
         ld      [hl+], a
         ld      [hl+], a
         ret

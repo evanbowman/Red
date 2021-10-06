@@ -58,7 +58,7 @@ CutsceneInit:
         ld      a, e
         ld      [var_cutscene_tile_start_bank], a
         ld      [var_cutscene_tile_current_bank], a
-        ld      a, 0
+        xor     a
         ld      [rWY], a
         ld      [var_cutscene_tile_offset], a
         ret
@@ -104,7 +104,7 @@ CutscenePlay:
         fcall   VBlankIntrWait
 
         dec     b
-        ld      a, 0
+        xor     a
         cp      b
         jr      NZ, .innerloop
 
@@ -207,7 +207,7 @@ CutsceneWriteFrame:
 	SET_BANK_FROM_A                             ; / texture data.
 
         pop     de              ; See fn top, where we store frame num on stack
-        ld      a, 0            ; \
+        xor     a               ; \
         sla     e               ; | Multiply frame number by two, because each
         adc     0               ; | texture offset occupies two bytes.
         ld      d, a            ; /
@@ -232,7 +232,7 @@ CutsceneWriteFrame:
         ld      b, 85           ; FIXME: could copy 89, except for palette swap in cutscene
         fcall   GDMABlockCopy
 
-        ld	a, 0
+        xor     a
 	ld	[rVBK], a
 
         ret

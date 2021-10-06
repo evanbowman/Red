@@ -91,9 +91,7 @@ r9_BonfireOnMessage:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-
-        or      a
-        ret     Z
+        ret     NC
 
         ld      de, InventorySceneEnter
         fcall   SceneSetUpdateFn

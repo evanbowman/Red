@@ -169,8 +169,7 @@ r9_WallCollisionCheckRight:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        jr      Z, .test1
+        jr      NC, .test1
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_RIGHT
@@ -194,8 +193,7 @@ r9_WallCollisionCheckRight:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        jr      Z, .test2
+        jr      NC, .test2
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_RIGHT
@@ -219,8 +217,7 @@ r9_WallCollisionCheckRight:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        ret     Z
+        ret     NC
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_RIGHT
@@ -254,8 +251,7 @@ r9_WallCollisionCheckLeft:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        jr      Z, .test1
+        jr      NC, .test1
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_LEFT
@@ -279,8 +275,7 @@ r9_WallCollisionCheckLeft:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        jr      Z, .test2
+        jr      NC, .test2
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_LEFT
@@ -304,8 +299,7 @@ r9_WallCollisionCheckLeft:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        ret     Z
+        ret     NC
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_LEFT
@@ -339,8 +333,7 @@ r9_WallCollisionCheckUp:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        jr      Z, .test1
+        jr      NC, .test1
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_UP
@@ -364,8 +357,7 @@ r9_WallCollisionCheckUp:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        jr      Z, .test2
+        jr      NC, .test2
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_UP
@@ -389,8 +381,7 @@ r9_WallCollisionCheckUp:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        ret     Z
+        ret     NC
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_UP
@@ -422,8 +413,7 @@ r9_WallCollisionCheckDown:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        jr      Z, .test1
+        jr      NC, .test1
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_DOWN
@@ -447,8 +437,7 @@ r9_WallCollisionCheckDown:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        jr      Z, .test2
+        jr      NC, .test2
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_DOWN
@@ -472,8 +461,7 @@ r9_WallCollisionCheckDown:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-        or      a
-        ret     Z
+        ret     NC
 
         ld      a, [hvar_wall_collision_result]
         or      COLLISION_DOWN

@@ -44,7 +44,7 @@
 
 
 InventorySceneEnter:
-        ld      a, 0
+        xor     a
         ld      [var_scene_counter], a
 
 	ld      de, DrawonlyUpdateFn
@@ -70,7 +70,7 @@ InventorySceneExit:
         ld      [rWY], a
         ld      [var_overlay_y_offset], a
 
-        ld      a, 0
+        xor     a
         ld      [var_overlay_alternate_pos], a
 
         fcall   ShowOverlay

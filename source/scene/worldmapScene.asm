@@ -44,7 +44,7 @@
 
 
 WorldmapSceneEnter:
-        ld      a, 0
+        xor     a
         ld      [var_scene_counter], a
         ld      [var_world_map_cursor_visible], a
         ld      [var_world_map_cursor_tx], a
@@ -80,7 +80,7 @@ WorldmapSceneUpdate:
 
 ;;; Clear out whatever objects might be in use by the world map
         ld      hl, var_oam_back_buffer
-        ld      a, 0
+        xor     a
         ld      bc, OAM_SIZE * OAM_COUNT
         fcall   Memset
 

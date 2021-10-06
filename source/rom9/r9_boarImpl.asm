@@ -236,8 +236,7 @@ r9_BoarDashCheckPlayerCollision:
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
 
-        or      a
-        jr      Z, .skip
+        jr      NC, .skip
 
         ld      a, 25
         ld      [var_player_color_counter], a
@@ -459,7 +458,7 @@ r9_BoarUpdateDyingImpl:
         ld      a, ENTITY_TYPE_BOAR_DEAD
         fcall   EntitySetType
 
-        ld      a, 0 | SPRITE_SHAPE_T
+        ld      a, SPRITE_SHAPE_T
         fcall   EntitySetDisplayFlags
 
         ld      a, $03          ; Has two items
@@ -502,8 +501,7 @@ r9_BoarOnMessage:
         ld      l, e
 
         fcall   r9_GreywolfCheckKnifeAttackCollision ; FIXME! :)
-        or      a
-        ret     Z
+        ret     NC
 
         ld      a, 7
         fcall   EntitySetHWGraphicsAttributes
@@ -726,8 +724,7 @@ r9_BoarDeadOnMessage:
 
         pop     hl
 
-        or      a
-        ret     Z
+        ret     NC
 
         push    hl
         ld      de, ScavengeSceneEnter

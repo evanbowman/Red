@@ -348,9 +348,7 @@ r9_PlayerOnMessage:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-
-        or      a
-        jr      Z, .skip
+        jr      NC, .skip
 
         fcall   r9_PlayerWolfAttackDepleteStamina
 

@@ -170,7 +170,7 @@ r9_GreywolfUpdateIdleImpl:
         ret
 
 .run:
-        ld      a, 0
+        xor     a
         ld      [bc], a
 
         ld      de, GreywolfUpdateRunSeekX
@@ -780,7 +780,7 @@ r9_GreywolfCheckKnifeAttackCollision:
 
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
-        fcall   CheckIntersection ; leaves result in a
+        fcall   CheckIntersection ; sets carry flag
 
         pop     hl
         ret
@@ -803,8 +803,7 @@ r9_GreywolfOnMessage:
         ld      l, e
 
         fcall   r9_GreywolfCheckKnifeAttackCollision
-        or      a
-        ret     Z
+        ret     NC
 
         ld      a, 7
         fcall   EntitySetHWGraphicsAttributes
@@ -821,13 +820,6 @@ r9_GreywolfOnMessage:
         ld      [bc], a
 
 
-	ld      de, GreywolfUpdateStunned
-        fcall   EntitySetUpdateFn
-
-	ld      d, 50
-        fcall   r9_GreywolfSetKnockback
-
-
         push    hl
         ld      hl, DAGGER_BASE_DAMAGE
         ld      a, [var_level]
@@ -837,8 +829,15 @@ r9_GreywolfOnMessage:
         fcall   FormatDamage
         pop     hl
         fcall   r9_GreywolfDepleteStamina
+        jr      NC, .dead
 
+        ld      de, GreywolfUpdateStunned
+        fcall   EntitySetUpdateFn
 
+	ld      d, 50
+        fcall   r9_GreywolfSetKnockback
+
+.dead:
         fcall   r9_GreywolfResetCounter
 
         fcall   EntityAnimationResetKeyframe
@@ -962,6 +961,9 @@ r9_GreywolfPopulateHitbox:
 ;;; hl - hitbox
         ld      [hl], b
         inc     hl
+        ld      a, c
+        add     4
+        ld      c, a
         ld      [hl], c
         inc     hl
 
@@ -969,7 +971,7 @@ r9_GreywolfPopulateHitbox:
         add     b
         ld      [hl+], a
 
-        ld      a, 32
+        ld      a, 28
         add     c
         ld      [hl], a
 
@@ -1020,6 +1022,7 @@ r9_EnemyDepleteStamina:
 r9_GreywolfDepleteStamina:
 ;;; b - amount
 ;;; c - fraction
+;;; sets carry flag if stamina remaining
         fcall   r9_EnemyDepleteStamina
         or      a
         jr      Z, .staminaExhausted
@@ -1037,6 +1040,7 @@ r9_GreywolfDepleteStamina:
         pop     af
         pop     hl
 
+        scf
         ret
 
 .staminaExhausted:
@@ -1058,6 +1062,7 @@ r9_GreywolfDepleteStamina:
         pop     af
         pop     hl
 
+        or      a               ; reset the carry flag
         ret
 
 
@@ -1092,7 +1097,7 @@ r9_GreywolfUpdateDyingImpl:
 
         pop     hl
 
-        ld      a, 0 | SPRITE_SHAPE_T
+        ld      a, SPRITE_SHAPE_T
         fcall   EntitySetDisplayFlags
 
         fcall   EntityGetPos
@@ -1163,8 +1168,7 @@ r9_GreywolfDeadOnMessage:
 
         pop     hl
 
-        or      a
-        ret     Z
+        ret     NC
 
         push    hl
         ld      de, ScavengeSceneEnter

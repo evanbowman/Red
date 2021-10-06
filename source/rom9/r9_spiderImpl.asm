@@ -229,9 +229,7 @@ r9_SpiderUpdateAttack:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
-
-        or      a
-        ret     Z
+        ret     NC
 
         ld      a, 25
         ld      [var_player_color_counter], a
@@ -540,11 +538,10 @@ r9_SpiderHandleKnifeAttackMessage:
 
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
-        fcall   CheckIntersection ; result in a
+        fcall   CheckIntersection ; sets carry flag
         pop     hl
 
-        or      a
-        ret     Z
+        ret     NC
 
         ld      a, 7            ; Injured color
         fcall   EntitySetHWGraphicsAttributes

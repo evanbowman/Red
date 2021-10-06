@@ -56,7 +56,7 @@
 MessageQueueAlloc:
 ;;; return a - message q number
 ;;; trashes hl, c
-        ld      a, 0
+        xor     a
 
         ld      c, 0
 
@@ -163,7 +163,7 @@ MessageQueueDrain:
         pop     af              ; pop loop counter from stack
         pop     hl              ; Restore pointer to msg queue header
 
-        ld      a, 0            ; \ Set the queue size to zero, we drained all
+        xor     a               ; \ Set the queue size to zero, we drained all
         ld      [hl], a         ; / of the messages.
 
         ret

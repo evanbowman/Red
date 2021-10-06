@@ -79,10 +79,10 @@ CheckXIntersection:
         cp      b
         jr      C, .failed      ; rect1.x2 < rect2.x1, so no intersection
 
-        ld      a, 1
+        scf
         ret
 .failed:
-        ld      a, 0
+        or      a
         ret
 
 
@@ -139,11 +139,11 @@ CheckIntersection:
         cp      b
         jr      C, .failed      ; rect1.y2 < rect2.y1, so no intersection
 
-        ld      a, 1
+        scf
         ret
 
 .failed:
-        ld      a, 0
+        or      a               ; reset carry flag
         ret
 
 
