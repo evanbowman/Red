@@ -86,6 +86,27 @@ Memcpy:
 
 ;;; ----------------------------------------------------------------------------
 
+PointerEq:
+;;; hl - lhs
+;;; de - rhs
+;;; return a == 0 if equal, a == 1 otherwise
+        ;; Missing sbc instruction for hl is one of the most annoying things
+        ;; about gb programming.
+        ld      a, d
+        cp      h
+        jr      NZ, .notEq
+        ld      a, e
+        cp      l
+        jr      NZ, .notEq
+        xor     a
+        ret
+.notEq:
+        ld      a, 1
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 SystemReboot:
         ld      a, $0
         ld      b, a

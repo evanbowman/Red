@@ -645,7 +645,7 @@ Fade:
         jr      C, .zero
         jr      .nominal
 .zero:
-        ld      a, 0
+        xor     a
 .nominal:
         ld      c, a
 
@@ -754,7 +754,7 @@ SetBackgroundTile32x32:
 	ld	a, 1
 	ld	[rVBK], a
         ld      [hl], d         ; set palette in other vram bank
-        ld      a, 0
+        xor     a
         ld      [rVBK], a
 
         inc     e
@@ -791,7 +791,7 @@ BackgroundTileAddress:
         ld      b, 0
         ld      c, 32
 .loop:
-        ld      a, 0
+        xor     a
         or      d
 	jr      Z, .ready
         dec     d
@@ -824,7 +824,7 @@ SetBackgroundTile:
         ld      b, 0
         ld      c, 32
 .loop:
-        ld      a, 0
+        xor     a
         or      d
 	jr      Z, .ready
         dec     d
@@ -842,7 +842,7 @@ SetBackgroundTile:
         ld	a, 1
 	ld	[rVBK], a
         ld      [hl], c
-        ld      a, 0
+        xor     a
         ld      [rVBK], a
         pop     af
 
@@ -888,7 +888,7 @@ PutText:
         ld      [rVBK], a
         ld      a, b
         ld      [de], a
-        ld      a, 0
+        xor     a
 	ld      [rVBK], a
 
         inc     hl
@@ -919,7 +919,7 @@ PutTextSimple:
 ;;; ----------------------------------------------------------------------------
 
 LcdOff:
-        ld      a, 0
+        xor     a
 	ld	[rLCDC], a
         ret
 
@@ -937,7 +937,7 @@ LcdOn:
 AllocateTexture:
 ;;; return a (0 on failure)
 ;;; trashes hl, c
-        ld      a, 0
+        xor     a
 
         ld      c, 0
 
@@ -966,7 +966,7 @@ AllocateTexture:
         jr      .loop
 
 .failed:
-        ld      a, 0
+        xor     a
 
         ret
 

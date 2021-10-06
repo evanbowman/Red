@@ -41,7 +41,7 @@
 ;;; i.e. four oam wide. But entities have drop shadows too, so, really, an
 ;;; an entity uses six oam at its widest point. We can really only allow two
 ;;; entities per row in the game world. So we want to divide the game world
-;;; into eight slabs, where each slab may contain a single enemy. The logic may
+;;; into eight slabs, where each slab may contain a single enemy*. The logic may
 ;;; get a bit more complicated, though:
 ;;; e.g. let's suppose that an entity occupies a slab, and another entity wants
 ;;; to cross over that row on the way to the player. Technically, we can allow
@@ -49,7 +49,20 @@
 ;;; long. But, what if an entity wants to cross over a row, and both the player
 ;;; and another entity are already in the row? Do we prevent the entity from
 ;;; moving, or just accept the momentary graphical abberation as it passes by?
-
+;;;
+;;; *The slab table actually stores OAM weights for enemies allocated to each
+;;; slab, so multiple enemies can move into the same slab, if they would fit
+;;; without overflowing the maximum. e.g. The spider enemy takes up three OAM,
+;;; so we can fit at least two in the same slab.
+;;;
+;;; P.S.: I've created a fairly strict implementation, which avoids graphical
+;;; glitches at all costs. But perhaps we can make the implementation a bit
+;;; smarter... The player character does not currently exist in the slab table,
+;;; so we sort of adjust the slab weight such that the player is implicitly
+;;; omnipresent in every slab. But we could give enemies greater mobility by
+;;; allowing two enemies to enter the same slab, as long as the enemies are
+;;; sufficiently far away from the player. But this introduces some tricky edge
+;;; cases. TODO.
 
 
 GetSlabNum:

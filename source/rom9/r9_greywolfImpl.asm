@@ -1043,6 +1043,10 @@ r9_GreywolfDepleteStamina:
         ld      d, 255
         fcall   r9_GreywolfSetKnockback
 
+
+        ld      e, 20
+	fcall   ScheduleSleep
+
         ld      de, GreywolfUpdateDying
         fcall   EntitySetUpdateFn
 

@@ -39,6 +39,7 @@ SPIDER_VAR_STAMINA       EQU 2 ; \
 SPIDER_VAR_STAMINA2      EQU 3 ; | Fixnum
 SPIDER_VAR_STAMINA3      EQU 4 ; /
 SPIDER_VAR_SLAB          EQU 5
+SPIDER_VAR_X_DEST        EQU 6
 
 
 ;;; ----------------------------------------------------------------------------
@@ -73,6 +74,20 @@ SpiderUpdateSeekY:
 
 SpiderUpdateDead:
         LONG_CALL r9_SpiderUpdateDeadImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+SpiderUpdateAfterAttack:
+        LONG_CALL r9_SpiderUpdateAfterAttackImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+SpiderUpdatePrepSeekX:
+        LONG_CALL r9_SpiderUpdatePrepSeekXImpl
         jp      EntityUpdateLoopResume
 
 

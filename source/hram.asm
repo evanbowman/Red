@@ -93,6 +93,9 @@ hvar_shadow_state:     DS      1
 hvar_current_entity_parity:     DS      1
 
 
+hvar_column_table_result:       DS      1
+
+
 hvar_spritesheet:      DS       1
 
 

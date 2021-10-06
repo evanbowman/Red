@@ -140,7 +140,7 @@ r1_MapExpandRow:
 
 
 r1_TileAttrLookupTab:
-.bank0:
+.vramBank0:
 DB      $02, $02, $02, $02,
 DB      $02, $02, $02, $02,
 DB      $02, $02, $02, $02,
@@ -148,7 +148,7 @@ DB      $02, $02, $02, $02,
 DB      $02, $04, $05, $05,
 DB      $04, $04, $02, $01,
 DB      $02, $02, $02, $02,
-.bank1:
+.vramBank1:
 DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
 DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
 DB      ($08 | $02), ($08 | $02), ($08 | $02), ($08 | $02),
@@ -1698,6 +1698,7 @@ DW      r1_GreywolfNew
 DW      r1_GreywolfDeadNew
 DW      r1_BoarNew
 DW      r1_BoarDeadNew
+DW      r1_SpiderDeadNew
 .spawnEntityJumpTableEnd:
 ASSERT((.spawnEntityJumpTableEnd - .spawnEntityJumpTable) / 2 == ENTITY_TYPE_COUNT)
 

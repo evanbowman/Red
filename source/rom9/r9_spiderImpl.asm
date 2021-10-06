@@ -37,6 +37,8 @@ SPIDER_SLAB_WEIGHT      EQU 3
 SPIDER_MOVE_SPEED_DECIMAL       EQU 0
 SPIDER_MOVE_SPEED_FRACTION      EQU 220
 
+X_DEST_NULL     EQU     255
+
 
 ;;; ----------------------------------------------------------------------------
 
@@ -66,6 +68,54 @@ r9_SpiderUpdateDeadImpl:
 
         ;; TODO...
 
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_SpiderGetXDest:
+;;; hl - self
+;;; return a
+        push    bc
+        ld      bc, SPIDER_VAR_X_DEST
+        fcall   EntityGetSlack
+        ld      a, [bc]
+        pop     bc
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_SpiderUpdatePrepSeekXImpl:
+        ld      h, b
+        ld      l, c
+
+        push    hl
+        fcall   r9_SpiderMessageLoop
+        pop     hl
+
+        ld      bc, SPIDER_VAR_COUNTER
+        fcall   EntityGetSlack
+        ld      a, [bc]
+        dec     a
+        ld      [bc], a
+        cp      0
+        jr      Z, .next
+        ret
+.next:
+        ld      de, SpiderUpdateSeekX
+        fcall   EntitySetUpdateFn
+
+        ld      bc, SPIDER_VAR_X_DEST
+        fcall   EntityGetSlack
+        ld      a, [bc]
+        cp      X_DEST_NULL
+        jr      Z, .assign
+        ret
+
+.assign:
+        ld      a, [var_player_coord_x]
+        ld      [bc], a
         ret
 
 
@@ -143,8 +193,13 @@ r9_SpiderUpdateAttack:
         ret
 
 .idle:
-	ld      de, SpiderUpdate
+        ld      de, SpiderUpdateAfterAttack
         fcall   EntitySetUpdateFn
+
+        ld      bc, SPIDER_VAR_COUNTER
+        fcall   EntityGetSlack
+        ld      a, 10
+        ld      [bc], a
 
         fcall   EntitySetTextureSwapFlag
 
@@ -191,9 +246,29 @@ r9_SpiderUpdateAttack:
 
 ;;; ----------------------------------------------------------------------------
 
+r9_SpiderUpdateAfterAttackImpl:
+        ld      h, b
+        ld      l, c
+
+        ld      bc, SPIDER_VAR_COUNTER
+        fcall   EntityGetSlack
+        ld      a, [bc]
+        dec     a
+        ld      [bc], a
+        cp      0
+        jr      Z, .idle
+        ret
+.idle:
+        ld      de, SpiderUpdate
+        fcall   EntitySetUpdateFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r9_SpiderMoveX:
         fcall   EntityGetPos
-        ld      a, [var_player_coord_x]
+        fcall   r9_SpiderGetXDest
         push    bc
 
         fcall   r9_absdiff      ; \
@@ -201,7 +276,7 @@ r9_SpiderMoveX:
         cp      12              ; | moving in the y direction
         jr      C, .moveY       ; /
 
-	ld      a, [var_player_coord_x]
+	fcall   r9_SpiderGetXDest
         cp      b
         jr      C, .moveLeft
 
@@ -311,9 +386,20 @@ r9_SpiderMoveY:
         cp      13
         jr      C, .idle
 
-        ld      de, SpiderUpdateSeekX
+        ld      de, SpiderUpdatePrepSeekX
         fcall   EntitySetUpdateFn
 
+        ld      bc, SPIDER_VAR_X_DEST
+        fcall   EntityGetSlack
+        ld      a, X_DEST_NULL
+        ld      [bc], a
+
+        fcall   r9_EnemySendSlabPositionsQuery
+
+        ld      bc, SPIDER_VAR_COUNTER
+        fcall   EntityGetSlack
+        ld      a, 2
+        ld      [bc], a
         ret
 
 .idle:
@@ -376,9 +462,71 @@ r9_SpiderOnMessage:
         ld      a, [bc]
         cp      a, MESSAGE_PLAYER_KNIFE_ATTACK
         jr      Z, .onPlayerKnifeAttack
+        cp      a, MESSAGE_SLAB_ENEMY_QUERY
+        jr      Z, .onMessageSlabQuery
         ret
 
+.onMessageSlabQuery:
+        ld      h, d
+        ld      l, e
+
+        inc     bc              ; \ Second message byte: slab number
+        ld      a, [bc]         ; /
+        ld      d, a
+
+        push    bc              ; preserve message pointer
+        ld      bc, SPIDER_VAR_SLAB
+        fcall   EntityGetSlack
+        ld      a, [bc]
+        pop     bc              ; restore message pointer
+
+        cp      d
+        jr      Z, .sameSlab
+        ret
+
+.sameSlab:
+        ;; Another entity is in the same slab as we are. We need to coordinate
+        ;; our positions so that we do not overlap.
+        inc     bc              ; \
+        ld      a, [bc]         ; |
+        ld      e, a            ; | Load a pointer to the other entity from the
+        inc     bc              ; | message. Now, the other entity pointer will
+        ld      a, [bc]         ; | be in de, and our self pointer in hl.
+        ld      d, a            ; /
+
+        fcall   PointerEq       ; \ Ignore message from ourself.
+        or      a               ; |
+        ret     Z               ; /
+
+        ld      bc, SPIDER_VAR_X_DEST
+        fcall   EntityGetSlack
+        ld      a, [bc]
+        ld      b, a
+        ld      a, [var_player_coord_x]
+        cp      b
+        jr      Z, .eqTaken
+        ret
+
+.eqTaken:
+        ld      h, d
+        ld      l, e
+        ld      bc, SPIDER_VAR_X_DEST
+        fcall   EntityGetSlack
+        sub     8
+        ld      [bc], a
+        ret
+
+
 .onPlayerKnifeAttack:
+        fcall   r9_SpiderHandleKnifeAttackMessage
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_SpiderHandleKnifeAttackMessage:
+;;; de - entity pointer
+;;; bc - message pointer
         ld      h, d
         ld      l, e
 
@@ -422,7 +570,6 @@ r9_SpiderOnMessage:
         fcall   FormatDamage
         pop     hl
         fcall   r9_SpiderDepleteStamina
-
         ret
 
 
@@ -512,8 +659,14 @@ r9_SpiderDepleteStamina:
         ld      a, SPRITE_SHAPE_INVISIBLE
         fcall   EntitySetDisplayFlags
 
+        ld      e, 20
+	fcall   ScheduleSleep
+
         ld      de, SpiderUpdateDead
         fcall   EntitySetUpdateFn
+
+	ld      a, ENTITY_TYPE_SPIDER_DEAD
+        fcall   EntitySetType
 
         ;; TODO: set a tile in the overworld representing a dead spider. No need
         ;; to waste OAM resources on small dead enemies.
@@ -573,6 +726,66 @@ r9_SpiderTryAttack:
         ld      a, SPRID_SPIDER_ATTACK_L
         fcall   EntitySetFrameBase
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_EnemySendSlabPositionsQuery:
+;;; hl - entity
+;;; trashes a bunch of registers (not hl)
+        push    hl
+
+        ld      bc, SPIDER_VAR_SLAB   ; \
+        fcall   EntityGetSlack        ; | Fetch current slab num
+        ld      a, [bc]               ; /
+
+	ld      b, a
+        ld      c, MESSAGE_SLAB_ENEMY_QUERY
+
+        push    hl              ; second two message bytes, self pointer
+        push    bc              ; first two message bytes, message type, slab
+
+        ld      hl, sp+0
+
+        fcall   MessageBusBroadcast
+
+        pop     bc
+        pop     bc
+
+        pop     hl
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+;; r9_EnemySendSlabPositionResponse:
+;;         push    hl
+
+;;         ld      bc, SPIDER_VAR_X_DEST
+;;         fcall   EntityGetSlack
+;; 	;; TODO
+
+;;         push    bc
+
+;;         ld      bc, SPIDER_VAR_SLAB ; \
+;;         fcall   EntityGetSlack      ; | Fetch current slab num
+;;         ld      a, [bc]             ; /
+
+;;         ld      b, a
+;;         ld      c, MESSAGE_SLAB_ENEMY_RESPONSE
+
+;;         push    bc
+
+;;         ld      hl, sp+0
+
+;;         fcall   MessageBusBroadcast
+
+;;         pop     bc              ; \ Pop message off of the stack.
+;;         pop     bc              ; /
+
+;;         pop     hl
+;;         ret
 
 
 ;;; ----------------------------------------------------------------------------

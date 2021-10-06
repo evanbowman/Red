@@ -97,7 +97,7 @@ r1_PlayerNew:
 
 
 ;;; Alloc and enqueue an entity, bind texture, misc other boilerplate
-r1_EntityInit:
+r1_EntityNew:
 ;;; b - x
 ;;; c - y
 ;;; e - type modifier bits
@@ -154,7 +154,7 @@ r1_BonfireNew:
 ;;; e - type modifier bits
         push    bc
 
-        fcall   r1_EntityInit
+        fcall   r1_EntityNew
 
         ld      a, SPRID_BONFIRE
         fcall   EntitySetFrameBase
@@ -198,7 +198,7 @@ r1_GreywolfNew:
 ;;; b - x
 ;;; c - y
 ;;; e - type modifier bits
-        fcall   r1_EntityInit
+        fcall   r1_EntityNew
 
         ld      a, SPRID_GREYWOLF_RUN_L
         fcall   EntitySetFrameBase
@@ -246,7 +246,7 @@ r1_SpiderNew:
 ;;; b - x
 ;;; c - y
 ;;; e - type modifier bits
-        fcall   r1_EntityInit
+        fcall   r1_EntityNew
 
         ld      a, SPRID_SPIDER_L
         fcall   EntitySetFrameBase
@@ -288,12 +288,32 @@ r1_SpiderNew:
 
 ;;; ----------------------------------------------------------------------------
 
+r1_SpiderDeadNew:
+;;; b - x
+;;; c - y
+;;; e - type modifier bits
+	fcall   r1_EntityNew
+
+        ld      a, ENTITY_TYPE_SPIDER_DEAD
+        fcall   EntitySetType
+
+	ld      de, SpiderUpdateDead
+        fcall   EntitySetUpdateFn
+
+        ld      a, SPRITE_SHAPE_INVISIBLE
+        fcall   EntitySetDisplayFlags
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 
 r1_BoarNew:
 ;;; b - x
 ;;; c - y
 ;;; e - type modifier bits
-        fcall   r1_EntityInit
+        fcall   r1_EntityNew
 
         ld      a, SPRID_BOAR_L
         fcall   EntitySetFrameBase
@@ -339,7 +359,7 @@ r1_GreywolfDeadNew:
 ;;; b - x
 ;;; c - y
 ;;; e - type modifier bits
-        fcall   r1_EntityInit
+        fcall   r1_EntityNew
 
         ld      a, SPRID_GREYWOLF_DEAD_L
         fcall   EntitySetFrameBase
@@ -367,7 +387,7 @@ r1_BoarDeadNew:
 ;;; b - x
 ;;; c - y
 ;;; e - type modifier bits
-        fcall   r1_EntityInit
+        fcall   r1_EntityNew
 
         ld      a, SPRID_BOAR_DEAD_L
         fcall   EntitySetFrameBase

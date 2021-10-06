@@ -922,6 +922,7 @@ EntityGetSlack:
 ;;; hl - entity
 ;;; bc - offset into slack space array
 ;;; return bc - result (pointer to slack space)
+;;; preserves a (important! some code probably depends on this.)
         push    hl
         add     hl, bc
         ld      bc, 17

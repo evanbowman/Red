@@ -177,7 +177,7 @@ r9_BoarUpdateDashLeftImpl:
 
 .collideWall:
         push    hl
-        ld      b, 2
+        ld      b, 3
         WIDE_CALL r1_StartScreenshake
         pop     hl
 
@@ -299,7 +299,7 @@ r9_BoarUpdateDashRightImpl:
 .collideWall:
 
         push    hl
-        ld      b, 2
+        ld      b, 3
         WIDE_CALL r1_StartScreenshake
         pop     hl
 

@@ -243,8 +243,6 @@ OverworldSceneUpdate:
         LONG_CALL r1_ExpDoLevelup
         fcall   OverlayRepaintRow2
 
-        ld      e, 60
-	fcall   ScheduleSleep
 
         ;; TODO: play a jingle, go to levelup scene
 

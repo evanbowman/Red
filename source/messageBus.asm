@@ -42,6 +42,9 @@
 ;;; Our engine allows communication between entities via a broadcast messaging
 ;;; system.
 ;;;
+;;; NOTE: Currently, nothing prevents an entity from sending a message to
+;;; itself, so entities should be prepared to ignore such messages.
+;;;
 ;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -207,9 +210,9 @@ MessageQueueAppend:
         pop     de
         pop     hl
 
-        ld      a, [hl]
-        inc     a
-        ld      [hl], a
+        ld      a, [hl]         ; \
+        inc     a               ; | +1 queue element count
+        ld      [hl], a         ; /
 
 .queueFull:
         ret
