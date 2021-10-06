@@ -1343,38 +1343,36 @@ r8_InventoryDescribeItem:
 
 
 r8_InventoryClearItemInfoBox:
+        fcall   VBlankIntrWait
+
         ld      hl, $9c61
         ld      bc, 10
-        ld      d, 0
-        fcall   r8_VramSafeMemset
+        xor     a
+        fcall   Memset
 
         ld      hl, $9c81
         ld      bc, 10
-        ld      d, 0
-        fcall   r8_VramSafeMemset
+        fcall   Memset
 
         ld      hl, $9ca1
         ld      bc, 10
-        ld      d, 0
-        fcall   r8_VramSafeMemset
+        fcall   Memset
 
         ld      a, 1
         ld      [rVBK], a
 
         ld      hl, $9c61
         ld      bc, 10
-        ld      d, $81
-        fcall   r8_VramSafeMemset
+        ld      a, $81
+        fcall   Memset
 
         ld      hl, $9c81
         ld      bc, 10
-        ld      d, $81
-        fcall   r8_VramSafeMemset
+        fcall   Memset
 
         ld      hl, $9ca1
         ld      bc, 10
-        ld      d, $81
-        fcall   r8_VramSafeMemset
+        fcall   Memset
 
         ld      a, 0
         ld      [rVBK], a
