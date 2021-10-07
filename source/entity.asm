@@ -516,6 +516,68 @@ EntitySetUpdateFn:
 
 ;;; ----------------------------------------------------------------------------
 
+UpdateEntities::
+        ld      de, var_entity_buffer
+        ld      a, [var_entity_buffer_size]
+
+;;; intentional fallthrough
+EntityUpdateLoop::
+        cp      0               ; compare loop counter in a
+        ret     Z
+        dec     a
+        push    af
+
+        ld      a, [de]         ; \
+        ld      h, a            ; |
+        inc     de              ; |  entity pointer from buffer into hl
+        ld      a, [de]         ; |
+        ld      l, a            ; |
+        inc     de              ; /
+
+	push    de              ; save entity buffer pointer on stack
+        push    hl              ; store hl, we will move it to bc later
+
+        ld      e, 13           ; \
+        ld      d, 0            ; | jump to position of flags in entity
+        add     hl, de          ; /
+
+        ld      d, [hl]         ; \
+        inc     hl              ; | load entity update function ptr
+        ld      e, [hl]         ; /
+
+        pop     bc              ; load preious hl into bc
+        ld      h, d            ; \
+        ld      l, e            ; | Jump to entity update address
+        jp      hl              ; /
+
+;;; Now, we could push the stack pointer, thus allowing entity update functions
+;;; to be actual functions. For now, entity update functions need to jump back
+;;; to this address.
+EntityUpdateLoopResume::
+
+        pop     de              ; restore entity buffer pointer
+        pop     af              ; restore loop counter
+        jr      EntityUpdateLoop
+
+
+;;; ----------------------------------------------------------------------------
+
+DrawEntitiesSetup:
+        xor     a
+        ld      [var_oam_top_counter], a
+        ld      a, 40
+        ld      [var_oam_bottom_counter], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+DrawEntitiesSimple:
+        xor     a
+        ld      [var_oam_top_counter], a
+        ld      a, 40
+        ld      [var_oam_bottom_counter], a
+;;; Fallthrough
 
 DrawEntities:
 
@@ -535,10 +597,6 @@ DrawEntities:
         ld      [var_last_entity_y], a
         ld      [var_last_entity_idx], a
 
-        xor     a
-        ld      [var_oam_top_counter], a
-        ld      a, 40
-        ld      [var_oam_bottom_counter], a
         ld      de, var_entity_buffer
         ld      a, [var_entity_buffer_size] ; loop counter
 EntityDrawLoop:

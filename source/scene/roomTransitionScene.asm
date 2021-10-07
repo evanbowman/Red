@@ -147,7 +147,7 @@ RoomTransitionSceneDownUpdate:
 	ld      c, 148
         fcall   FixnumAdd
 
-        fcall   DrawEntities
+        fcall   DrawEntitiesSimple
 
         ld      a, [var_room_load_counter]
         ld      c, a
@@ -193,7 +193,7 @@ RoomTransitionSceneUpUpdate:
 	ld      c, 148
         fcall   FixnumSub
 
-        fcall   DrawEntities
+        fcall   DrawEntitiesSimple
 
         ld      a, [var_room_load_counter]
         ld      c, a
@@ -290,7 +290,7 @@ RoomTransitionSceneRightUpdate:
 	ld      c, 148
         fcall   FixnumAdd
 
-        fcall   DrawEntities
+        fcall   DrawEntitiesSimple
 
         ld      a, [var_room_load_counter]
         ld      c, a
@@ -387,7 +387,7 @@ RoomTransitionSceneLeftUpdate:
 	ld      c, 148
         fcall   FixnumSub
 
-        fcall   DrawEntities
+        fcall   DrawEntitiesSimple
 
         ld      a, [var_room_load_counter]
         ld      c, a

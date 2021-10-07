@@ -77,7 +77,7 @@ InventorySceneExit:
 
         fcall   OverlayRepaintRow2
 
-        fcall   DrawEntities
+        fcall   DrawEntitiesSimple
 
 	ld      de, InventorySceneFadeOutVBlank
         fcall   SceneSetVBlankFn

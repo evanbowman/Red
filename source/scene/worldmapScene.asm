@@ -85,7 +85,7 @@ WorldmapSceneUpdate:
         fcall   Memset
 
 
-        fcall   DrawEntities
+        fcall   DrawEntitiesSimple
 
         fcall   VBlankIntrWait
 ;;; i.e. Hide all tiles onscreen

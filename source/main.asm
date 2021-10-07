@@ -81,7 +81,7 @@ ENDM
 ;;; Allows you to call code anywhere in ROM. Fairly large overhead, though. If
 ;;; you are in bank0 already, there's no reason to use this macro instead of
 ;;; LONG_CALL.
-;;; NOTE: trashes hl and a both prior to invocation, and after invocation.
+;;; NOTE: trashes hl, a, d both prior to invocation, and after invocation.
 WIDE_CALL: MACRO
         ASSERT (BANK(\1) != BANK(@)) ; pointless call to current bank
 
@@ -90,13 +90,12 @@ WIDE_CALL: MACRO
         ;; the currently-assigned ROM bank. But I think it's ultimately best to
         ;; discourage doing this, hence the assertion.
         ASSERT (BANK(@) != BANK(EntryPoint))
+	ASSERT (BANK(__Widecall) == BANK(EntryPoint))
 
-        ld      a, BANK(@)
-        push    af              ; Put bank on stack for widecall implementation.
+        ld      d, BANK(@)
         ld      a, BANK(\1)
         ld      hl, \1
         call    __Widecall
-        pop     af
 ENDM
 
 
@@ -466,7 +465,7 @@ VoidUpdateFn:
 ;;; ----------------------------------------------------------------------------
 
 DrawonlyUpdateFn:
-        fcall   DrawEntities
+        fcall   DrawEntitiesSimple
         ret
 
 
@@ -476,11 +475,13 @@ DrawonlyUpdateFn:
 __Widecall:
 ;;; hl - function pointer
 ;;; a - target bank
+;;; d - resume bank
 ;;; NOTE: assumes that the caller pushed its own bank onto the stack. Only
 ;;; intended to be invoked using the WIDE_CALL macro.
+        push    de
         rst     $08
-        ld      hl, sp + 3      ; Location of caller's bank on the stack.
-        ld      a, [hl]
+        pop     de
+        ld      a, d
         SET_BANK_FROM_A
         ret
 

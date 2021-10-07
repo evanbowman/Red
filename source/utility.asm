@@ -136,7 +136,7 @@ ForceSleepOverworld:
 ;;; e - frames to sleep
         push    de
         push    bc
-        fcall   DrawEntities
+        fcall   DrawEntitiesSimple
         pop     bc
         pop     de
 
