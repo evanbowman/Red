@@ -222,6 +222,7 @@ r1_Sine:
 ;;; c - value
 ;;; hl
 ;;; result in b
+;;; preserves a
         ld      b, 0
         ld      hl, r1_SineLut
         add     hl, bc

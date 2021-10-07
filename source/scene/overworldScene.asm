@@ -108,6 +108,12 @@ OverworldSceneLoadTiles:
         ld      bc, r7_SpriteSmallDropShadowEnd - r7_SpriteSmallDropShadow
         ld      de, $87b0
         fcall   VramSafeMemcpy
+
+        ld      hl, r7_SpriteSnowflake
+        ld      bc, r7_SpriteSnowflakeEnd - r7_SpriteSnowflake
+        ld      de, $8780
+        fcall   VramSafeMemcpy
+
         ret
 
 

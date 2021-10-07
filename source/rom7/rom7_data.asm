@@ -746,6 +746,12 @@ DB $FF,$00,$FF,$00,$7E,$00,$00,$00
 r7_SpriteSmallDropShadowEnd::
 
 
+r7_SpriteSnowflake::
+DB $00,$00,$00,$00,$30,$00,$38,$00
+DB $18,$00,$00,$00,$00,$00,$00,$00
+r7_SpriteSnowflakeEnd::
+
+
 ;;; Requires 8-byte alignement for DMA copies.
 align 8
 r7_BackgroundTilesWaterAnim::

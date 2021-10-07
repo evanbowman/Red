@@ -1162,9 +1162,18 @@ r9_PlayerDepleteStamina:
 
 
 r9_PlayerWalkDepleteStamina:
-        ;; TODO: Change the stamina depletion based on difficulty?
+        ld      a, [var_blizzard_active]
+        or      a
+        jr      NZ, .blizzard
+
 	ld      b, 0
         ld      c, 3
+        fcall   r9_PlayerDepleteStamina
+        ret
+
+.blizzard:
+        ld      b, 0
+        ld      c, 12
         fcall   r9_PlayerDepleteStamina
         ret
 

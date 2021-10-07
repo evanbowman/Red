@@ -312,6 +312,13 @@ var_crafting_dependency_set_end:
         NEXTU
 var_scavenge_selection:         DS      1
         NEXTU
+var_blizzard_color_pulse_counter:       DS      1
+var_blizzard_fade_amount:               DS      1
+var_blizzard_fadein_counter:            DS      1
+
+var_blizzard_snowflakes:   DS BLIZZARD_SNOWFLAKE_SIZE * BLIZZARD_SNOWFLAKE_COUNT
+
+        NEXTU
         ENDU
 var_scene_union_end:
 
@@ -362,14 +369,7 @@ var_temp_str3:          DS      6
         ENDU
 var_misc_data_union_end:
 
-var_worldgen_curr_x:    DS      1
-var_worldgen_curr_y:    DS      1
-var_worldgen_prev_x:    DS      1
-var_worldgen_prev_y:    DS      1
-var_worldgen_path_w:    DS      1
-var_worldgen_path_flags:DS      1
-var_worldgen_remaining: DS      1
-
+var_blizzard_active:    DS      1
 
 var_scavenge_slot_0:    DS      1
 var_scavenge_slot_1:    DS      1

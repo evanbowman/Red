@@ -554,6 +554,7 @@ TimerISR:
         INCLUDE "scene.asm"
         INCLUDE "rect.asm"
         INCLUDE "inventory.asm"
+        INCLUDE "blizzardScene.asm"
         INCLUDE "overworldScene.asm"
         INCLUDE "inventoryScene.asm"
         INCLUDE "introCutsceneScene.asm"
@@ -573,6 +574,8 @@ TimerISR:
         INCLUDE "overlayBar.asm"
         INCLUDE "math.asm"
         INCLUDE "collectible.asm"
+
+;;; Other ROM banks:
         INCLUDE "rom1_code.asm"
         INCLUDE "rom2_data.asm"
         INCLUDE "rom3_data.asm"
@@ -588,6 +591,7 @@ TimerISR:
         INCLUDE "rom20_intro_cutscene_texture_data.asm"
         INCLUDE "rom21_intro_cutscene_texture_data.asm"
         INCLUDE "rom22_intro_cutscene_texture_data.asm"
+        INCLUDE "rom30_data.asm"
 
 
 ;;; SECTION START

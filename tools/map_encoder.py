@@ -19,6 +19,9 @@ def encode(room_json):
     if room_json["connections"]["left"]:
         connections |= (1 << 3)
 
+    if "blizzard" in room_json["flags"]:
+        connections |= (1 << 6)
+
     out += '${0:0{1}X}, '.format(connections, 2)
     out += '${0:0{1}X}, '.format(room_json["variant"], 2)
 

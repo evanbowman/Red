@@ -37,7 +37,8 @@
 ;;;
 ;;; struct Room {
 ;;;     char visited_ : 1;        \
-;;;     char reserved_ : 3;       |  First byte.
+;;;     char blizzard_ : 1;       |
+;;;     char reserved_ : 2;       |  First byte.
 ;;;     char connections_ : 4:    /
 ;;;
 ;;;     char room_variant_;       Second byte.
@@ -76,8 +77,9 @@ ROOM_B1_CONNECTIONS     EQU $0f
 
 
 ROOM_VISITED            EQU $80
+ROOM_BLIZZARD           EQU $40
 
-ROOM_B3_PROXIMAL_PATH   EQU $01
+ROOM_B3_PROXIMAL_PATH   EQU $01 ; No longer used
 
 WORLD_MAP_WIDTH         EQU 18
 WORLD_MAP_HEIGHT        EQU 16
@@ -93,3 +95,10 @@ ROOM_META_WIDTH         EQU 16
 ROOM_META_HEIGHT        EQU 16
 
 ROOM_DATA_SIZE          EQU ROOM_META_WIDTH * ROOM_META_HEIGHT
+
+
+
+
+
+BLIZZARD_SNOWFLAKE_SIZE EQU 4
+BLIZZARD_SNOWFLAKE_COUNT EQU 20

@@ -76,8 +76,7 @@ RoomTransitionDone:
 	ld      de, OverworldSceneUpdate
         fcall   SceneSetUpdateFn
 
-        ld      de, OverworldSceneOnVBlank
-        fcall   SceneSetVBlankFn
+        fcall   .setHooks
 
         LONG_CALL r1_SetRoomVisited
 
@@ -90,6 +89,67 @@ RoomTransitionDone:
         fcall   VBlankIntrWait
 
         ret
+
+.setHooks:
+        ld      a, [var_blizzard_active]
+        or      a
+        jr      Z, .normal
+
+.blizzard:
+        fcall   .currentRoomHasBlizzardEffect
+        jr      Z, .blizzardExit
+
+	ld      de, BlizzardSceneUpdate
+        fcall   SceneSetUpdateFn
+
+        ld      de, BlizzardSceneVBlank
+        fcall   SceneSetUpdateFn
+        ret
+
+.blizzardExit:
+        xor     a                        ; \ Turn off blizzard effect flags.
+        ld      [var_blizzard_active], a ; /
+
+        ld      a, 60                       ; \
+        ld      [var_scene_counter], a      ; | Set blizzard effect to fade out.
+	ld      de, BlizzardSceneExitVBlank ; |
+        fcall   SceneSetVBlankFn            ; /
+        ret
+
+.normal:
+	fcall   .currentRoomHasBlizzardEffect
+        jr      NZ, .blizzardEnter
+
+        ld      de, OverworldSceneOnVBlank
+        fcall   SceneSetVBlankFn
+        ret
+
+.blizzardEnter:
+        ld      a, 1
+        ld      [var_blizzard_active], a
+
+        ld      a, 0
+        ld      [var_scene_counter], a
+
+        ld      de, BlizzardSceneFadeInVBlank
+        fcall   SceneSetVBlankFn
+
+        ld      de, BlizzardSceneFadeInUpdate
+        fcall   SceneSetUpdateFn
+        ret
+
+
+.currentRoomHasBlizzardEffect:
+        RAM_BANK 1
+        ld      a, [var_room_x]
+        ld      b, a
+        ld      a, [var_room_y]
+        ld      c, a
+        LONG_CALL r1_LoadRoom
+        ld      a, [hl]         ; Fetch first byte of room data
+        and     ROOM_BLIZZARD
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------
