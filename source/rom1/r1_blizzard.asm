@@ -33,32 +33,46 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-TESTC EQU 6
-
-
-;;; 7a
-;;; 87a0
 
 ;;; ----------------------------------------------------------------------------
 
 r1_InitSnowflakes:
-        ld      hl, var_entity_mem_used
-        ld      bc, var_entity_mem_used_end - var_entity_mem_used
-        xor     a
-        fcall   Memset
-        ret
+        ld      b, BLIZZARD_SNOWFLAKE_COUNT
+        ld      hl, var_blizzard_snowflakes
+
+.loop:
+        ld      a, b
+        or      a
+        ret     Z
+
+        push    hl
+        fcall   GetRandom
+        ld      a, l
+        pop     hl
+
+        ld      [hl+], a
+        inc     hl
+        inc     hl
+        inc     hl
+
+        dec     b
+        jr      .loop
 
 
 ;;; ----------------------------------------------------------------------------
 
 r1_UpdateSnowflakes:
-        ld      b, TESTC
+        ld      b, BLIZZARD_SNOWFLAKE_COUNT
 	ld      hl, var_blizzard_snowflakes
 
 .loop:
         ld      a, b
         or      a
         ret     Z
+
+        ld      a, [hl]         ; \
+        inc     a               ; | Inc timer byte
+        ld      [hl+], a        ; /
 
         ld      a, [hl]
         add     2
@@ -79,8 +93,7 @@ r1_UpdateSnowflakes:
         ld      [hl+], a
 
 .resume:
-        inc     hl              ; \ Skip the second two bytes.
-        inc     hl              ; /
+        inc     hl              ; skip unused fourth byte
 
         dec     b
         jr      .loop
@@ -118,7 +131,7 @@ r1_UpdateSnowflakes:
 r1_DrawSnowflakes:
 	fcall   r1_UpdateSnowflakes
 
-        ld      b, TESTC
+        ld      b, BLIZZARD_SNOWFLAKE_COUNT
         ld      hl, var_blizzard_snowflakes
 
 .loop:
@@ -130,9 +143,23 @@ r1_DrawSnowflakes:
         dec     d               ; otherwise off-by-one
 
         push    bc
-	ld      a, [hl+]
+        ld      a, [hl+]        ; Timer
+        ld      c, a
+        push    hl
+        fcall   r1_HalfSine
+        pop     hl
+        srl     b
+        srl     b
+        srl     b
+        srl     b
+        srl     b
+        ld      c, b
+
+
+	ld      a, [hl+]        ; x-coordinate
         ld      b, a
-        ld      a, [hl+]
+        ld      a, [hl+]        ; y-coordinate
+        add     c
         ld      c, a
 
         push    hl
@@ -143,7 +170,6 @@ r1_DrawSnowflakes:
         pop     hl
         pop     bc
 
-        inc     hl
         inc     hl
 
         dec     b
