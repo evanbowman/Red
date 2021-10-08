@@ -574,6 +574,7 @@ TimerISR:
         INCLUDE "overlayBar.asm"
         INCLUDE "math.asm"
         INCLUDE "collectible.asm"
+        INCLUDE "sector.asm"
 
 ;;; Other ROM banks:
         INCLUDE "rom1_code.asm"
