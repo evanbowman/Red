@@ -153,6 +153,7 @@ r1_DrawSnowflakes:
         srl     b
         srl     b
         srl     b
+        srl     b
         ld      c, b
 
 

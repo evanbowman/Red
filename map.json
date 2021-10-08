@@ -12,6 +12,11 @@
         },
         "variant": 0,
         "entities": [
+            {
+                "type": 1,
+                "x": 5,
+                "y": 8
+            }
         ],
         "collectibles": [
             {
