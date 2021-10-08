@@ -1196,9 +1196,10 @@ r9_PlayerSpiderBiteAttackDepleteStamina:
 
 r9_PlayerBoarAttackDepleteStamina:
         ld      hl, BOAR_ATTACK_BASE_DAMAGE
+        fcall   r9_BoarAttackLevel
+        ld      b, a
         ld      a, [var_level]
         ld      c, a
-        ld      b, BOAR_ATTACK_LEVEL
         fcall   CalculateDamage
         fcall   FormatDamage
         fcall   r9_PlayerDepleteStamina
@@ -1208,8 +1209,13 @@ r9_PlayerBoarAttackDepleteStamina:
 ;;; ----------------------------------------------------------------------------
 
 r9_PlayerWolfAttackDepleteStamina:
-        ld      b, 20
-        ld      c, 70
+        ld      hl, GREYWOLF_ATTACK_BASE_DAMAGE
+        fcall   r9_GreywolfAttackLevel
+        ld      b, a
+        ld      a, [var_level]
+        ld      c, a
+        fcall   CalculateDamage
+        fcall   FormatDamage
         fcall   r9_PlayerDepleteStamina
         ret
 

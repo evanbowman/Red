@@ -33,6 +33,41 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+
+;;; ----------------------------------------------------------------------------
+
+r9_BoarAttackLevel:
+;;; trashes bc
+;;; result in a
+        push    hl
+        ld      hl, .lut
+        fcall   SectorLutGet
+        pop     hl
+        ret
+.lut:
+DB      18, 18, 18
+DB      18, 18, 18
+DB      18, 18, 18
+DB      18, 18, 18
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_BoarDefenseLevel:
+;;; trashes bc
+;;; result in a
+        push    hl
+        ld      hl, .lut
+        fcall   SectorLutGet
+        pop     hl
+        ret
+.lut:
+DB      13, 13, 13
+DB      13, 13, 13
+DB      13, 13, 13
+DB      13, 13, 13
+
+
 ;;; ----------------------------------------------------------------------------
 
 r9_BoarUpdateImpl:
@@ -513,9 +548,10 @@ r9_BoarOnMessage:
 
         push    hl
         ld      hl, DAGGER_BASE_DAMAGE
+	fcall   r9_BoarDefenseLevel
+        ld      c, a
         ld      a, [var_level]
         ld      b, a
-        ld      c, BOAR_DEFENSE_LEVEL
         fcall   CalculateDamage
         fcall   FormatDamage
         pop     hl

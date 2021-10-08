@@ -33,6 +33,41 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+
+;;; ----------------------------------------------------------------------------
+
+r9_GreywolfAttackLevel:
+;;; trashes bc
+;;; result in a
+        push    hl
+        ld      hl, .lut
+        fcall   SectorLutGet
+        pop     hl
+        ret
+.lut:
+DB      14, 14, 14
+DB      14, 14, 14
+DB      14, 14, 14
+DB      14, 14, 14
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_GreywolfDefenseLevel:
+;;; trashes bc
+;;; result in a
+        push    hl
+        ld      hl, .lut
+        fcall   SectorLutGet
+        pop     hl
+        ret
+.lut:
+DB      9, 9, 9
+DB      9, 9, 9
+DB      9, 9, 9
+DB      9, 9, 9
+
+
 ;;; ----------------------------------------------------------------------------
 
 
@@ -822,9 +857,10 @@ r9_GreywolfOnMessage:
 
         push    hl
         ld      hl, DAGGER_BASE_DAMAGE
+        fcall   r9_GreywolfDefenseLevel
+        ld      c, a
         ld      a, [var_level]
         ld      b, a
-        ld      c, GREYWOLF_DEFENSE_LEVEL
         fcall   CalculateDamage
         fcall   FormatDamage
         pop     hl
@@ -1213,7 +1249,6 @@ r9_GreywolfSetupScavenge:
 
 
 ;;; ----------------------------------------------------------------------------
-
 
 r9_GreywolfUpdateDeadImpl:
 ;;; bc - self
