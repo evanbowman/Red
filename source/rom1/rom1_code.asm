@@ -113,6 +113,9 @@ r1_GameboyAdvanceDetected:
 
 
 
+;;; FIXME: this code needs to be update to actually save everything! It only
+;;; saves the game map, not the player position, collectible items, inventory,
+;;; stamina.
 r1_SaveGame:
 	RAM_BANK 1
 

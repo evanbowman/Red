@@ -644,15 +644,21 @@ r1_WorldMapTemplateTopEnd::
 
 
 r1_WorldMapTemplateRow0::
-DB $06, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08
+DB $06, $08, $08, $08, $08, $08, $2a, $08, $08, $08, $08, $08, $2a, $08, $08
 DB $08, $08, $08, $08, $07
 r1_WorldMapTemplateRow0End::
 
 
 r1_WorldMapTemplateRow1::
-DB $07, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08, $08
+DB $07, $08, $08, $08, $08, $08, $2a, $08, $08, $08, $08, $08, $2a, $08, $08
 DB $08, $08, $08, $08, $06
 r1_WorldMapTemplateRow1End::
+
+
+r1_WorldMapTemplateRow2::
+DB $06, $2c, $2c, $2c, $2c, $2c, $2b, $2c, $2c, $2c, $2c, $2c, $2b, $2c, $2c
+DB $2c, $2c, $2c, $2c, $07
+r1_WorldMapTemplateRow2End::
 
 
 r1_WorldMapTemplateBottom::
@@ -673,6 +679,7 @@ DB $05,$02,$7D,$02,$41,$3E,$7F,$00
 r1_WorldMapObjectTexturesEnd::
 
 
+;;; ----------------------------------------------------------------------------
 
 r1_WorldMapShowRowPair:
 ;;; de - first row address
@@ -690,6 +697,25 @@ r1_WorldMapShowRowPair:
         fcall   VramSafeMemcpy
         ret
 
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldMapShowDottedRowPair:
+        push    hl
+
+        ld      hl, r1_WorldMapTemplateRow2
+        ld      bc, r1_WorldMapTemplateRow2End - r1_WorldMapTemplateRow2
+        fcall   VramSafeMemcpy
+
+        pop     de
+
+        ld      hl, r1_WorldMapTemplateRow1
+        ld      bc, r1_WorldMapTemplateRow1End - r1_WorldMapTemplateRow1
+        fcall   VramSafeMemcpy
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 r1_WorldMapShowRooms:
         fcall   VBlankIntrWait
@@ -719,7 +745,7 @@ r1_WorldMapShowRooms:
 .write:
         ld      a, [hl]
         and     ROOM_VISITED            ; Check for room visited flag
-        jr      Z, .skip                ; The tile is empty by default
+        jr      Z, .notVisited          ; The tile is empty by default
 
         ld      a, [hl]
         and     $0f                     ; Lower four bits hold connection mask
@@ -742,13 +768,17 @@ r1_WorldMapShowRooms:
 .setTile:
         ld      [de], a
 
-        ld      a, 1
-        ld	[rVBK], a
+        VIDEO_BANK 1
         ld      a, $01                  ; palette 1, show over objects
         ld      [de],  a
-        ld      a, 0
-        ld      [rVBK], a
+        VIDEO_BANK 0
+        jr      .skip
 
+.notVisited:
+        VIDEO_BANK 1
+        xor     a
+        ld      [de], a
+        VIDEO_BANK 0
 
 .skip:
         push    de                      ; \
@@ -778,6 +808,8 @@ r1_WorldMapShowRooms:
 
 	ret
 
+
+;;; ----------------------------------------------------------------------------
 
 r1_WorldMapInitBorder:
         ld      d, 0
@@ -818,6 +850,8 @@ r1_WorldMapInitBorder:
         ret
 
 
+;;; ----------------------------------------------------------------------------
+
 r1_WorldMapShow:
         VIDEO_BANK 1
         ld      hl, r1_WorldMapObjectTextures
@@ -848,7 +882,7 @@ r1_WorldMapShow:
 
         ld      de, $9CA0
         ld      hl, $9CC0
-        fcall   r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowDottedRowPair
 
         ld      de, $9CE0
         ld      hl, $9D00
@@ -856,7 +890,7 @@ r1_WorldMapShow:
 
         ld      de, $9D20
         ld      hl, $9D40
-        fcall   r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowDottedRowPair
 
         ld      de, $9D60
         ld      hl, $9D80
@@ -864,7 +898,7 @@ r1_WorldMapShow:
 
         ld      de, $9DA0
         ld      hl, $9DC0
-        fcall   r1_WorldMapShowRowPair
+        fcall   r1_WorldMapShowDottedRowPair
 
         ld      de, $9DE0
         ld      hl, $9E00
@@ -897,17 +931,17 @@ r1_WorldMapShow:
 
 
         ;; Set a few specific map tiles with custom graphics.
-        ld      hl, $9E12
-        ld      a, $09
-        ld      [hl], a
+        ;; ld      hl, $9E12
+        ;; ld      a, $09
+        ;; ld      [hl], a
 
-        ld      hl, $9C32
-        ld      a, $29
-        ld      [hl], a
+        ;; ld      hl, $9C32
+        ;; ld      a, $29
+        ;; ld      [hl], a
 
-        ld      hl, $9E01
-        ld      a, $29
-        ld      [hl], a
+        ;; ld      hl, $9E01
+        ;; ld      a, $29
+        ;; ld      [hl], a
 
 
         ;; now that we're done drawing the map, pop up the window so that it
@@ -1019,7 +1053,7 @@ r1_WorldMapDescribeRoomVBlankImpl:
         cp      0
         jr      Z, .skip
 
-        add     $29             ; Index of first obj icon in vram
+        add     $2c             ; Index of first obj icon in vram
         ld      [bc], a
         inc     bc
 
@@ -1051,7 +1085,7 @@ r1_WorldMapDescribeRoomVBlankImpl:
         cp      0
         jr      Z, .skip2
 
-	add     $29
+	add     $2c
         ld      [bc], a
         inc     bc
 
@@ -1923,21 +1957,27 @@ DB $FF,$FF,$81,$81,$81,$81,$81,$99
 DB $81,$99,$81,$81,$81,$81,$FF,$FF
 DB $7E,$7E,$C3,$C3,$03,$03,$0E,$0E
 DB $18,$18,$00,$00,$18,$18,$00,$00
+DB $00,$00,$02,$00,$02,$00,$00,$00
+DB $00,$00,$02,$00,$02,$00,$00,$00
+DB $00,$00,$66,$00,$02,$00,$00,$00
+DB $00,$00,$02,$00,$02,$00,$00,$00
+DB $00,$00,$66,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
 .obj_icons::
 DB $FF,$FF,$FF,$EF,$FF,$E3,$FF,$F0
 DB $FF,$A0,$FF,$E4,$FF,$CD,$FF,$E3
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $FF,$FF,$FF,$FF,$FF,$DD,$FF,$C1
+DB $FF,$D5,$FF,$C1,$FF,$E3,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$DD,$FF,$C1
+DB $FF,$D5,$FF,$C1,$FF,$E3,$FF,$FF
+DB $FF,$FF,$FF,$BE,$FF,$DD,$FF,$EB
+DB $FF,$F7,$FF,$EB,$FF,$DD,$FF,$BE
+DB $FF,$FF,$FF,$FF,$FF,$DD,$FF,$C1
+DB $FF,$D5,$FF,$C1,$FF,$E3,$FF,$FF
+DB $FF,$FF,$FF,$BE,$FF,$DD,$FF,$EB
+DB $FF,$F7,$FF,$EB,$FF,$DD,$FF,$BE
+DB $FF,$FF,$FF,$BE,$FF,$DD,$FF,$EB
+DB $FF,$F7,$FF,$EB,$FF,$DD,$FF,$BE
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
