@@ -1173,7 +1173,7 @@ r9_PlayerWalkDepleteStamina:
 
 .blizzard:
         ld      b, 0
-        ld      c, 12
+        ld      c, 14
         fcall   r9_PlayerDepleteStamina
         ret
 

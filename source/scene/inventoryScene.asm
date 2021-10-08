@@ -106,6 +106,34 @@ InventorySceneUpdate:
 
 ;;; ----------------------------------------------------------------------------
 
+InventorySceneDiscardUpdate:
+        LONG_CALL r8_InventorySceneDiscardUpdate
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+InventorySceneConsumeUpdate:
+        LONG_CALL r8_InventorySceneConsumeUpdate
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+InventorySceneCraftOptionUpdate:
+        LONG_CALL r8_InventorySceneCraftOptionUpdate
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+InventorySceneUseFirewoodUpdate:
+        LONG_CALL r8_InventorySceneUseFirewoodUpdate
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 InventorySceneFadeinVBlank:
 
         ld      a, HIGH(var_oam_back_buffer)

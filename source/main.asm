@@ -384,8 +384,8 @@ Main:
 ;;; As per my own testing, I can fit about five DMA block copies for 32x32 pixel
 ;;; sprites in within the vblank window.
 .done:
-        ld      a, [rLY]
-        cp      SCRN_Y
+        ld      a, [rLY]        ; \ NOTE: if current line is less than the
+        cp      SCRN_Y          ; / start of the vblank, we exceeded the vblank.
         jr      C, .vbl_window_exceeded
 
         jr      Main.loop

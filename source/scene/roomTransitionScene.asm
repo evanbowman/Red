@@ -103,7 +103,7 @@ RoomTransitionDone:
         fcall   SceneSetUpdateFn
 
         ld      de, BlizzardSceneVBlank
-        fcall   SceneSetUpdateFn
+        fcall   SceneSetVBlankFn
         ret
 
 .blizzardExit:

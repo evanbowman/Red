@@ -858,6 +858,9 @@ r8_GetItemDesc:
 
 
 r8_InventoryUseItem:
+        xor     a
+        ld      [var_inventory_submenu_selection], a
+
         ld      a, [var_inventory_scene_selected_row]
         fcall   r8_InventoryAdjustOffset
 
@@ -878,20 +881,14 @@ r8_InventoryUseItem:
 
 .useFoodItem:
         inc     hl
-        ld      b, [hl]         ; Amount of health to restore
-        ld      c, 0
+        ld      a, [hl]
+        ld      [var_inventory_add_stamina_amount], a
 
-        ld      hl, var_player_stamina
-        fcall   FixnumAddClamped
+        ld      de, InventorySceneConsumeUpdate
+        fcall   SceneSetUpdateFn
 
-        fcall   UpdateStaminaBar
-        fcall   VBlankIntrWait  ; FIXME...
-        fcall   ShowOverlay
-
-        fcall   r8_RemoveSelectedItem
-
-        fcall   r8_InventoryInitText
-        fcall   r8_InventoryUpdateImage
+        ld      hl, r8_queryConsumeItemText
+        fcall   r8_ShowYesNoOptionBox
         ret
 
 .useEquipmentItem:
@@ -899,18 +896,72 @@ r8_InventoryUseItem:
         ret
 
 .useMiscItem:
-        ;; item id in d. Now, for misc items, we want to perform some specific operation
-        ;; based on which item we have
         ld      a, d
         cp      ITEM_FIREWOOD
         jr      Z, .useFirewoodItem
+        cp      ITEM_NONE
+        ret     Z
 
+.discardItem:
+        ld      de, InventorySceneDiscardUpdate
+        fcall   SceneSetUpdateFn
+
+        ld      hl, r8_queryDiscardItemText
+        fcall   r8_ShowYesNoOptionBox
         ret
 
 .useFirewoodItem:
-
-        ld      de, ConstructBonfireSceneEnter
+        ld      de, InventorySceneUseFirewoodUpdate
         fcall   SceneSetUpdateFn
+
+        ld      hl, r8_queryUseFirewoodText
+        fcall   r8_ShowYesNoOptionBox
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_ShowYesNoOptionBox:
+;;; hl - heading text
+        fcall   VBlankIntrWait
+        ld      b, $89
+        ld      a, 0
+        fcall   r8_InventoryPutTextRow
+
+        fcall   VBlankIntrWait
+        ld      b, $89
+        ld      a, 1
+        ld      hl, r8_emptyLine
+        fcall   r8_InventoryPutTextRow
+
+        fcall   VBlankIntrWait
+        ld      b, $8A
+        ld      a, 2
+        ld      hl, r8_optionNoText
+        fcall   r8_InventoryPutTextRow
+
+        fcall   VBlankIntrWait
+        ld      b, $89
+        ld      a, 3
+        ld      hl, r8_optionYesText
+        fcall   r8_InventoryPutTextRow
+
+        fcall   VBlankIntrWait
+        ld      b, $89
+        ld      a, 4
+        ld      hl, r8_emptyLine
+        fcall   r8_InventoryPutTextRow
+
+        ld      b, $89
+        ld      a, 5
+        ld      hl, r8_emptyLine
+        fcall   r8_InventoryPutTextRow
+
+        ld      b, $89
+        ld      a, 6
+        ld      hl, r8_emptyLine
+        fcall   r8_InventoryPutTextRow
+
         ret
 
 
@@ -935,12 +986,21 @@ r8_InventoryAPressed:
         cp      INVENTORY_TAB_CRAFT
         jr      Z, .craft
         cp      INVENTORY_TAB_COOK
-        jr      Z, .craft
+        jr      Z, .cook
 .items:
         fcall   r8_InventoryUseItem
         ret
 .craft:
-        fcall   r8_InventoryCraftItem
+        ld      hl, r8_queryCraftItemText
+        fcall   r8_ShowYesNoOptionBox
+        ld      de, InventorySceneCraftOptionUpdate
+        fcall   SceneSetUpdateFn
+        ret
+.cook:
+        ld      hl, r8_queryCookItemText
+        fcall   r8_ShowYesNoOptionBox
+        ld      de, InventorySceneCraftOptionUpdate
+        fcall   SceneSetUpdateFn
         ret
 
 
@@ -1600,6 +1660,146 @@ r8_InventoryMoveCursorUp:
 
 ;;; ----------------------------------------------------------------------------
 
+r8_InventorySceneOptionBoxUpdate:
+;;; hl - yes callback
+        ldh     a, [hvar_joypad_current]
+
+.checkUp:
+        bit     PADB_UP, a
+        jr      Z, .checkA
+
+        xor     a
+        ld      [var_inventory_submenu_selection], a
+
+        fcall   VBlankIntrWait
+        ld      b, $8a
+        ld      a, 2
+        ld      hl, r8_optionNoText
+        fcall   r8_InventoryPutTextRow
+
+        ld      b, $89
+        ld      a, 3
+        ld      hl, r8_optionYesText
+        fcall   r8_InventoryPutTextRow
+	ret
+
+.checkA:
+        bit     PADB_A, a
+        jr      Z, .checkDown
+
+        ld      a, [var_inventory_submenu_selection]
+        or      a
+        jr      Z, .cancelOut
+
+        INVOKE_HL               ; yes option callback
+        ret
+
+.checkDown:
+        bit     PADB_DOWN, a
+        jr      Z, .checkB
+
+        ld      a, 1
+        ld      [var_inventory_submenu_selection], a
+
+        fcall   VBlankIntrWait
+        ld      b, $89
+        ld      a, 2
+        ld      hl, r8_optionNoText
+        fcall   r8_InventoryPutTextRow
+
+        ld      b, $8a
+        ld      a, 3
+        ld      hl, r8_optionYesText
+        fcall   r8_InventoryPutTextRow
+        ret
+
+.checkB:
+        bit     PADB_B, a
+        ret     Z
+
+.cancelOut:
+        fcall   r8_InventoryInitText
+
+        ld      de, InventorySceneUpdate
+        fcall   SceneSetUpdateFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r8_InventorySceneDiscardUpdate:
+        ld      hl, .yesOptionSelectedCallback
+        fcall   r8_InventorySceneOptionBoxUpdate
+        ret
+
+.yesOptionSelectedCallback:
+        fcall   r8_RemoveSelectedItem
+        fcall   r8_InventoryInitText
+        fcall   r8_InventoryUpdateImage
+
+        ld      de, InventorySceneUpdate
+        fcall   SceneSetUpdateFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventorySceneUseFirewoodUpdate:
+        ld      hl, .yesOptionSelectedCallback
+        fcall   r8_InventorySceneOptionBoxUpdate
+        ret
+
+.yesOptionSelectedCallback:
+        fcall   r8_RemoveSelectedItem
+
+        ld      de, ConstructBonfireSceneEnter
+        fcall   SceneSetUpdateFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventorySceneCraftOptionUpdate:
+        ld      hl, .yesOptionSelectedCallback
+        fcall   r8_InventorySceneOptionBoxUpdate
+        ret
+
+.yesOptionSelectedCallback:
+        fcall   r8_InventoryCraftItem
+        ld      de, InventorySceneUpdate
+        fcall   SceneSetUpdateFn
+        ret
+
+;;; ----------------------------------------------------------------------------
+
+r8_InventorySceneConsumeUpdate:
+        ld      hl, .yesOptionSelectedCallback
+        fcall   r8_InventorySceneOptionBoxUpdate
+        ret
+
+.yesOptionSelectedCallback:
+        ld      a, [var_inventory_add_stamina_amount]
+        ld      b, a
+        ld      c, 0
+        ld      hl, var_player_stamina
+        fcall   FixnumAddClamped
+
+        fcall   UpdateStaminaBar
+        fcall   VBlankIntrWait  ; FIXME...
+        fcall   ShowOverlay
+
+        fcall   r8_RemoveSelectedItem
+        fcall   r8_InventoryInitText
+        fcall   r8_InventoryUpdateImage
+
+        ld      de, InventorySceneUpdate
+        fcall   SceneSetUpdateFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r8_InventoryUpdate:
         ldh     a, [hvar_joypad_current]
         bit     PADB_UP, a
@@ -1929,6 +2129,28 @@ r8_VramSafeMemset:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+r8_optionYesText:
+DB      "yes            ", 0
+r8_optionNoText:
+DB      "no             ", 0
+
+
+r8_emptyLine:
+DB      "               ", 0
+
+
+r8_queryDiscardItemText:
+DB      "Discard item?  ", 0
+r8_queryConsumeItemText:
+DB      "Consume item?  ", 0
+r8_queryCraftItemText:
+DB      "Craft item?    ", 0
+r8_queryCookItemText:
+DB      "Cook item?     ", 0
+r8_queryUseFirewoodText:
+DB      "Start bonfire? ", 0
 
 
 ;;; NOTE: Only the first nine bytes of the strings are guaranteed to be shown.

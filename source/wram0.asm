@@ -309,6 +309,9 @@ var_inventory_scene_craftable_items_list:   DS  2 * CRAFTABLE_ITEMS_COUNT
 var_crafting_dependency_set:  DS      ITEM_SIZE * 3
 var_crafting_dependency_set_end:
 
+var_inventory_submenu_selection:        DS      1
+var_inventory_add_stamina_amount:       DS      1
+
         NEXTU
 var_scavenge_selection:         DS      1
         NEXTU

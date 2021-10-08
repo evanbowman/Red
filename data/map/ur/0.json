@@ -31,7 +31,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"..\/..\/..\/..\/..\/snap\/tiled\/1825\/tiles.tsx"
+         "source":"..\/..\/..\/..\/..\/gb\/project1\/data\/tiles.tsx"
         }],
  "tilewidth":16,
  "type":"map",

@@ -117,12 +117,12 @@ BlizzardSceneVBlank:
         ld      a, [var_player_stamina]
         ld      [var_stamina_last_val], a
 
+	ld      a, [var_water_anim_changed]
+        or      a
+        fcallc  NZ, VBlankCopyWaterTextures
 
 	fcall   VBlankCopySpriteTextures
 
-        ld      a, [var_water_anim_changed]
-        or      a
-        fcallc  NZ, VBlankCopyWaterTextures
         ret
 
 
