@@ -66,7 +66,73 @@ r9_SpiderUpdateDeadImpl:
         ld      h, b
         ld      l, c
 
-        ;; TODO...
+        push    hl
+
+        fcall   EntityGetMessageQueue
+        fcall   MessageQueueLoad
+
+        pop     de
+        ld      bc, .onMessage
+        fcall   MessageQueueDrain
+
+        ret
+
+.onMessage:
+;;; bc - message pointer
+;;; de - self
+        ld      a, [bc]
+        cp      MESSAGE_PLAYER_INTERACT
+        jr      Z, .onPlayerInteract
+        ret
+
+.onPlayerInteract:
+        ld      h, d
+        ld      l, e
+
+        push    hl
+        fcall   EntityGetPos
+        ld      hl, var_temp_hitbox1
+        fcall   r9_SpiderPopulateHitbox
+
+        ld      hl, var_temp_hitbox2
+        fcall   r9_PlayerPopulateHitbox
+
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection
+        pop     hl
+        ret     NC
+
+        push    hl
+        ld      de, ScavengeSceneEnter
+        fcall   SceneSetUpdateFn
+        pop     hl
+
+        call    r9_SpiderSetupScavenge
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_SpiderSetupScavenge:
+;;; hl - self
+        ld      a, h                         ; \
+        ld      [var_scavenge_target], a     ; |
+        inc     bc                           ; | Store self pointer in ram.
+        ld      a, l                         ; |
+        ld      [var_scavenge_target + 1], a ; /
+
+        ld      a, ITEM_NONE
+        ld      [var_scavenge_slot_0], a
+        ld      [var_scavenge_slot_1], a
+
+        fcall   EntityGetFullType
+        bit     6, a
+        ret     Z
+
+        ld      a, ITEM_MORSEL
+        ld      [var_scavenge_slot_0], a
 
         ret
 
@@ -661,6 +727,9 @@ r9_SpiderDepleteStamina:
 
         ld      de, SpiderUpdateDead
         fcall   EntitySetUpdateFn
+
+        ld      a, $01          ; Drops one item
+        fcall   EntitySetTypeModifier
 
 	ld      a, ENTITY_TYPE_SPIDER_DEAD
         fcall   EntitySetType

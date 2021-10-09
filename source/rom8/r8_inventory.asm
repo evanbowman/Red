@@ -37,6 +37,7 @@
 r8_InventoryCraftingRecipes::
 DB      ITEM_BUNDLE,    ITEM_STICK,     ITEM_STICK,     ITEM_STICK
 DB      ITEM_FIREWOOD,  ITEM_BUNDLE,    ITEM_BUNDLE,    ITEM_BUNDLE
+DB      ITEM_RAW_MEAT,  ITEM_MORSEL,    ITEM_MORSEL,    ITEM_MORSEL
 ;;; Last row must be empty:
 DB      ITEM_NONE,      ITEM_NONE,      ITEM_NONE,      ITEM_NONE
 r8_InventoryCraftingRecipesEnd::
@@ -792,6 +793,11 @@ ITEM_CATEGORY_FOOD      EQU 1
 ITEM_CATEGORY_MISC      EQU 2
 
 
+;;; Why did I dedicate three bytes per item description? I don't remember, there
+;;; was probably a reason, but now it's unused, I think... aha, so for easy
+;;; indexing, the size should be a power of two, and I must have thought that
+;;; two bytes was not future-proof enough, so I doubled the size.
+
 r8_ItemDescs::
 .none:
 DB      ITEM_CATEGORY_MISC,      $00, $00, $00
@@ -834,6 +840,9 @@ DB      ITEM_CATEGORY_MISC,      $00, $00, $00
 
 .key:
 DB      ITEM_CATEGORY_MISC,      $00, $00, $00
+
+.morsel:
+DB      ITEM_CATEGORY_FOOD,        2, $00, $00
 
 r8_ItemDescsEnd::
 STATIC_ASSERT((r8_ItemDescsEnd - r8_ItemDescs) / 4 == ITEM_COUNT)
@@ -2173,6 +2182,7 @@ DB      "stew           ", 0
 DB      "bundle         ", 0
 DB      "firewood       ", 0
 DB      "key            ", 0
+DB      "morsel         ", 0
 r8_InventoryItemTextTableEnd::
 STATIC_ASSERT((r8_InventoryItemTextTableEnd - r8_InventoryItemTextTable) / 16 == ITEM_COUNT)
 
@@ -2275,6 +2285,13 @@ DB $83, $83, $83, $83
 DB $83, $83, $83, $83
 DB $83, $83, $83, $83
 .keyEnd::
+.morsel::
+DB $83, $83, $83, $83           ; placeholder, TODO...
+DB $83, $83, $83, $83
+DB $84, $83, $83, $83
+DB $84, $85, $85, $83
+.morselEnd::
+
 r8_InventoryItemAttributesEnd::
 STATIC_ASSERT((r8_InventoryItemAttributesEnd - r8_InventoryItemAttributes) / 16 == ITEM_COUNT)
 
@@ -2424,6 +2441,16 @@ DB $fa,$46, $ad,$24, $d1,$21, $81,$20,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 .keyEnd::
+.morsel::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04, ; placeholder, TODO...
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $1b,$4b, $ad,$24, $7d,$35, $9f,$63,
+DB $1b,$4b, $ad,$24, $7d,$35, $81,$20,
+DB $1b,$4b, $ad,$24, $9f,$63, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.morselEnd::
 r8_InventoryItemPalettesEnd::
 STATIC_ASSERT((r8_InventoryItemPalettesEnd - r8_InventoryItemPalettes) / 64 == ITEM_COUNT)
 
@@ -2906,5 +2933,39 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $DE,$20,$EC,$10,$F8,$00,$F8,$80
 DB $F8,$E0,$30,$30,$00,$00,$00,$00
 .keyEnd::
+.morsel::
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$07,$00,$1F,$01,$3B,$07
+DB $2E,$17,$5C,$27,$7C,$0F,$78,$0F
+DB $00,$00,$E0,$00,$F8,$E0,$3C,$F8
+DB $0C,$FC,$06,$FC,$02,$FE,$03,$FE
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$01,$00
+DB $01,$00,$03,$02,$03,$02,$03,$03
+DB $E8,$1F,$F8,$1F,$F8,$1F,$F0,$1F
+DB $F0,$1F,$F0,$1F,$F0,$1F,$F0,$1F
+DB $42,$FF,$A3,$FF,$A1,$FF,$41,$FF
+DB $01,$FF,$01,$FF,$03,$FF,$3D,$FE
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $80,$00,$80,$00,$80,$00,$00,$00
+DB $01,$01,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $E0,$9F,$F1,$CF,$7F,$7F,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $06,$F8,$E0,$E0,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+.morselEnd::
 r8_InventoryItemIconsEnd::
 STATIC_ASSERT((r8_InventoryItemIconsEnd - r8_InventoryItemIcons) / 256 == ITEM_COUNT)
