@@ -119,3 +119,35 @@ PlayerAttack3Exit:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+PlayerRaiseHammer:
+        LONG_CALL r9_PlayerRaiseHammerImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+PlayerWaitHammer:
+        LONG_CALL r9_PlayerWaitHammerImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+PlayerDropHammer:
+        LONG_CALL r9_PlayerDropHammerImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
+
+
+PlayerDropHammerRecover:
+        LONG_CALL r9_PlayerDropHammerRecoverImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------

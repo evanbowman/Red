@@ -155,7 +155,7 @@ OverworldSceneEnter:
 
 
 OverworldSceneUpdateView:
-        ld      a, [var_player_coord_x]
+        ld      a, [var_player_anchor_x]
         ld      d, a
         ld      a, 175                  ; 255 - (screen_width / 2)
         cp      d
@@ -178,7 +178,7 @@ OverworldSceneUpdateView:
         ld      [var_view_x], a
 
 .setY:
-        ld      a, [var_player_coord_y]
+        ld      a, [var_player_anchor_y]
         add     a, 8                    ; Menu bar takes up one row, add offset
         ld      d, a
         ld      a, (183 + 19)           ; FIXME: why does this val work?

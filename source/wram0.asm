@@ -75,6 +75,9 @@ var_exp:                DS      2
 var_exp_to_next_level:  DS      2
 
 
+var_equipped_item:      DS      1
+
+
 PERSISTENT_STATE_DATA_END:
 
 
@@ -380,6 +383,17 @@ var_scavenge_target:    DS      2
 
 
 var_entity_slab_weight: DS      1
+
+
+;;; Anchor vars:
+;;; For some animations, we need to move the sprite origin left/right to fit
+;;; the sprite within the 32x32 texture size. These anchor positions represent
+;;; the player's real position, and the player's entity coordinates will be
+;;; calculated by adding a texture origin to the entity's position fields, after
+;;; copying them from these anchor variables.
+;;; NOTE: y, followed by x, to match the layout in an entity.
+var_player_anchor_y:    DS      FIXNUM_SIZE
+var_player_anchor_x:    DS      FIXNUM_SIZE
 
 
 ;;; ############################################################################

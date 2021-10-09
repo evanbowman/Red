@@ -424,7 +424,13 @@ CreateWorld:
 
 	LONG_CALL r1_SetRoomVisited
 
-        ld      b, ITEM_DAGGER
+
+        ld      a, ITEM_DAGGER
+        ld      [var_equipped_item], a
+        ld      b, a
+        fcall   InventoryAddItem
+
+        ld      b, ITEM_HAMMER
         fcall   InventoryAddItem
 
         ret
@@ -581,6 +587,7 @@ TimerISR:
         INCLUDE "rom2_data.asm"
         INCLUDE "rom3_data.asm"
         INCLUDE "rom4_data.asm"
+        INCLUDE "rom5_data.asm"
         INCLUDE "rom7_data.asm"
         INCLUDE "rom8_code.asm"
         INCLUDE "rom9_code.asm"

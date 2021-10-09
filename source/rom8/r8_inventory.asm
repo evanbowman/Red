@@ -844,6 +844,9 @@ DB      ITEM_CATEGORY_MISC,      $00, $00, $00
 .morsel:
 DB      ITEM_CATEGORY_FOOD,        2, $00, $00
 
+.hammer:
+DB      ITEM_CATEGORY_EQUIPMENT, $00, $00, $00
+
 r8_ItemDescsEnd::
 STATIC_ASSERT((r8_ItemDescsEnd - r8_ItemDescs) / 4 == ITEM_COUNT)
 
@@ -901,7 +904,11 @@ r8_InventoryUseItem:
         ret
 
 .useEquipmentItem:
-        ;; TODO... probably just equip the item...
+        ld      de, InventorySceneEquipUpdate
+        fcall   SceneSetUpdateFn
+
+        ld      hl, r8_queryEquipItemText
+        fcall   r8_ShowYesNoOptionBox
         ret
 
 .useMiscItem:
@@ -1769,6 +1776,25 @@ r8_InventorySceneUseFirewoodUpdate:
 
 ;;; ----------------------------------------------------------------------------
 
+r8_InventorySceneEquipUpdate:
+        ld      hl, .yesOptionSelectedCallback
+        fcall   r8_InventorySceneOptionBoxUpdate
+        ret
+
+.yesOptionSelectedCallback:
+        fcall   r8_InventoryGetSelectedIndex
+        ld      b, a
+        fcall   r8_InventoryTabLoadItem
+	ld      a, b
+        ld      [var_equipped_item], a
+        ld      de, InventorySceneUpdate
+        fcall   SceneSetUpdateFn
+        fcall   r8_InventoryInitText
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r8_InventorySceneCraftOptionUpdate:
         ld      hl, .yesOptionSelectedCallback
         fcall   r8_InventorySceneOptionBoxUpdate
@@ -2160,6 +2186,8 @@ r8_queryCookItemText:
 DB      "Cook item?     ", 0
 r8_queryUseFirewoodText:
 DB      "Start bonfire? ", 0
+r8_queryEquipItemText:
+DB      "Equip item?    ", 0
 
 
 ;;; NOTE: Only the first nine bytes of the strings are guaranteed to be shown.
@@ -2183,6 +2211,7 @@ DB      "bundle         ", 0
 DB      "firewood       ", 0
 DB      "key            ", 0
 DB      "morsel         ", 0
+DB      "hammer         ", 0
 r8_InventoryItemTextTableEnd::
 STATIC_ASSERT((r8_InventoryItemTextTableEnd - r8_InventoryItemTextTable) / 16 == ITEM_COUNT)
 
@@ -2286,11 +2315,18 @@ DB $83, $83, $83, $83
 DB $83, $83, $83, $83
 .keyEnd::
 .morsel::
-DB $83, $83, $83, $83           ; placeholder, TODO...
+DB $83, $83, $83, $83
 DB $83, $83, $83, $83
 DB $84, $83, $83, $83
 DB $84, $85, $85, $83
 .morselEnd::
+.hammer::
+DB $83, $83, $83, $83           ; Placeholder, TODO...
+DB $83, $83, $84, $84
+DB $84, $84, $85, $84
+DB $85, $85, $85, $85
+.hammerEnd::
+
 
 r8_InventoryItemAttributesEnd::
 STATIC_ASSERT((r8_InventoryItemAttributesEnd - r8_InventoryItemAttributes) / 16 == ITEM_COUNT)
@@ -2442,7 +2478,7 @@ DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 .keyEnd::
 .morsel::
-DB $BF,$73, $1A,$20, $1A,$20, $00,$04, ; placeholder, TODO...
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
 DB $37,$73, $49,$35, $00,$04, $62,$1c,
 DB $03,$00, $69,$72, $00,$00, $1A,$20,
 DB $1b,$4b, $ad,$24, $7d,$35, $9f,$63,
@@ -2451,6 +2487,17 @@ DB $1b,$4b, $ad,$24, $9f,$63, $81,$20,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $00,$00, $00,$00, $00,$00,
 .morselEnd::
+.hammer::
+DB $BF,$73, $1A,$20, $1A,$20, $00,$04, ; Placeholder, TODO...
+DB $37,$73, $49,$35, $00,$04, $62,$1c,
+DB $03,$00, $69,$72, $00,$00, $1A,$20,
+DB $fa,$46, $ad,$4d, $ff,$7f, $81,$20,
+DB $fa,$46, $ad,$4d, $d1,$21, $81,$20,
+DB $fa,$46, $ad,$24, $d1,$21, $81,$20,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+DB $00,$00, $00,$00, $00,$00, $00,$00,
+.hammerEnd::
+
 r8_InventoryItemPalettesEnd::
 STATIC_ASSERT((r8_InventoryItemPalettesEnd - r8_InventoryItemPalettes) / 64 == ITEM_COUNT)
 
@@ -2967,5 +3014,39 @@ DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 DB $00,$00,$00,$00,$00,$00,$00,$00
 .morselEnd::
+.hammer::
+DB $38,$00,$3C,$00,$16,$08,$3B,$24 ; Placeholder, TODO...
+DB $3F,$30,$1F,$18,$0F,$08,$0F,$0C
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $80,$00,$C0,$00,$E0,$00,$70,$80
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $07,$06,$03,$02,$03,$03,$01,$01
+DB $01,$01,$00,$00,$00,$00,$00,$00
+DB $B8,$40,$FC,$00,$EE,$10,$FD,$02
+DB $F4,$8B,$F8,$C7,$7C,$43,$7E,$61
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $80,$00,$40,$00,$E0,$03,$E1,$17
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$C0,$00,$E0,$00,$E0
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $3F,$30,$1E,$11,$1E,$19,$0E,$0D
+DB $06,$07,$00,$33,$01,$7F,$C0,$F8
+DB $03,$FF,$14,$FC,$00,$F8,$80,$F4
+DB $00,$FC,$0C,$F0,$9E,$E0,$FF,$F0
+DB $80,$C0,$40,$40,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $70,$70,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $1F,$18,$0F,$0C,$07,$06,$03,$02
+DB $01,$01,$00,$00,$00,$00,$00,$00
+DB $00,$00,$80,$00,$C0,$00,$C0,$30
+DB $C0,$28,$80,$F8,$80,$F8,$F0,$F0
+.hammerEnd::
 r8_InventoryItemIconsEnd::
 STATIC_ASSERT((r8_InventoryItemIconsEnd - r8_InventoryItemIcons) / 256 == ITEM_COUNT)

@@ -127,6 +127,13 @@ InventorySceneCraftOptionUpdate:
 
 ;;; ----------------------------------------------------------------------------
 
+InventorySceneEquipUpdate:
+        LONG_CALL r8_InventorySceneEquipUpdate
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 InventorySceneUseFirewoodUpdate:
         LONG_CALL r8_InventorySceneUseFirewoodUpdate
         ret

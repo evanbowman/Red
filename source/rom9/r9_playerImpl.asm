@@ -164,6 +164,11 @@ r9_PlayerUpdateMovement:
         ld      e, SPRID_PLAYER_WU
         fcall   r9_PlayerJoypadResponse
 
+        ld      hl, var_player_coord_y  ; \
+        ld      de, var_player_anchor_y ; | Set View Anchor
+        ld      bc, FIXNUM_SIZE * 2     ; |
+        fcall   Memcpy                  ; /
+
         ret
 
 
@@ -919,6 +924,37 @@ DB      "inventory full", 0
 
 
 r9_PlayerAttackInit:
+        ld      a, [var_equipped_item]
+        cp      ITEM_DAGGER
+        jr      Z, .initDagger
+	cp      ITEM_HAMMER
+        jr      Z, .initHammer
+        ret
+
+.initHammer:
+        ld      hl, var_player_struct
+        ld      de, PlayerRaiseHammer
+        fcall   EntitySetUpdateFn
+
+        ld      hl, var_player_coord_y  ; \ Cache x,y coords. We will be
+        ld      de, var_player_anchor_y ; | shifting the player's origin
+        ld      bc, FIXNUM_SIZE * 2     ; / around.
+        fcall   Memcpy
+
+        xor     a
+        ld      [var_player_kf], a
+
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
+        ld      [var_player_swap_spr], a
+
+        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_SQUARE_32
+        ld      [var_player_display_flag], a
+
+        ld      a, SPRID_PLAYER_HAMMER_L
+        ld      [var_player_fb], a
+        ret
+
+.initDagger:
 	fcall   r9_PlayerKnifeAttackDepleteStamina
 
         ld      hl, var_player_struct
@@ -1084,6 +1120,7 @@ r9_PlayerAttackMovement:
         ld      b, 0
         ld      c, 30
         fcall   FixnumAdd
+	jr      .done
 
 .skipMoveDown:
         ret
@@ -1101,6 +1138,7 @@ r9_PlayerAttackMovement:
         ld      b, 0
         ld      c, 30
         fcall   FixnumSub
+        jr      .done
 
 .skipMoveUp:
         ret
@@ -1118,6 +1156,7 @@ r9_PlayerAttackMovement:
         ld      b, 0
         ld      c, 30
         fcall   FixnumAdd
+        jr      .done
 
 .skipMoveRight:
         ret
@@ -1135,9 +1174,210 @@ r9_PlayerAttackMovement:
         ld      b, 0
         ld      c, 30
         fcall   FixnumSub
+        jr      .done
 
 .skipMoveLeft:
         ret
+
+.done:
+        ld      hl, var_player_coord_y  ; \
+        ld      de, var_player_anchor_y ; | Set View Anchor
+        ld      bc, FIXNUM_SIZE * 2     ; |
+        fcall   Memcpy                  ; /
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+;;; Used for setting the origin while playing the hammer attack animation.
+;;; Anchor_x + table[keyframe] == centered_sprite_x.
+r9_PlayerHammerLOriginXTable:
+DB      0, 0, 1, 0, -5, -6, -6, -5, -3, 5, 5
+r9_PlayerHammerROriginXTable:
+DB      0, 0, -1, 0, 5, 6, 6, 5, 3, -5, -5
+
+
+r9_PlayerHammerFrameTimes:
+DB      6, 6, 6, 6, 6, 12, 16, 12, 6, 6, 32
+
+
+r9_PlayerRaiseHammerImpl:
+	ld      a, [var_player_kf]
+        ld      c, a
+        ld      b, 0
+        ld      hl, r9_PlayerHammerFrameTimes
+        add     hl, bc
+        ld      c, [hl]
+
+        ld      hl, var_player_animation
+        ld      d, 11
+        fcall   AnimationAdvance
+        or      a
+        jr      NZ, .frameChanged
+        ret
+
+.frameChanged:
+
+;;         ld      a, [var_player_kf]
+;;         cp      0
+;;         jr      Z, .return
+;;         cp      10
+;;         jr      NZ, .skip
+
+;; 	ld      b, 3
+;;         WIDE_CALL r1_StartScreenshake
+
+;; .skip:
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
+        ld      [var_player_swap_spr], a
+
+        ld      a, [var_player_kf]
+        ld      c, a
+        ld      b, 0
+        ld      hl, r9_PlayerHammerLOriginXTable
+        add     hl, bc
+        ld      b, [hl]
+        ld      a, b
+        cp      128
+        jr      C, .add
+.sub:
+        cpl
+        inc     a
+        ld      b, a
+        ld      a, [var_player_anchor_x]
+        add     b
+        ld      [var_player_coord_x], a
+        jr      .return
+.add:
+        ld      a, [var_player_anchor_x]
+        sub     b
+        ld      [var_player_coord_x], a
+        jr      .return
+
+.return:
+        ld      a, [var_player_kf]
+        cp      6
+        ret     NZ
+        ld      hl, var_player_struct
+        ld      de, PlayerWaitHammer
+        fcall   EntitySetUpdateFn
+        ret
+
+.djls:
+        ld      hl, var_player_struct
+        ld      de, PlayerDropHammerRecover
+        fcall   EntitySetUpdateFn
+
+        xor     a
+        ld      [var_player_tmr], a
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerDropHammerRecoverImpl:
+        ld      a, [var_player_tmr]
+        inc     a
+        ld      [var_player_tmr], a
+        cp      2
+        jr      Z, .return
+        ret
+.return:
+        xor     a
+        ld      [var_player_tmr], a
+
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdate
+        fcall   EntitySetUpdateFn
+
+        ld      de, var_player_coord_y  ; \
+        ld      hl, var_player_anchor_y ; | Restore position from anchor.
+        ld      bc, FIXNUM_SIZE * 2     ; |
+        fcall   Memcpy                  ; /
+        ret
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerWaitHammerImpl:
+        ldh     a, [hvar_joypad_raw]
+        bit     PADB_B, a
+        jr      Z, .next
+        ret
+.next:
+        ld      hl, var_player_struct
+        ld      de, PlayerDropHammer
+        fcall   EntitySetUpdateFn
+        ret
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerDropHammerImpl:
+	ld      a, [var_player_kf]
+        ld      c, a
+        ld      b, 0
+        ld      hl, r9_PlayerHammerFrameTimes
+        add     hl, bc
+        ld      c, [hl]
+
+        ld      hl, var_player_animation
+        ld      d, 11
+        fcall   AnimationAdvance
+        or      a
+        jr      NZ, .frameChanged
+        ret
+
+.frameChanged:
+
+        ld      a, [var_player_kf]
+        cp      0
+        jr      Z, .return
+        cp      10
+        jr      NZ, .skip
+
+	ld      b, 3
+        WIDE_CALL r1_StartScreenshake
+
+.skip:
+        ld      a, ENTITY_FLAG0_TEXTURE_SWAP
+        ld      [var_player_swap_spr], a
+
+        ld      a, [var_player_kf]
+        ld      c, a
+        ld      b, 0
+        ld      hl, r9_PlayerHammerLOriginXTable
+        add     hl, bc
+        ld      b, [hl]
+        ld      a, b
+        cp      128
+        jr      C, .add
+.sub:
+        cpl
+        inc     a
+        ld      b, a
+        ld      a, [var_player_anchor_x]
+        add     b
+        ld      [var_player_coord_x], a
+        ret
+.add:
+        ld      a, [var_player_anchor_x]
+        sub     b
+        ld      [var_player_coord_x], a
+        ret
+
+.return:
+        ld      hl, var_player_struct
+        ld      de, PlayerDropHammerRecover
+        fcall   EntitySetUpdateFn
+
+        xor     a
+        ld      [var_player_tmr], a
+        ret
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -1690,6 +1930,9 @@ r9_PlayerSetIdleSprite:
 
         cp      SPRID_PLAYER_KNIFE_ATK_U
         jr      Z, .idle_up
+
+        cp      SPRID_PLAYER_HAMMER_L
+        jr      Z, .idle_left
 
 .idle_down:
         ;; NOTE: player face down as the base case, so we do not compare any of
