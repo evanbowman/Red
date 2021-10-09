@@ -936,6 +936,10 @@ r9_HammerAttackSetFacing:
         jr      Z, .down
         cp      SPRID_PLAYER_SD
         jr      Z, .down
+        cp      SPRID_PLAYER_WU
+        jr      Z, .up
+        cp      SPRID_PLAYER_SU
+        jr      Z, .up
         ret
 
 .left:
@@ -950,6 +954,11 @@ r9_HammerAttackSetFacing:
 
 .down:
         ld      a, SPRID_PLAYER_HAMMER_D
+        ld      [var_player_fb], a
+        ret
+
+.up:
+        ld      a, SPRID_PLAYER_HAMMER_U
         ld      [var_player_fb], a
         ret
 
@@ -1106,6 +1115,29 @@ r9_PlayerInteractBroadcast:
 
 ;;; ----------------------------------------------------------------------------
 
+r9_PlayerHammerAttackBroadcast:
+        ld      a, [var_player_anchor_x] ; \
+        ld      b, a                     ; | Second argument: player x, y
+        ld      a, [var_player_anchor_y] ; |
+        ld      c, a                     ; |
+        push    bc                       ; /
+
+        ld      c, MESSAGE_PLAYER_HAMMER_ATTACK ; \ First argument: message type
+        ld      a, [var_player_fb]              ; | and player sprite id.
+        ld      b, a                            ; |
+        push    bc                              ; /
+
+        ld      hl, sp+0        ; Load pointer to the message on the stack
+
+        fcall   MessageBusBroadcast
+
+        pop     bc
+        pop     bc
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 r9_PlayerKnifeAttackBroadcast:
         ld      c, MESSAGE_PLAYER_KNIFE_ATTACK ; \
@@ -1231,6 +1263,9 @@ r9_PlayerHammerROriginXTable:
 DB      0, 0, -1, 0, 5, 6, 6, 5, 3, -5, -5
 r9_PlayerHammerDOriginYTable:
 DB      -2, -1, 0, 0, 0, 0, 0, 0, 0, -8, -8
+r9_PlayerHammerUOriginYTable:
+DB      0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0
+
 
 
 r9_PlayerHammerFrameTimes:
@@ -1314,11 +1349,15 @@ r9_PlayerDropHammerSetYOrigin:
         ld      a, [var_player_fb]
         cp      SPRID_PLAYER_HAMMER_D
         jr      Z, .D
-
+        cp      SPRID_PLAYER_HAMMER_U
+        jr      Z, .U
         ret
 
 .D:
         ld      hl, r9_PlayerHammerDOriginYTable
+        jr      .set
+.U:
+        ld      hl, r9_PlayerHammerUOriginYTable
 
 .set:
         ld      a, [var_player_kf]
@@ -1412,6 +1451,14 @@ r9_PlayerDropHammerImpl:
         ld      a, [var_player_kf]
         cp      0
         jr      Z, .return
+        cp      8
+        jr      NZ, .skip0
+
+        ;; Frame 9: hammer lands on ground, broadcast
+        fcall   r9_PlayerHammerAttackBroadcast
+
+        jr      .skip
+.skip0:
         cp      10
         jr      NZ, .skip
 
@@ -1993,6 +2040,9 @@ r9_PlayerSetIdleSprite:
 
         cp      SPRID_PLAYER_HAMMER_R
         jr      Z, .idle_right
+
+        cp      SPRID_PLAYER_HAMMER_U
+        jr      Z, .idle_up
 
 .idle_down:
         ;; NOTE: player face down as the base case, so we do not compare any of

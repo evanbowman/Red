@@ -430,9 +430,6 @@ CreateWorld:
         ld      b, a
         fcall   InventoryAddItem
 
-        ld      b, ITEM_HAMMER
-        fcall   InventoryAddItem
-
         ret
 
 
