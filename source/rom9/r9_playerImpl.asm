@@ -38,6 +38,19 @@ EMPTY_TILE      EQU     58
 EMPTY_TILE_ADDR EQU     $f4
 
 
+;;; NOTE: We don't want the player to walk faster in the diagonal direction
+;;; than along cartesian axes. Consider the cartesian number as a hypotenuse,
+;;; and the diagonal constants as each x,y vector to add to the player's
+;;; position when moving diagonally, assigned such that the diagonal speed
+;;; equals the l/r/u/d speed.
+PLAYER_WALK_SPEED_CARTESIAN_NUM         EQU     1
+PLAYER_WALK_SPEED_CARTESIAN_DENOM       EQU     64
+
+PLAYER_WALK_SPEED_DIAGONAL_NUM          EQU     0
+PLAYER_WALK_SPEED_DIAGONAL_DENOM        EQU     224
+
+
+
 
 r9_PlayerTileCoord:
 ;;; return b - y
@@ -279,12 +292,12 @@ r9_PlayerJoypadResponse:
 ;;; We want to add less to each axis-aligned movement vector when moving
 ;;; diagonally, otherwise, we will move faster in the diagonal direction.
         jr      NZ, .moveDiagonalFwd
-        ld      b, 1
-        ld      c, 64
+        ld      b, PLAYER_WALK_SPEED_CARTESIAN_NUM
+        ld      c, PLAYER_WALK_SPEED_CARTESIAN_DENOM
         jr      .moveFwd
 .moveDiagonalFwd:
-        ld      b, 0
-        ld      c, 224
+        ld      b, PLAYER_WALK_SPEED_DIAGONAL_NUM
+        ld      c, PLAYER_WALK_SPEED_DIAGONAL_DENOM
 .moveFwd:
 
         fcall   FixnumAdd
@@ -296,12 +309,12 @@ r9_PlayerJoypadResponse:
         or      a
 
         jr      NZ, .moveDiagonalRev
-        ld      b, 1
-        ld      c, 64
+        ld      b, PLAYER_WALK_SPEED_CARTESIAN_NUM
+        ld      c, PLAYER_WALK_SPEED_CARTESIAN_DENOM
         jr      .moveRev
 .moveDiagonalRev:
-        ld      b, 0
-        ld      c, 224
+        ld      b, PLAYER_WALK_SPEED_DIAGONAL_NUM
+        ld      c, PLAYER_WALK_SPEED_DIAGONAL_DENOM
 .moveRev:
 
         ld      b, 1

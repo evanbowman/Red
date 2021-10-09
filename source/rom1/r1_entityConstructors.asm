@@ -246,6 +246,7 @@ r1_SpiderNew:
 ;;; b - x
 ;;; c - y
 ;;; e - type modifier bits
+
         fcall   r1_EntityNew
 
         ld      a, SPRID_SPIDER_L
@@ -292,6 +293,8 @@ r1_SpiderDeadNew:
 ;;; b - x
 ;;; c - y
 ;;; e - type modifier bits
+        push    bc              ; store x, y
+
 	fcall   r1_EntityNew
 
         ld      a, ENTITY_TYPE_SPIDER_DEAD
@@ -302,6 +305,24 @@ r1_SpiderDeadNew:
 
         ld      a, SPRITE_SHAPE_INVISIBLE
         fcall   EntitySetDisplayFlags
+
+        pop     bc              ; restore x, y
+
+        ;; FIXME: I don't really like this tile effect. The enemy isn't
+        ;; constrained to a grid, so sometimes the tile spawns off-center, and
+        ;; it looks unprofessional.
+        fcall   VBlankIntrWait  ; reqd. because we're setting a tile
+        srl     b
+        srl     b
+        srl     b
+        srl     c
+        srl     c
+        srl     c
+        ld      a, b
+        ld      d, c
+        ld      e, $ec
+        ld      c, ($08 | $02)
+        fcall   SetBackgroundTile16x16
 
         ret
 

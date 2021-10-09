@@ -734,8 +734,25 @@ r9_SpiderDepleteStamina:
 	ld      a, ENTITY_TYPE_SPIDER_DEAD
         fcall   EntitySetType
 
-        ;; TODO: set a tile in the overworld representing a dead spider. No need
-        ;; to waste OAM resources on small dead enemies.
+        fcall   EntityGetPos
+
+
+        ;; FIXME: I don't really like this tile effect. The enemy isn't
+        ;; constrained to a grid, so sometimes the tile spawns off-center, and
+        ;; it looks unprofessional.
+        fcall   VBlankIntrWait  ; reqd. because we're setting a tile
+        srl     b
+        srl     b
+        srl     b
+        srl     c
+        srl     c
+        srl     c
+        ld      a, b
+        ld      d, c
+        ld      e, $ec
+        ld      c, ($08 | $02)
+        fcall   SetBackgroundTile16x16
+
 
 	push    hl
         push    af
