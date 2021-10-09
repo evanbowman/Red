@@ -922,6 +922,31 @@ DB      "inventory full", 0
 
 ;;; ----------------------------------------------------------------------------
 
+r9_HammerAttackSetFacing:
+        ld      a, [var_player_fb]
+        cp      SPRID_PLAYER_WL
+        jr      Z, .left
+        cp      SPRID_PLAYER_SL
+        jr      Z, .left
+        cp      SPRID_PLAYER_WR
+        jr      Z, .right
+        cp      SPRID_PLAYER_SR
+        jr      Z, .right
+        ret
+
+.left:
+        ld      a, SPRID_PLAYER_HAMMER_L
+        ld      [var_player_fb], a
+        ret
+
+.right:
+        ld      a, SPRID_PLAYER_HAMMER_R
+        ld      [var_player_fb], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 
 r9_PlayerAttackInit:
         ld      a, [var_equipped_item]
@@ -950,8 +975,7 @@ r9_PlayerAttackInit:
         ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_SQUARE_32
         ld      [var_player_display_flag], a
 
-        ld      a, SPRID_PLAYER_HAMMER_L
-        ld      [var_player_fb], a
+        fcall   r9_HammerAttackSetFacing
         ret
 
 .initDagger:
@@ -1199,7 +1223,7 @@ DB      0, 0, -1, 0, 5, 6, 6, 5, 3, -5, -5
 
 
 r9_PlayerHammerFrameTimes:
-DB      6, 6, 6, 6, 6, 12, 16, 12, 6, 6, 32
+DB      6, 6, 6, 6, 6, 12, 15, 12, 6, 6, 32
 
 
 r9_PlayerRaiseHammerImpl:
@@ -1219,59 +1243,17 @@ r9_PlayerRaiseHammerImpl:
 
 .frameChanged:
 
-;;         ld      a, [var_player_kf]
-;;         cp      0
-;;         jr      Z, .return
-;;         cp      10
-;;         jr      NZ, .skip
-
-;; 	ld      b, 3
-;;         WIDE_CALL r1_StartScreenshake
-
-;; .skip:
         ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
-        ld      a, [var_player_kf]
-        ld      c, a
-        ld      b, 0
-        ld      hl, r9_PlayerHammerLOriginXTable
-        add     hl, bc
-        ld      b, [hl]
-        ld      a, b
-        cp      128
-        jr      C, .add
-.sub:
-        cpl
-        inc     a
-        ld      b, a
-        ld      a, [var_player_anchor_x]
-        add     b
-        ld      [var_player_coord_x], a
-        jr      .return
-.add:
-        ld      a, [var_player_anchor_x]
-        sub     b
-        ld      [var_player_coord_x], a
-        jr      .return
+        fcall   r9_PlayerDropHammerSetXOrigin
 
-.return:
         ld      a, [var_player_kf]
         cp      6
         ret     NZ
         ld      hl, var_player_struct
         ld      de, PlayerWaitHammer
         fcall   EntitySetUpdateFn
-        ret
-
-.djls:
-        ld      hl, var_player_struct
-        ld      de, PlayerDropHammerRecover
-        fcall   EntitySetUpdateFn
-
-        xor     a
-        ld      [var_player_tmr], a
-
         ret
 
 
@@ -1316,6 +1298,50 @@ r9_PlayerWaitHammerImpl:
 ;;; ----------------------------------------------------------------------------
 
 
+r9_PlayerDropHammerSetXOrigin:
+        ld      a, [var_player_fb]
+        cp      SPRID_PLAYER_HAMMER_L
+        jr      Z, .L
+        cp      SPRID_PLAYER_HAMMER_R
+        jr      Z, .R
+
+        ret
+
+.L:
+        ld      hl, r9_PlayerHammerLOriginXTable
+        jr      .set
+.R:
+        ld      hl, r9_PlayerHammerROriginXTable
+
+
+.set:
+        ld      a, [var_player_kf]
+        ld      c, a
+        ld      b, 0
+
+        add     hl, bc
+        ld      b, [hl]
+        ld      a, b
+        cp      128
+        jr      C, .add
+.sub:
+        cpl
+        inc     a
+        ld      b, a
+        ld      a, [var_player_anchor_x]
+        add     b
+        ld      [var_player_coord_x], a
+        ret
+.add:
+        ld      a, [var_player_anchor_x]
+        sub     b
+        ld      [var_player_coord_x], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 r9_PlayerDropHammerImpl:
 	ld      a, [var_player_kf]
         ld      c, a
@@ -1346,27 +1372,7 @@ r9_PlayerDropHammerImpl:
         ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
-        ld      a, [var_player_kf]
-        ld      c, a
-        ld      b, 0
-        ld      hl, r9_PlayerHammerLOriginXTable
-        add     hl, bc
-        ld      b, [hl]
-        ld      a, b
-        cp      128
-        jr      C, .add
-.sub:
-        cpl
-        inc     a
-        ld      b, a
-        ld      a, [var_player_anchor_x]
-        add     b
-        ld      [var_player_coord_x], a
-        ret
-.add:
-        ld      a, [var_player_anchor_x]
-        sub     b
-        ld      [var_player_coord_x], a
+        fcall   r9_PlayerDropHammerSetXOrigin
         ret
 
 .return:
@@ -1933,6 +1939,9 @@ r9_PlayerSetIdleSprite:
 
         cp      SPRID_PLAYER_HAMMER_L
         jr      Z, .idle_left
+
+        cp      SPRID_PLAYER_HAMMER_R
+        jr      Z, .idle_right
 
 .idle_down:
         ;; NOTE: player face down as the base case, so we do not compare any of
