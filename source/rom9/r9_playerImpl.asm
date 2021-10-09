@@ -213,12 +213,12 @@ r9_PlayerAnimate:
         ret
 
 .frameChangedLR:
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_T
+        ld      a, SPRITE_SHAPE_T
         ld      [var_player_display_flag], a
         jr      .frameChanged
 
 .frameChangedUD:
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
+        ld      a, SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
 
 .frameChanged:
@@ -412,7 +412,7 @@ r9_PlayerUpdateImpl:
 
         ld      a, SPRID_PLAYER_SD
         ld      [var_player_fb], a
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
+        ld      a, SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
@@ -430,7 +430,7 @@ r9_PlayerUpdateImpl:
 
         ld      a, SPRID_PLAYER_SU
         ld      [var_player_fb], a
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
+        ld      a, SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
@@ -448,7 +448,7 @@ r9_PlayerUpdateImpl:
 
         ld      a, SPRID_PLAYER_SL
         ld      [var_player_fb], a
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
+        ld      a, SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
@@ -466,7 +466,7 @@ r9_PlayerUpdateImpl:
 
         ld      a, SPRID_PLAYER_SR
         ld      [var_player_fb], a
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
+        ld      a, SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
         ld      a, 0
         ld      [var_player_kf], a
@@ -716,7 +716,7 @@ r9_PlayerUpdatePickupItemImpl:
         ret
 
 .frameChanged:
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
+        ld      a, SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
 
         ld      a, ENTITY_FLAG0_TEXTURE_SWAP
@@ -932,6 +932,10 @@ r9_HammerAttackSetFacing:
         jr      Z, .right
         cp      SPRID_PLAYER_SR
         jr      Z, .right
+        cp      SPRID_PLAYER_WD
+        jr      Z, .down
+        cp      SPRID_PLAYER_SD
+        jr      Z, .down
         ret
 
 .left:
@@ -941,6 +945,11 @@ r9_HammerAttackSetFacing:
 
 .right:
         ld      a, SPRID_PLAYER_HAMMER_R
+        ld      [var_player_fb], a
+        ret
+
+.down:
+        ld      a, SPRID_PLAYER_HAMMER_D
         ld      [var_player_fb], a
         ret
 
@@ -972,7 +981,7 @@ r9_PlayerAttackInit:
         ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_SQUARE_32
+        ld      a, SPRITE_SHAPE_SQUARE_32
         ld      [var_player_display_flag], a
 
         fcall   r9_HammerAttackSetFacing
@@ -991,7 +1000,7 @@ r9_PlayerAttackInit:
         ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_SQUARE_32
+        ld      a, SPRITE_SHAPE_SQUARE_32
         ld      [var_player_display_flag], a
 
 
@@ -1215,11 +1224,13 @@ r9_PlayerAttackMovement:
 
 
 ;;; Used for setting the origin while playing the hammer attack animation.
-;;; Anchor_x + table[keyframe] == centered_sprite_x.
+;;; e.g.: Anchor_x + table[keyframe] == centered_sprite_x.
 r9_PlayerHammerLOriginXTable:
 DB      0, 0, 1, 0, -5, -6, -6, -5, -3, 5, 5
 r9_PlayerHammerROriginXTable:
 DB      0, 0, -1, 0, 5, 6, 6, 5, 3, -5, -5
+r9_PlayerHammerDOriginYTable:
+DB      -2, -1, 0, 0, 0, 0, 0, 0, 0, -8, -8
 
 
 r9_PlayerHammerFrameTimes:
@@ -1247,6 +1258,7 @@ r9_PlayerRaiseHammerImpl:
         ld      [var_player_swap_spr], a
 
         fcall   r9_PlayerDropHammerSetXOrigin
+        fcall   r9_PlayerDropHammerSetYOrigin
 
         ld      a, [var_player_kf]
         cp      6
@@ -1294,6 +1306,44 @@ r9_PlayerWaitHammerImpl:
         ld      de, PlayerDropHammer
         fcall   EntitySetUpdateFn
         ret
+
+;;; ----------------------------------------------------------------------------
+
+
+r9_PlayerDropHammerSetYOrigin:
+        ld      a, [var_player_fb]
+        cp      SPRID_PLAYER_HAMMER_D
+        jr      Z, .D
+
+        ret
+
+.D:
+        ld      hl, r9_PlayerHammerDOriginYTable
+
+.set:
+        ld      a, [var_player_kf]
+        ld      c, a
+        ld      b, 0
+
+        add     hl, bc
+        ld      b, [hl]
+        ld      a, b
+        cp      128
+        jr      C, .add
+.sub:
+        cpl
+        inc     a
+        ld      b, a
+        ld      a, [var_player_anchor_y]
+        add     b
+        ld      [var_player_coord_y], a
+        ret
+.add:
+        ld      a, [var_player_anchor_y]
+        sub     b
+        ld      [var_player_coord_y], a
+        ret
+
 
 ;;; ----------------------------------------------------------------------------
 
@@ -1373,6 +1423,7 @@ r9_PlayerDropHammerImpl:
         ld      [var_player_swap_spr], a
 
         fcall   r9_PlayerDropHammerSetXOrigin
+        fcall   r9_PlayerDropHammerSetYOrigin
         ret
 
 .return:
@@ -1706,7 +1757,7 @@ r9_PlayerAttackTryExit:
         ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
-        ld      a, ENTITY_ATTR_HAS_SHADOW | SPRITE_SHAPE_TALL_16_32
+        ld      a, SPRITE_SHAPE_TALL_16_32
         ld      [var_player_display_flag], a
 
         ret

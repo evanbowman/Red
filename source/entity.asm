@@ -572,6 +572,42 @@ DrawEntitiesSetup:
 
 ;;; ----------------------------------------------------------------------------
 
+FIXMEReallyBadHackManuallyDrawPlayerShadow:
+        ;; Really bad hack: The player animation is the most complicated of all,
+        ;; sometimes I need to shift the origin of the animation in order to get
+        ;; large keyframes to fit into a 32x32 window. The entity header does
+        ;; not offer any mechanism for setting the offset of an entity's drop
+        ;; shadow, so I disabled the shadow on the Player's entity, and I
+        ;; manually draw it using the location of the player's anchor variables.
+        ;; FIXME: ultimately, the solution would be to put additional variables
+        ;; into the entity header, whereby the origin of the dropshadow with
+        ;; respect to the entity center could be adjusted.
+        ld      a, [var_view_y]
+        ld      d, a
+        ld      a, [var_player_anchor_y]
+        sub     d
+        add     17              ; shadow offset from spr top
+        ld      c, a
+
+        ld      a, [var_view_x]
+        ld      d, a
+        ld      a, [var_player_anchor_x]
+        sub     d
+        ld      b, a
+
+        ld      a, [var_oam_bottom_counter]
+        sub     2
+        ld      l, a
+        ld      [var_oam_bottom_counter], a
+        ld      e, $7c
+        ld      d, 2
+        fcall   ShowSpriteSquare16
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 DrawEntitiesSimple:
         xor     a
         ld      [var_oam_top_counter], a
@@ -591,6 +627,7 @@ DrawEntities:
 .skip:
         ld      [hvar_shadow_parity], a
 
+        fcallc  Z, FIXMEReallyBadHackManuallyDrawPlayerShadow
 
 
         ld      a, 255

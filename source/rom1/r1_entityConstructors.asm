@@ -75,7 +75,7 @@ r1_PlayerNew:
         ld      a, ENTITY_FLAG0_TEXTURE_SWAP
         ld      [var_player_swap_spr], a
 
-        ld      a, SPRITE_SHAPE_T | ENTITY_ATTR_HAS_SHADOW
+        ld      a, SPRITE_SHAPE_T
         ld      [var_player_display_flag], a
 
         ld      hl, var_player_struct

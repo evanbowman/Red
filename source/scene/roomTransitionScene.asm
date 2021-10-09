@@ -185,6 +185,16 @@ RoomTransitionSceneDownFinishUpVBlank:
 
 ;;; ----------------------------------------------------------------------------
 
+RoomTransitionSceneSetPlayerAnchor:
+        ld      hl, var_player_coord_y  ; \
+        ld      de, var_player_anchor_y ; | Set View Anchor
+        ld      bc, FIXNUM_SIZE * 2     ; |
+        fcall   Memcpy                  ; /
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 RoomTransitionSceneDownUpdate:
         ld      a, [var_view_y]
         cp      0
@@ -206,6 +216,10 @@ RoomTransitionSceneDownUpdate:
         ld      b, 0
 	ld      c, 148
         fcall   FixnumAdd
+
+        fcall   RoomTransitionSceneSetPlayerAnchor
+
+        fcall   RoomTransitionSceneSetPlayerAnchor
 
         fcall   DrawEntitiesSimple
 
@@ -252,6 +266,8 @@ RoomTransitionSceneUpUpdate:
         ld      b, 0
 	ld      c, 148
         fcall   FixnumSub
+
+        fcall   RoomTransitionSceneSetPlayerAnchor
 
         fcall   DrawEntitiesSimple
 
@@ -350,6 +366,8 @@ RoomTransitionSceneRightUpdate:
 	ld      c, 148
         fcall   FixnumAdd
 
+        fcall   RoomTransitionSceneSetPlayerAnchor
+
         fcall   DrawEntitiesSimple
 
         ld      a, [var_room_load_counter]
@@ -446,6 +464,8 @@ RoomTransitionSceneLeftUpdate:
         ld      b, 0
 	ld      c, 148
         fcall   FixnumSub
+
+	fcall   RoomTransitionSceneSetPlayerAnchor
 
         fcall   DrawEntitiesSimple
 
