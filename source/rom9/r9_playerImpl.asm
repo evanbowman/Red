@@ -238,12 +238,21 @@ r9_PlayerJoypadResponse:
 ;;; b - add/sub position
 ;;; trashes a
         or      a
-        jr      Z, .done
+        ret     Z
 
         ld      a, c
         or      a
         jr      Z, .n2
-        jr      .setSpeed
+
+        ld      a, [var_player_fb] ; \
+        cp      SPRID_PLAYER_WL    ; |
+        jr      Z, .setSpeed       ; |
+        cp      SPRID_PLAYER_WR    ; | Bugfix: If the player's keyframe is
+        jr      Z, .setSpeed       ; | anything other than one of the walk
+	cp      SPRID_PLAYER_WU    ; | keyframes, set desired frame from e.
+        jr      Z, .setSpeed       ; |
+        cp      SPRID_PLAYER_WD    ; |
+        jr      Z, .setSpeed       ; /
 
 .n2:
         ld      a, [var_player_fb]
@@ -995,8 +1004,8 @@ r9_PlayerAttackInit:
 
         fcall   r9_HammerAttackSetFacing
 
-        ld      b, 0
-        ld      c, 200
+        ld      b, 1
+        ld      c, 10
         fcall   r9_PlayerDepleteStamina
         ret
 
