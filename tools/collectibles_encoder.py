@@ -11,8 +11,8 @@ def encode(room_json):
 
     collectible_count = 0
 
-    if len(room_json) > 7:
-        print("error: too many collectibles assigned to room.")
+    if len(room_json["collectibles"]) > 7:
+        print("error: too many collectibles assigned to room {},{}".format(room_json["x"], room_json["y"]))
         sys.exit(1)
 
     for collectible in room_json["collectibles"]:

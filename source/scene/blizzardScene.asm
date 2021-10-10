@@ -60,6 +60,33 @@ BlizzardSceneEnter:
 ;;; ----------------------------------------------------------------------------
 
 BlizzardSceneUpdate:
+
+.checkLevelup:
+	ldh     a, [hvar_exp_levelup_ready_flag]
+        or      a
+        jr      Z, .checkExpChanged
+
+        xor     a
+        ldh     [hvar_exp_levelup_ready_flag], a
+        ldh     [hvar_exp_changed_flag], a
+
+        LONG_CALL r1_ExpDoLevelup
+        fcall   OverlayRepaintRow2
+	ret
+
+.checkExpChanged:
+        ldh     a, [hvar_exp_changed_flag]
+        or      a
+        jr      Z, .update
+
+        xor     a
+        ldh     [hvar_exp_changed_flag], a
+
+	fcall   OverlayRepaintRow2
+        ret
+
+.update:
+
         fcall   UpdateEntities
 
         fcall   OverworldSceneAnimateWater
@@ -175,6 +202,7 @@ BlizzardSceneFadeInVBlank:
 ;;; ----------------------------------------------------------------------------
 
 BlizzardSceneFadeInUpdate:
+
         fcall   UpdateEntities
 
         fcall   OverworldSceneAnimateWater

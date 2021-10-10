@@ -45,7 +45,7 @@ r9_GreywolfAttackLevel:
         pop     hl
         ret
 .lut:
-DB      14, 14, 14
+DB      1,  14, 14
 DB      14, 14, 14
 DB      14, 14, 14
 DB      14, 14, 14
@@ -62,7 +62,7 @@ r9_GreywolfDefenseLevel:
         pop     hl
         ret
 .lut:
-DB      9, 9, 9
+DB      2, 9, 9
 DB      9, 9, 9
 DB      9, 9, 9
 DB      9, 9, 9
@@ -1168,7 +1168,7 @@ r9_GreywolfUpdateDyingImpl:
         ld      c, 0
         fcall   FixnumAdd
 
-        ld      hl, 10
+        ld      hl, 20
         fcall   AddExp
 
         ret

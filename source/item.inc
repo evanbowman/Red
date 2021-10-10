@@ -30,9 +30,6 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 ;;;
-;;; tl;dr: Do whatever you want with the code, just don't blame me if something
-;;; goes wrong.
-;;;
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
@@ -52,4 +49,5 @@ ITEM_FIREWOOD  EQU 12
 ITEM_KEY       EQU 13
 ITEM_MORSEL    EQU 14
 ITEM_HAMMER    EQU 15
-ITEM_COUNT     EQU 16
+ITEM_THREAD    EQU 16
+ITEM_COUNT     EQU 17

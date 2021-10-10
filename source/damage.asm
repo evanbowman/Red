@@ -116,7 +116,7 @@ CalculateDamage:
 ;;; Damage = B + ((B / 16) * A) - ((B / 16) * D)
 
         fcall   Mul16
-
+        push    hl
         push    hl              ; Store original base damage
 
         fcall   Div16           ; \
@@ -157,9 +157,19 @@ CalculateDamage:
         inc     bc              ; /
 
         add     hl, bc
+        jr      NC, .negative
 
         fcall   Div16
+        pop     bc              ; see push at fn top
+        ret
 
+;;; FIXME: if the defender's defense is way larger than the attacker's attack,
+;;; the damage calculation can return a negative number. Instead, we return the
+;;; weapon base damage divided by 16, as a placeholder. We could instead deal
+;;; zero damage, or a tiny amount, but that's no fun.
+.negative:
+        pop     hl
+        fcall   Div16
         ret
 
 

@@ -128,12 +128,19 @@ r9_SpiderSetupScavenge:
         ld      [var_scavenge_slot_1], a
 
         fcall   EntityGetFullType
-        bit     6, a
-        ret     Z
+        ld      b, a
+        bit     6, b
+        jr      Z, .nextBit
 
         ld      a, ITEM_MORSEL
         ld      [var_scavenge_slot_0], a
 
+.nextBit:
+        bit     7, b
+        ret     Z
+
+        ld      a, ITEM_THREAD
+        ld      [var_scavenge_slot_1], a
         ret
 
 
@@ -237,10 +244,13 @@ r9_SpiderUpdateAttackingImpl:
         ld      h, b
         ld      l, c
 
+        push    hl
+        fcall   r9_SpiderUpdateColor
+        fcall   r9_SpiderMessageLoop
+        pop     hl
+
         fcall   r9_SpiderUpdateAttack
 
-	fcall   r9_SpiderUpdateColor
-        fcall   r9_SpiderMessageLoop
         ret
 
 r9_SpiderUpdateAttack:
@@ -313,6 +323,11 @@ r9_SpiderUpdateAttack:
 r9_SpiderUpdateAfterAttackImpl:
         ld      h, b
         ld      l, c
+
+        push    hl
+	fcall   r9_SpiderUpdateColor
+        fcall   r9_SpiderMessageLoop
+        pop     hl
 
         ld      bc, SPIDER_VAR_COUNTER
         fcall   EntityGetSlack
@@ -786,7 +801,7 @@ r9_SpiderDepleteStamina:
         ld      de, SpiderUpdateDead
         fcall   EntitySetUpdateFn
 
-        ld      a, $01          ; Drops one item
+        ld      a, $03          ; Drops two items
         fcall   EntitySetTypeModifier
 
 	ld      a, ENTITY_TYPE_SPIDER_DEAD
@@ -820,7 +835,7 @@ r9_SpiderDepleteStamina:
         pop     af
         pop     hl
 
-        ld      hl, 6
+        ld      hl, 11
         fcall   AddExp
 
         ret
