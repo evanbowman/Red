@@ -931,7 +931,7 @@ r1_WorldMapShow:
 
 
         ;; Set a few specific map tiles with custom graphics.
-        ld      hl, $9D4A
+        ld      hl, $9D4b
         ld      a, $09
         ld      [hl], a
 

@@ -54,7 +54,7 @@ with open(sys.argv[1]) as map_json:
         encode(room)
 
 
-null_room = "DB $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, "
+null_room = "DB $4f, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, "
 
 
 for row in rooms:
