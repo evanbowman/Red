@@ -58,67 +58,10 @@ DB      ITEM_NONE,      ITEM_NONE,      ITEM_NONE,      ITEM_NONE
 r8_InventoryCookingRecipesEnd::
 
 
-r8_InventoryTiles::
-DB $00,$FF,$00,$FF,$00,$FF,$10,$E0
-DB $00,$E0,$80,$E7,$07,$E7,$07,$E7
-DB $00,$FF,$00,$FF,$00,$FF,$08,$07
-DB $00,$07,$00,$E7,$E0,$E7,$E0,$E7
-DB $E0,$E7,$E0,$E7,$E0,$E7,$00,$07
-DB $08,$07,$00,$FF,$00,$FF,$00,$FF
-DB $07,$E7,$07,$E7,$07,$E7,$00,$E0
-DB $10,$E0,$00,$FF,$00,$FF,$00,$FF
-DB $00,$FF,$00,$FF,$00,$FF,$00,$00
-DB $00,$00,$00,$FF,$FF,$FF,$FF,$FF
-DB $07,$E7,$07,$E7,$07,$E7,$07,$E7
-DB $07,$E7,$07,$E7,$07,$E7,$07,$E7
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $00,$00,$00,$00,$00,$00,$00,$00
-DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E7
-DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E7
-DB $FF,$FF,$FF,$FF,$FF,$FF,$00,$00
-DB $00,$00,$00,$FF,$00,$FF,$00,$FF
-DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-DB $FF,$FF,$FF,$FF,$DF,$DF,$9F,$9F
-DB $1F,$1F,$9F,$9F,$DF,$DF,$FF,$FF
-DB $FF,$FF,$FF,$FF,$FB,$FB,$F9,$F9
-DB $F8,$F8,$F9,$F9,$FB,$FB,$FF,$FF
-DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
-DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-DB $FF,$FF,$FF,$FF,$FF,$FF,$83,$83
-DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-r8_InventoryTilesEnd::
-
-r8_InventoryLowerBoxTopRow::
-DB $30, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34
-DB $34, $34, $34, $34, $31
-r8_InventoryLowerBoxTopRowEnd::
-
-r8_InventoryLowerBoxBottomRow::
-DB $33, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38
-DB $38, $38, $38, $38, $32
-r8_InventoryLowerBoxBottomRowEnd::
-
-r8_InventoryLowerBoxMiddleRow::
-DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-DB $00, $00, $00, $00, $37
-r8_InventoryLowerBoxMiddleRowEnd::
-
-
 r8_InventoryImageBoxTopRow::
 DB $30, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $31, $30, $34, $34,
 DB $34, $34, $34, $34, $31
 r8_InventoryImageBoxTopRowEnd::
-
-r8_InventoryImageBoxBottomRow::
-DB $33, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $32, $33, $38, $38
-DB $38, $38, $38, $38, $32
-r8_InventoryImageBoxBottomRowEnd::
-
-r8_InventoryImageBoxMiddleRow::
-DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $37, $35, $00, $00
-DB $00, $00, $00, $00, $37
-r8_InventoryImageBoxMiddleRowEnd::
 
 
 r8_InventoryPalettes::
@@ -404,26 +347,6 @@ r8_InventoryTabLoadItem:
 
 .craft:
         fcall   r8_InventoryGetCraftableItem
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-r8_InventoryLowerBoxInitRow:
-;;; de - address
-        ld      hl, r8_InventoryLowerBoxMiddleRow
-        ld      bc, r8_InventoryLowerBoxMiddleRowEnd - r8_InventoryLowerBoxMiddleRow
-        fcall   VramSafeMemcpy
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-r8_InventoryImageBoxInitRow:
-;;; de - address
-        ld      hl, r8_InventoryImageBoxMiddleRow
-        ld      bc, r8_InventoryImageBoxMiddleRowEnd - r8_InventoryImageBoxMiddleRow
-        fcall   VramSafeMemcpy
         ret
 
 
@@ -1955,16 +1878,17 @@ r8_InventoryInitImageMargin:
 ;;; ----------------------------------------------------------------------------
 
 r8_InventoryOpen:
-        ld      hl, r8_InventoryTiles
-        ld      bc, r8_InventoryTilesEnd - r8_InventoryTiles
-        ld      de, $9300
-        fcall   VramSafeMemcpy
-
         ;; It's just simpler if objects are reset
         ld      hl, var_oam_back_buffer
         ld      a, 0
         ld      bc, OAM_SIZE * OAM_COUNT
         fcall   Memset
+
+        fcall   VBlankIntrWait
+        ld      hl, r8_InventoryTiles
+        ld      de, $9300
+        ld      b, ((r8_InventoryTilesEnd - r8_InventoryTiles) / 16) - 1
+        fcall   GDMABlockCopy
 
         fcall   VBlankIntrWait
         ld      a, HIGH(var_oam_back_buffer)
@@ -1978,66 +1902,34 @@ r8_InventoryOpen:
         ld      a, 1
         ld	[rVBK], a
 
-        ld      hl, (_SCRN1 + 32)
-        ld      bc, $9e14 - (_SCRN1  + 32)
-        ld      d, $81
-        fcall   r8_VramSafeMemset
+        fcall   VBlankIntrWait                     ; \
+        ld      hl, (_SCRN1 + 32)                  ; |
+        ld      bc, ($9e14 - (_SCRN1  + 32)) - 160 ; | Memset as much as we can
+        ld      a, $81                             ; | in one blank.
+        fcall   Memset                             ; /
+
+        fcall   VBlankIntrWait
+        ld      hl, (_SCRN1 + 32) + (($9e14 - (_SCRN1  + 32)) - 160)
+        ld      bc, 160
+        ld      a, $81
+        fcall   Memset
+
         ld      a, 0
         ld      [rVBK], a
 
-        ld      hl, r8_InventoryLowerBoxTopRow
-        ld      bc, r8_InventoryLowerBoxTopRowEnd - r8_InventoryLowerBoxTopRow
+
+
+
+        fcall   VBlankIntrWait
         ld      de, $9D00
-        fcall   VramSafeMemcpy
+        ld      hl, r8_InventoryLowerBoxTemplate
+        ld      b, 17
+        fcall   GDMABlockCopy
 
         ld      de, $9C20
-        fcall   r8_InventoryImageBoxInitRow
-
-        ld      de, $9C40
-        fcall   r8_InventoryImageBoxInitRow
-
-        ld      de, $9C60
-        fcall   r8_InventoryImageBoxInitRow
-
-        ld      de, $9C80
-        fcall   r8_InventoryImageBoxInitRow
-
-	ld      de, $9CA0
-        fcall   r8_InventoryImageBoxInitRow
-
-	ld      de, $9CC0
-        fcall   r8_InventoryImageBoxInitRow
-
-        ld      hl, r8_InventoryImageBoxBottomRow
-        ld      bc, r8_InventoryImageBoxBottomRowEnd - r8_InventoryImageBoxBottomRow
-        ld      de, $9CE0
-	fcall   VramSafeMemcpy
-
-        ld      de, $9D20
-        fcall   r8_InventoryLowerBoxInitRow
-
-        ld      de, $9D40
-        fcall   r8_InventoryLowerBoxInitRow
-
-        ld      de, $9D60
-        fcall   r8_InventoryLowerBoxInitRow
-
-        ld      de, $9D80
-        fcall   r8_InventoryLowerBoxInitRow
-
-        ld      de, $9DA0
-        fcall   r8_InventoryLowerBoxInitRow
-
-	ld      de, $9DC0
-        fcall   r8_InventoryLowerBoxInitRow
-
-        ld      de, $9DE0
-        fcall   r8_InventoryLowerBoxInitRow
-
-        ld      hl, r8_InventoryLowerBoxBottomRow
-        ld      bc, r8_InventoryLowerBoxBottomRowEnd - r8_InventoryLowerBoxBottomRow
-        ld      de, $9E00
-        fcall   VramSafeMemcpy
+        ld      hl, r8_InventoryImageBoxTemplate
+        ld      b, 13
+        fcall   GDMABlockCopy
 
         ld      a, 1
         ld      [var_overlay_alternate_pos], a
@@ -2507,7 +2399,72 @@ r8_InventoryItemPalettesEnd::
 STATIC_ASSERT((r8_InventoryItemPalettesEnd - r8_InventoryItemPalettes) / 64 == ITEM_COUNT)
 
 
-align 8                         ; Required alignment for dma copies
+;;; ############################################################################
+
+SECTION "ROM8_MENU_TEMPLATE", ROMX, ALIGN[8], BANK[8]
+
+r8_InventoryLowerBoxTemplate::
+.topRow:
+DB $30, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34, $34,
+DB $34, $34, $34, $34, $31, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+.middleRows:
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+.bottomRow:
+DB $33, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38
+DB $38, $38, $38, $38, $32, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+r8_InventoryLowerBoxTemplateEnd::
+
+r8_InventoryImageBoxTemplate::
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $37, $35, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $37, $35, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $37, $35, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $37, $35, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $37, $35, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $35, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $37, $35, $00, $00
+DB $00, $00, $00, $00, $37, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+DB $33, $38, $38, $38, $38, $38, $38, $38, $38, $38, $38, $32, $33, $38, $38
+DB $38, $38, $38, $38, $32, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+DB $00, $00,
+r8_InventoryImageBoxTemplateEnd::
+
+
+;;; ############################################################################
+
+SECTION "ROM8_ITEM_ICONS", ROMX, ALIGN[8], BANK[8]
+
 r8_InventoryItemIcons::
 .empty::
 DB $00,$00,$00,$00,$00,$00,$00,$00
@@ -3055,3 +3012,38 @@ DB $7C,$61,$30,$3F,$18,$1F,$0E,$0E
 .hammerEnd::
 r8_InventoryItemIconsEnd::
 STATIC_ASSERT((r8_InventoryItemIconsEnd - r8_InventoryItemIcons) / 256 == ITEM_COUNT)
+
+;;; ############################################################################
+
+SECTION "ROM8_INVENTORY_TILES", ROMX, ALIGN[8], BANK[8]
+
+r8_InventoryTiles::
+DB $00,$FF,$00,$FF,$00,$FF,$10,$E0
+DB $00,$E0,$80,$E7,$07,$E7,$07,$E7
+DB $00,$FF,$00,$FF,$00,$FF,$08,$07
+DB $00,$07,$00,$E7,$E0,$E7,$E0,$E7
+DB $E0,$E7,$E0,$E7,$E0,$E7,$00,$07
+DB $08,$07,$00,$FF,$00,$FF,$00,$FF
+DB $07,$E7,$07,$E7,$07,$E7,$00,$E0
+DB $10,$E0,$00,$FF,$00,$FF,$00,$FF
+DB $00,$FF,$00,$FF,$00,$FF,$00,$00
+DB $00,$00,$00,$FF,$FF,$FF,$FF,$FF
+DB $07,$E7,$07,$E7,$07,$E7,$07,$E7
+DB $07,$E7,$07,$E7,$07,$E7,$07,$E7
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $00,$00,$00,$00,$00,$00,$00,$00
+DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E7
+DB $E0,$E7,$E0,$E7,$E0,$E7,$E0,$E7
+DB $FF,$FF,$FF,$FF,$FF,$FF,$00,$00
+DB $00,$00,$00,$FF,$00,$FF,$00,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$DF,$DF,$9F,$9F
+DB $1F,$1F,$9F,$9F,$DF,$DF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FB,$FB,$F9,$F9
+DB $F8,$F8,$F9,$F9,$FB,$FB,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+DB $FF,$FF,$FF,$FF,$FF,$FF,$83,$83
+DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+r8_InventoryTilesEnd::

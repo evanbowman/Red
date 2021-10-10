@@ -163,7 +163,7 @@ InventorySceneFadeinVBlank:
 
         ld      a, [var_scene_counter]
 	ld      c, a
-        add     16
+        add     18
         jr      C, .transition
 	jr      .continue
 
