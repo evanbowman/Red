@@ -163,10 +163,6 @@ r9_SpiderUpdatePrepSeekXImpl:
         ld      h, b
         ld      l, c
 
-        push    hl
-        fcall   r9_SpiderMessageLoop
-        pop     hl
-
         ld      bc, SPIDER_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, [bc]
@@ -174,7 +170,7 @@ r9_SpiderUpdatePrepSeekXImpl:
         ld      [bc], a
         cp      0
         jr      Z, .next
-        ret
+        jr      .return
 .next:
         ld      de, SpiderUpdateSeekX
         fcall   EntitySetUpdateFn
@@ -184,12 +180,18 @@ r9_SpiderUpdatePrepSeekXImpl:
         ld      a, [bc]
         cp      X_DEST_NULL
         jr      Z, .assign
-        ret
+        jr      .return
 
 .assign:
         ld      a, [var_player_coord_x]
         ld      [bc], a
+
+.return:
+        push    hl
+        fcall   r9_SpiderMessageLoop
+        pop     hl
         ret
+
 
 
 ;;; ----------------------------------------------------------------------------
@@ -244,12 +246,12 @@ r9_SpiderUpdateAttackingImpl:
         ld      h, b
         ld      l, c
 
+        fcall   r9_SpiderUpdateAttack
+
         push    hl
         fcall   r9_SpiderUpdateColor
         fcall   r9_SpiderMessageLoop
         pop     hl
-
-        fcall   r9_SpiderUpdateAttack
 
         ret
 
@@ -324,11 +326,6 @@ r9_SpiderUpdateAfterAttackImpl:
         ld      h, b
         ld      l, c
 
-        push    hl
-	fcall   r9_SpiderUpdateColor
-        fcall   r9_SpiderMessageLoop
-        pop     hl
-
         ld      bc, SPIDER_VAR_COUNTER
         fcall   EntityGetSlack
         ld      a, [bc]
@@ -336,10 +333,16 @@ r9_SpiderUpdateAfterAttackImpl:
         ld      [bc], a
         cp      0
         jr      Z, .idle
-        ret
+        jr      .return
 .idle:
         ld      de, SpiderUpdate
         fcall   EntitySetUpdateFn
+
+.return:
+        push    hl
+        fcall   r9_SpiderUpdateColor
+        fcall   r9_SpiderMessageLoop
+        pop     hl
         ret
 
 
