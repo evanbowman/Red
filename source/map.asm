@@ -60,6 +60,8 @@ IsTileCollectible:
         ret     Z
         cp      COLLECTIBLE_TILE_KEY
         ret     Z
+        cp      COLLECTIBLE_TILE_HAMMER
+        ret     Z
         ret
 
 

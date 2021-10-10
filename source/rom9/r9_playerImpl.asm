@@ -789,6 +789,8 @@ got_stick_str::
 DB      "got stick", 0
 got_key_str::
 DB      "got key", 0
+got_hammer_str::
+DB      "got hammer!", 0
 
 
 r9_PlayerAddItemToInventory:
@@ -799,6 +801,8 @@ r9_PlayerAddItemToInventory:
         jr      Z, .stick
         cp      COLLECTIBLE_TILE_KEY
         jr      Z, .key
+        cp      COLLECTIBLE_TILE_HAMMER
+        jr      Z, .hammer
         ret
 
 .potato:
@@ -819,6 +823,13 @@ r9_PlayerAddItemToInventory:
         ld      b, ITEM_KEY
         fcall   InventoryAddItem
         ld      hl, got_key_str
+        fcall   OverlayPutText
+        ret
+
+.hammer:
+        ld      b, ITEM_HAMMER
+        fcall   InventoryAddItem
+        ld      hl, got_hammer_str
         fcall   OverlayPutText
         ret
 
