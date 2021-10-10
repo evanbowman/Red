@@ -39,6 +39,10 @@ ScavengeSceneEnter:
         ld      de, ScavengeSceneAnimateIn0
         fcall   SceneSetUpdateFn
 
+        ld      de, OverworldSceneOnVBlank
+        fcall   SceneSetVBlankFn
+
+
         ld      a, 128
         ld      [var_overlay_y_offset], a
 
@@ -165,9 +169,36 @@ ScavengeSceneAnimateOut1:
 
         ret
 .next:
+        ld      a, 128
+        ld      [var_overlay_y_offset], a
+
+        fcall   ScavengeSceneExit
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+ScavengeSceneExit:
+        ld      a, [var_blizzard_active]
+        or      a
+        jr      Z, .normal
+
+.blizzard:
+	ld      de, BlizzardSceneUpdate
+        fcall   SceneSetUpdateFn
+
+        ld      de, BlizzardSceneVBlank
+        fcall   SceneSetVBlankFn
+        ret
+
+.normal:
         ld      de, OverworldSceneUpdate
         fcall   SceneSetUpdateFn
+
+        ld      de, OverworldSceneOnVBlank
+        fcall   SceneSetVBlankFn
         ret
+
 
 
 ;;; ----------------------------------------------------------------------------

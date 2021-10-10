@@ -134,19 +134,31 @@ BlizzardSceneVBlank:
         fcall   ShowOverlay
         jr      .noFade
 .skip:
-
+        ld      a, [var_blizzard_last_fade_amount]
+        ld      b, a
         ld      a, [var_blizzard_fade_amount]
+        cp      b
+        jr      Z, .noFade
+
+        ;; We don't have enough space in vblank to copy over with animated tiles
+        ;; and also flicker the screen palettes, pick one or the other,
+        ;; depending on whether a palette update is actually required
+        ld      [var_blizzard_last_fade_amount], a
         add     60
         ld      c, a
         fcall   FadeToWhite
+        jr      .noWaterUpdate
 .noFade:
-
-        ld      a, [var_player_stamina]
-        ld      [var_stamina_last_val], a
-
 	ld      a, [var_water_anim_changed]
         or      a
         fcallc  NZ, VBlankCopyWaterTextures
+
+.noWaterUpdate:
+        ld      a, [var_overlay_y_offset]
+        ld      [rWY], a
+
+        ld      a, [var_player_stamina]
+        ld      [var_stamina_last_val], a
 
 	fcall   VBlankCopySpriteTextures
 

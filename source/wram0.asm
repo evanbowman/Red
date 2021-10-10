@@ -320,6 +320,7 @@ var_scavenge_selection:         DS      1
         NEXTU
 var_blizzard_color_pulse_counter:       DS      1
 var_blizzard_fade_amount:               DS      1
+var_blizzard_last_fade_amount:          DS      1
 var_blizzard_fadein_counter:            DS      1
 
 var_blizzard_snowflakes:   DS BLIZZARD_SNOWFLAKE_SIZE * BLIZZARD_SNOWFLAKE_COUNT
