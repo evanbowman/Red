@@ -414,12 +414,35 @@ InitOverlay:
 
 	dec     c
         dec     c
+
+        fcall   OverlayShowEquipIcon
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+OverlayShowEquipIcon:
+;;; c - x loc (always 18)
+        ld      a, [var_equipped_item]
+        cp      ITEM_DAGGER
+        jr      Z, .setDaggerIcon
+        cp      ITEM_HAMMER
+        jr      Z, .setHammerIcon
+
+.setDaggerIcon:
         ld      a, $D
         fcall   SetOverlayTile
         inc     c
         ld      a, $E
         fcall   SetOverlayTile
+        ret
 
+.setHammerIcon:
+        ld      a, $10
+        fcall   SetOverlayTile
+        inc     c
+        ld      a, $11
+        fcall   SetOverlayTile
         ret
 
 

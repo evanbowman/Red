@@ -202,10 +202,14 @@ DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$E7
 DB $FF,$E7,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$3F,$3F,$7F,$7F,$7F,$7F
 DB $72,$72,$79,$79,$78,$78,$36,$36
-DB $FF,$FF,$F3,$F3,$BB,$BB,$7B,$7B
-DB $FB,$FB,$FB,$FB,$FB,$FB,$F3,$F3
+DB $FF,$FF,$D9,$D9,$BD,$BD,$7D,$7D
+DB $FD,$FD,$FD,$FD,$FD,$FD,$F9,$F9
 DB $FF,$FF,$FF,$FF,$FF,$BB,$FF,$83
 DB $FF,$AB,$FF,$83,$FF,$C7,$FF,$FF
+DB $FF,$FF,$3E,$3E,$7C,$7C,$7D,$7D
+DB $7E,$7E,$7D,$7D,$7B,$7B,$37,$37
+DB $FF,$FF,$79,$79,$BD,$BD,$DD,$DD
+DB $9D,$9D,$3D,$3D,$FD,$FD,$F9,$F9
 r7_OverlayTilesEnd::
 
 r7_BackgroundTiles::

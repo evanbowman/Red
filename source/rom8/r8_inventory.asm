@@ -1790,6 +1790,11 @@ r8_InventorySceneEquipUpdate:
         ld      de, InventorySceneUpdate
         fcall   SceneSetUpdateFn
         fcall   r8_InventoryInitText
+
+        ld      c, 18
+        fcall   OverlayShowEquipIcon
+
+        fcall   ShowOverlay
         ret
 
 
