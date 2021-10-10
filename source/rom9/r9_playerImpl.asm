@@ -994,6 +994,10 @@ r9_PlayerAttackInit:
         ld      [var_player_display_flag], a
 
         fcall   r9_HammerAttackSetFacing
+
+        ld      b, 0
+        ld      c, 200
+        fcall   r9_PlayerDepleteStamina
         ret
 
 .initDagger:
@@ -1273,6 +1277,9 @@ DB      6, 6, 6, 6, 6, 12, 15, 12, 6, 6, 32
 
 
 r9_PlayerRaiseHammerImpl:
+        fcall   r9_PlayerUpdateInjuredColor
+        fcall   r9_PlayerMessageLoop
+
 	ld      a, [var_player_kf]
         ld      c, a
         ld      b, 0
@@ -1308,6 +1315,9 @@ r9_PlayerRaiseHammerImpl:
 
 
 r9_PlayerDropHammerRecoverImpl:
+        fcall   r9_PlayerUpdateInjuredColor
+        fcall   r9_PlayerMessageLoop
+
         ld      a, [var_player_tmr]
         inc     a
         ld      [var_player_tmr], a
@@ -1332,9 +1342,67 @@ r9_PlayerDropHammerRecoverImpl:
 
 
 r9_PlayerWaitHammerImpl:
+        fcall   r9_PlayerUpdateInjuredColor
+        fcall   r9_PlayerMessageLoop
+
+.checkUp:
+        ldh     a, [hvar_joypad_raw]
+	bit     PADB_UP, a
+        jr      Z, .checkDown
+
+        ld      a, SPRID_PLAYER_HAMMER_U
+        ld      [var_player_fb], a
+
+        ld      hl, var_player_struct
+        fcall   EntitySetTextureSwapFlag
+
+.checkDown:
+        ldh     a, [hvar_joypad_raw]
+	bit     PADB_DOWN, a
+        jr      Z, .checkLeft
+
+        ld      a, SPRID_PLAYER_HAMMER_D
+        ld      [var_player_fb], a
+
+        ld      hl, var_player_struct
+        fcall   EntitySetTextureSwapFlag
+
+.checkLeft:
+        ldh     a, [hvar_joypad_raw]
+	bit     PADB_LEFT, a
+        jr      Z, .checkRight
+
+        ld      a, SPRID_PLAYER_HAMMER_L
+        ld      [var_player_fb], a
+
+        ld      hl, var_player_struct
+        fcall   EntitySetTextureSwapFlag
+
+.checkRight:
+        ldh     a, [hvar_joypad_raw]
+	bit     PADB_RIGHT, a
+        jr      Z, .update
+
+        ld      a, SPRID_PLAYER_HAMMER_R
+        ld      [var_player_fb], a
+
+        ld      hl, var_player_struct
+        fcall   EntitySetTextureSwapFlag
+
+.update:
+        fcall    r9_PlayerDropHammerSetXOrigin
+        fcall    r9_PlayerDropHammerSetYOrigin
+
         ldh     a, [hvar_joypad_raw]
         bit     PADB_B, a
         jr      Z, .next
+
+        ;; If the player is holding b, then prime the animation counter with
+        ;; some frames, so that the attack will begin as soon as the player
+        ;; releases the button.
+        ld      a, 12
+        ld      [var_player_animation], a
+
         ret
 .next:
         ld      hl, var_player_struct
@@ -1351,6 +1419,9 @@ r9_PlayerDropHammerSetYOrigin:
         jr      Z, .D
         cp      SPRID_PLAYER_HAMMER_U
         jr      Z, .U
+
+        ld      a, [var_player_anchor_y]
+        ld      [var_player_coord_y], a
         ret
 
 .D:
@@ -1394,6 +1465,8 @@ r9_PlayerDropHammerSetXOrigin:
         cp      SPRID_PLAYER_HAMMER_R
         jr      Z, .R
 
+        ld      a, [var_player_anchor_x]
+        ld      [var_player_coord_x], a
         ret
 
 .L:
@@ -1432,6 +1505,9 @@ r9_PlayerDropHammerSetXOrigin:
 
 
 r9_PlayerDropHammerImpl:
+        fcall   r9_PlayerUpdateInjuredColor
+        fcall   r9_PlayerMessageLoop
+
 	ld      a, [var_player_kf]
         ld      c, a
         ld      b, 0
@@ -1451,7 +1527,7 @@ r9_PlayerDropHammerImpl:
         ld      a, [var_player_kf]
         cp      0
         jr      Z, .return
-        cp      8
+        cp      9
         jr      NZ, .skip0
 
         ;; Frame 9: hammer lands on ground, broadcast
@@ -1920,14 +1996,6 @@ r9_PlayerPopulateHitbox:
 
 r9_PlayerKnifeAttackPopulateHitbox:
 ;;; hl - hitbox to fill with data
-        ;; ld      a, [var_player_fb]
-        ;; cp      SPRID_PLAYER_KNIFE_ATK_L
-        ;; jr      Z, .left
-        ;; cp      SPRID_PLAYER_KNIFE_ATK_R
-        ;; jr      Z, .right
-        ;; cp      SPRID_PLAYER_KNIFE_ATK_U
-        ;; jr      Z, .up
-
         ld      a, [var_player_coord_x]
         add     4
         ld      b, a
@@ -1945,49 +2013,66 @@ r9_PlayerKnifeAttackPopulateHitbox:
         ld      [hl], a
         ret
 
-;; .left:
-;;         ld      a, [var_player_coord_x]
-;;         sub     4
-;;         ld      b, a
-;;         ld      [hl+], a
-;;         ld      a, [var_player_coord_y]
-;;         ld      c, a
-;;         ld      [hl+], a
 
-;;         ld      a, 16
-;;         add     b
-;;         ld      [hl+], a
+;;; ----------------------------------------------------------------------------
 
-;;         ld      a, 32
-;;         add     c
-;;         ld      [hl], a
-;;         ret
+r9_PlayerHammerAttackPopulateHitbox:
+;;; hl - hitbox to fill with data
+;;; a - player sprite id
+        cp      SPRID_PLAYER_HAMMER_L
+        jr      Z, .left
+        cp      SPRID_PLAYER_HAMMER_R
+        jr      Z, .right
+        cp      SPRID_PLAYER_HAMMER_U
+        jr      Z, .up
 
+.right:
+        ld      a, [var_player_coord_x]
+        add     12
+        ld      b, a
+        ld      [hl+], a
+        ld      a, [var_player_coord_y]
+        add     10
+        ld      c, a
+        ld      [hl+], a
+        jr      .setSize
+.left:
+        ld      a, [var_player_coord_x]
+        sub     12
+        ld      b, a
+        ld      [hl+], a
+        ld      a, [var_player_coord_y]
+        add     10
+        ld      c, a
+        ld      [hl+], a
+        jr      .setSize
+.up:
+        ld      a, [var_player_coord_x]
+        sub     12
+        ld      b, a
+        ld      [hl+], a
+        ld      a, [var_player_coord_y]
+        add     10
+        ld      c, a
+        ld      [hl+], a
+        jr      .setSize
+.down:
+        ld      a, [var_player_coord_x]
+        add     12
+        ld      b, a
+        ld      [hl+], a
+        ld      a, [var_player_coord_y]
+        add     10
+        ld      c, a
+        ld      [hl+], a
 
-;; .right:
-;;         ld      a, [var_player_coord_x]
-;;         add     20
-;;         ld      b, a
-;;         ld      [hl+], a
-;;         ld      a, [var_player_coord_y]
-;;         ld      c, a
-;;         ld      [hl+], a
-
-;;         ld      a, 16
-;;         add     b
-;;         ld      [hl+], a
-
-;;         ld      a, 32
-;;         add     c
-;;         ld      [hl], a
-;;         ret
-
-;; .up:
-        ;; fcall   r9_PlayerPopulateHitbox ;todo
-;;         ret
-
-;; .down:
-;;         fcall   r9_PlayerPopulateHitbox ;todo
+.setSize:
+        ld      a, 24
+        add     b
+        ld      [hl+], a
+        ld      a, 19
+        add     c
+        ld      [hl], a
         ret
 
 

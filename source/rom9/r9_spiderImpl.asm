@@ -526,6 +526,8 @@ r9_SpiderOnMessage:
         ld      a, [bc]
         cp      a, MESSAGE_PLAYER_KNIFE_ATTACK
         jr      Z, .onPlayerKnifeAttack
+        cp      a, MESSAGE_PLAYER_HAMMER_ATTACK
+        jr      Z, .onPlayerHammerAttack
         cp      a, MESSAGE_SLAB_ENEMY_QUERY
         jr      Z, .onMessageSlabQuery
         ret
@@ -585,6 +587,10 @@ r9_SpiderOnMessage:
         fcall   r9_SpiderHandleKnifeAttackMessage
         ret
 
+.onPlayerHammerAttack:
+        fcall   r9_SpiderHandleHammerAttackMessage
+        ret
+
 
 ;;; ----------------------------------------------------------------------------
 
@@ -626,6 +632,58 @@ r9_SpiderHandleKnifeAttackMessage:
         ;; NOTE: damage * 2 because I decided that the spider enemy wasn't weak
         ;; enough, but I could not easily lower its level any more.
         ld      hl, DAGGER_BASE_DAMAGE * 2
+        ld      a, [var_level]
+        ld      b, a
+        ld      c, SPIDER_DEFENSE_LEVEL
+        fcall   CalculateDamage
+        fcall   FormatDamage
+        pop     hl
+        fcall   r9_SpiderDepleteStamina
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_SpiderHandleHammerAttackMessage:
+;;; de - entity pointer
+;;; bc - message pointer
+        ld      h, d
+        ld      l, e
+
+        push    hl
+        push    hl
+        inc     bc
+        ld      a, [bc]         ; player sprite id from message
+        ld      hl, var_temp_hitbox2
+        fcall   r9_PlayerHammerAttackPopulateHitbox
+        pop     hl
+
+        fcall   EntityGetPos
+        ld      hl, var_temp_hitbox1
+        fcall   r9_SpiderPopulateHitbox
+
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection ; sets carry flag
+        pop     hl
+
+        ret     NC
+
+        ld      a, 7            ; Injured color
+        fcall   EntitySetHWGraphicsAttributes
+
+        push    hl
+        ld      b, 1
+        WIDE_CALL r1_StartScreenshake
+        pop     hl
+
+        ld      bc, SPIDER_VAR_COLOR_COUNTER
+        fcall   EntityGetSlack
+        ld      a, 20
+        ld      [bc], a
+
+        push    hl
+        ld      hl, HAMMER_BASE_DAMAGE
         ld      a, [var_level]
         ld      b, a
         ld      c, SPIDER_DEFENSE_LEVEL

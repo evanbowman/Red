@@ -429,6 +429,8 @@ CreateWorld:
         ld      [var_equipped_item], a
         ld      b, a
         fcall   InventoryAddItem
+	ld      b, ITEM_HAMMER
+        fcall   InventoryAddItem
 
         ret
 
