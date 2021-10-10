@@ -392,7 +392,26 @@
             }
         ],
         "collectibles": [
-
+            {
+                "type": 24,
+                "x": 12,
+                "y": 12
+            },
+            {
+                "type": 15,
+                "x": 2,
+                "y": 9
+            },
+            {
+                "type": 15,
+                "x": 3,
+                "y": 9
+            },
+            {
+                "type": 15,
+                "x": 2,
+                "y": 8
+            }
         ]
     },
     {
@@ -416,7 +435,11 @@
             }
         ],
         "collectibles": [
-
+            {
+                "type": 16,
+                "x": 4,
+                "y": 6
+            }
         ]
     },
     {
@@ -440,7 +463,16 @@
             }
         ],
         "collectibles": [
-
+            {
+                "type": 16,
+                "x": 11,
+                "y": 13
+            },
+            {
+                "type": 16,
+                "x": 13,
+                "y": 13
+            }
         ]
     },
     {
@@ -462,5 +494,61 @@
         "collectibles": [
 
         ]
+    },
+    {
+        "x": 2,
+        "y": 3,
+        "flags": [
+            "blizzard"
+        ],
+        "connections": {
+            "up": false,
+            "left": true,
+            "right": true,
+            "down": false
+        },
+        "variant": 1,
+        "entities": [
+
+        ],
+        "collectibles": [
+
+        ]
+    },
+    {
+        "x": 3,
+        "y": 3,
+        "flags": [
+            "blizzard"
+        ],
+        "connections": {
+            "up": false,
+            "left": true,
+            "right": true,
+            "down": false
+        },
+        "variant": 2,
+        "entities": [
+            {
+                "type": 5,
+                "x": 8,
+                "y": 8
+            }
+        ],
+        "collectibles": []
+    },
+    {
+        "x": 1,
+        "y": 4,
+        "flags": [],
+        "connections": {
+            "left": true,
+            "up": true,
+            "right": false,
+            "down": true
+        },
+        "variant": 0,
+        "entities": [],
+        "collectibles": []
     }
 ]

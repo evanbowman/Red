@@ -45,7 +45,7 @@ r9_BoarAttackLevel:
         pop     hl
         ret
 .lut:
-DB      18, 18, 18
+DB      6, 18, 18
 DB      18, 18, 18
 DB      18, 18, 18
 DB      18, 18, 18
@@ -62,7 +62,7 @@ r9_BoarDefenseLevel:
         pop     hl
         ret
 .lut:
-DB      13, 13, 13
+DB      6, 13, 13
 DB      13, 13, 13
 DB      13, 13, 13
 DB      13, 13, 13

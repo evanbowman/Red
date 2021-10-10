@@ -171,7 +171,7 @@ GetRoomData__rom0_only:
 
 
 .roomDataLookupTab::
-DW      r10_TEST_MAP_2
+DW      r10_room_data_durl      ; index 0 == no connections, so doesn't matter what we use.
 DW      r10_room_data_d
 DW      r10_room_data_u
 DW      r10_room_data_du
