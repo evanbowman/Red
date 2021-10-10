@@ -371,7 +371,7 @@ var_temp_hitbox2:       DS      4
 ;;; Intended to be used for integer->string conversions
 var_temp_str1:          DS      6 ; Max 16 bit value needs 5 places, plus null
 var_temp_str2:          DS      6
-var_temp_str3:          DS      6
+var_temp_str3:          DS      10
         NEXTU
         ENDU
 var_misc_data_union_end:

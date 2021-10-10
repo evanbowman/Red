@@ -627,7 +627,7 @@ DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
 DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
 DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
 DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
-DB $1B,$4B, $1B,$4B, $1B,$4B, $1B,$4B,
+DB $ff,$7f, $00,$00, $00,$00, $00,$00,
 DB $00,$00, $ff,$7f, $00,$00, $00,$00,
 r1_WorldMapPalettesEnd::
 
@@ -1007,6 +1007,62 @@ r1_WorldMapDescribeRoom:
         ld      de, WorldMapSceneDescribeRoomVBlank
         fcall   SceneSetVBlankFn
 
+        fcall   r1_WorldMapFormatCoordinates
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_WorldMapFormatCoordinates:
+        ld      a, $77          ; '(' in charmap
+        ld      hl, var_temp_str3
+        ld      [hl], a
+
+
+        ld      a, [var_world_map_cursor_x]
+        inc     a
+        ld      c, a
+        fcall   r1_SmallIntToStringImpl
+        push    hl
+        fcall   SmallStrlen
+        ld      b, 0
+        pop     hl
+
+        ld      de, var_temp_str3+1
+        push    bc
+        fcall   Memcpy
+        pop     bc
+
+        ld      hl, var_temp_str3+1
+        add     hl, bc
+        ld      a, $58          ; set comma after first pack of data
+        ld      [hl+], a        ;
+
+        push    hl              ; store incremented pointer into buffer
+
+        ld      a, [var_world_map_cursor_y]
+        inc     a
+        ld      c, a
+        fcall   r1_SmallIntToStringImpl
+        push    hl
+        fcall   SmallStrlen
+        ld      b, 0
+        pop     hl
+
+        pop     de              ; restore incremented pointer into buffer
+        push    de              ; store pointer
+        push    bc
+        fcall   Memcpy
+        pop     bc
+
+        pop     hl              ; restore de into hl
+        add     bc              ; increment to end of used data in buffer
+
+        ld      a, $78
+        ld      [hl+], a
+        xor     a
+        ld      [hl], a
+.here:
         ret
 
 
@@ -1028,6 +1084,12 @@ r1_WorldMapDescribeRoomVBlankImpl:
         ld      bc, 20
         fcall   Memset
 
+        ld      hl, var_temp_str3
+        ld      de, $9e20
+        ld      b, 142
+        fcall   PutText
+        push    de              ; store write pointer on stack
+
         ld      a, [var_world_map_cursor_x]
         ld      b, a
         ld      a, [var_world_map_cursor_y]
@@ -1036,14 +1098,15 @@ r1_WorldMapDescribeRoomVBlankImpl:
 
         RAM_BANK 1
 
+        pop     bc              ; restore write pointer into bc
+        inc     bc
+
         ld      a, [hl+]        ; \ Don't show list of items in room if
         and     ROOM_VISITED    ; | room not yet visited.
-        ret     Z               ; /
+        jr      Z, .end         ; /
 
         inc     hl              ; \ Skip over the rest of the room header
         inc     hl              ; /
-
-        ld      bc, $9e20
 
         ld      d, 0
 .loop:
@@ -1096,7 +1159,7 @@ r1_WorldMapDescribeRoomVBlankImpl:
         cp      d
         jr      NZ, .show_collectibles_loop
 
-.here:
+.end:
         ret
 
 

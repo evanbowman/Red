@@ -452,8 +452,39 @@ r1_ClearOverlayBar:
 
 ;;; ----------------------------------------------------------------------------
 
-r1_SmallIntToString:
-;;; b - int
+r1_SmallIntegerToString:
+;;; c - integer
+;;; de - buffer to fill data with
+        fcall   r1_SmallIntToStringImpl ; result in hl
+        push    hl
+        fcall   SmallStrlen     ; result in c
+        inc     c               ; we want to copy the null terminator too.
+        pop     hl
+
+        ld      b, 0            ; clear b, bc now holds size to copy
+        fcall   Memcpy
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+;;; NOTE: should not be called outside of rom1 or rom0. Returns a pointer to a
+;;; string in rom1, so other rom banks can't really use the data for anything.
+;;; we have a more substantial int to string function for 16 bit integers
+;;; anyway.
+r1_SmallIntToStringImpl:
+;;; c - int
+;;; trashes bc, hl
+        xor     a
+        sla     c               ; \
+        adc     0               ; |
+        sla     a               ; | Multiply c * 4, result in bc.
+        sla     c               ; |
+        adc     0               ; |
+        ld      b, a            ; /
+        ld      hl, .table
+        add     hl, bc
         ret
 .table:
 DB "0", 0, 0, 0,
