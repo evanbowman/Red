@@ -299,6 +299,15 @@ r9_RabbitMessageLoop:
         ld      h, d
         ld      l, e
 
+        ld      bc, GREYWOLF_VAR_COLOR_COUNTER
+        fcall   EntityGetSlack
+        ld      a, 20
+        ld      [bc], a
+
+        ld      a, 7
+        fcall   EntitySetHWGraphicsAttributes
+
+
         push    hl
         fcall   EntityGetPos
         ld      hl, var_temp_hitbox1
@@ -330,6 +339,24 @@ r9_RabbitMessageLoop:
 	ld      a, SPRITE_SHAPE_SQUARE_16
         fcall   EntitySetDisplayFlags
 
+        fcall   EntityAnimationResetKeyframe
+        fcall   EntitySetTextureSwapFlag
+
+
+        fcall   EntityGetFrameBase
+        ld      a, b
+        cp      SPRID_RABBIT_RUN_L
+        jr      Z, .L
+        cp      SPRID_RABBIT_L
+        jr      Z, .L
+
+.R:
+	ld      a, SPRID_RABBIT_DEAD_R
+        fcall   EntitySetFrameBase
+        ret
+.L:
+        ld      a, SPRID_RABBIT_DEAD_L
+        fcall   EntitySetFrameBase
         ret
 
 
@@ -338,6 +365,8 @@ r9_RabbitMessageLoop:
 r9_RabbitUpdateDeadImpl:
         ld      h, b
         ld      l, c
+
+        fcall   r9_EnemyUpdateColor
 
         push    hl
 
