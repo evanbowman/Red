@@ -158,7 +158,7 @@ UpdateStaminaBar:
 
 OverlayRow2Attrs::
 DB      $8b, $8b, $8b, $8b, $83, $8b, $8b, $8b, $8b, $8b, $8b, $8b, $83
-DB      $80, $80, $80, $80, $80, $80, $80 ; Whitespace, TODO...
+DB      $80, $8b, $8b, $83, $80, $80, $80
 OverlayRow2AttrsEnd::
 
 
@@ -372,6 +372,20 @@ OverlayRepaintRow2:
         ld      a, $0c
         ld      hl, $9c2c
         ld      [hl], a
+
+        ld      hl, $9c2d       ; \
+        ld      a, $12          ; | Show lives icon
+        ld      [hl+], a        ; /
+
+        ld      a, $54          ; 'x', see charmap
+        ld      [hl+], a
+
+	ld      a, [var_lives]
+        add     $33             ; '0', see charmap
+	ld      [hl+], a
+
+        ld      a, $0c
+        ld      [hl+], a
 
         ret
 

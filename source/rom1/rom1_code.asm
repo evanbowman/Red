@@ -112,10 +112,6 @@ r1_GameboyAdvanceDetected:
 	ret
 
 
-
-;;; FIXME: this code needs to be update to actually save everything! It only
-;;; saves the game map, not the player position, collectible items, inventory,
-;;; stamina.
 r1_SaveGame:
 	RAM_BANK 1
 
@@ -127,7 +123,17 @@ r1_SaveGame:
 
         ld      hl, wram1_var_world_map_info
         ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
-        ld      de, _SRAM
+        ld      de, sram_var_world_map_info
+        fcall   Memcpy
+
+        ld      hl, wram2_var_collectibles
+        ld      bc, wram2_var_collectibles_end - wram2_var_collectibles
+        ld      de, sram_var_collectibles
+        fcall   Memcpy
+
+        ld      hl, PERSISTENT_STATE_DATA
+        ld      bc, PERSISTENT_STATE_DATA_END - PERSISTENT_STATE_DATA
+        ld      de, sram_var_persistent_data
         fcall   Memcpy
 
         ld      a, 0                    ; \ Disable SRAM writes
@@ -145,9 +151,19 @@ r1_LoadGame:
         ld      a, 0
         ld      [rRAMB], a
 
-        ld      hl, _SRAM
-        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
         ld      de, wram1_var_world_map_info
+        ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
+        ld      hl, sram_var_world_map_info
+        fcall   Memcpy
+
+        ld      de, wram2_var_collectibles
+        ld      bc, wram2_var_collectibles_end - wram2_var_collectibles
+        ld      hl, sram_var_collectibles
+        fcall   Memcpy
+
+        ld      de, PERSISTENT_STATE_DATA
+        ld      bc, PERSISTENT_STATE_DATA_END - PERSISTENT_STATE_DATA
+        ld      hl, sram_var_persistent_data
         fcall   Memcpy
 
         ld      a, 0                    ; \ Disable SRAM writes

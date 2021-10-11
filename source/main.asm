@@ -144,6 +144,7 @@ ENDM
         INCLUDE "wram5.asm"
         INCLUDE "wram6.asm"
         INCLUDE "wram7.asm"
+        INCLUDE "sram.asm"
 
 
 ;; #############################################################################
@@ -409,6 +410,9 @@ CreateWorld:
 
         ld      a, 1
         ld      [var_level], a
+
+        ld      a, 3
+        ld      [var_lives], a
 
 	LONG_CALL r1_SetLevelupExp
 

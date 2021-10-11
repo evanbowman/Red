@@ -210,6 +210,8 @@ DB $FF,$FF,$3E,$3E,$7C,$7C,$7D,$7D
 DB $7E,$7E,$7D,$7D,$7B,$7B,$37,$37
 DB $FF,$FF,$79,$79,$BD,$BD,$DD,$DD
 DB $9D,$9D,$3D,$3D,$FD,$FD,$F9,$F9
+DB $FF,$C7,$FF,$83,$FF,$01,$FF,$31
+DB $FF,$79,$B7,$34,$FF,$7C,$FF,$7C
 r7_OverlayTilesEnd::
 
 r7_BackgroundTiles::

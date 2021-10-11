@@ -35,7 +35,7 @@
 
 ;;; ############################################################################
 
-        SECTION "WRAM2_UNUSED", WRAMX, BANK[2]
+        SECTION "WRAM2_COLLECTIBLES", WRAMX, BANK[2]
 
 
 COLLECTIBLES_PER_ROOM   EQU     7

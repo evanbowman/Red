@@ -58,6 +58,8 @@ var_oam_bottom_counter:  DS      1
 
 PERSISTENT_STATE_DATA:
 
+var_persistent_data_magic:      DS      2
+
 var_room_x:     DS      1
 var_room_y:     DS      1
 
@@ -76,6 +78,10 @@ var_exp_to_next_level:  DS      2
 
 
 var_equipped_item:      DS      1
+
+
+;;; NOTE: max lives == 9, due to UI code.
+var_lives:              DS      1
 
 
 PERSISTENT_STATE_DATA_END:
