@@ -58,8 +58,6 @@ var_oam_bottom_counter:  DS      1
 
 PERSISTENT_STATE_DATA:
 
-var_persistent_data_magic:      DS      2
-
 var_room_x:     DS      1
 var_room_y:     DS      1
 
@@ -82,6 +80,17 @@ var_equipped_item:      DS      1
 
 ;;; NOTE: max lives == 9, due to UI code.
 var_lives:              DS      1
+
+
+;;; Anchor vars:
+;;; For some animations, we need to move the sprite origin left/right to fit
+;;; the sprite within the 32x32 texture size. These anchor positions represent
+;;; the player's real position, and the player's entity coordinates will be
+;;; calculated by adding a texture origin to the entity's position fields, after
+;;; copying them from these anchor variables.
+;;; NOTE: y, followed by x, to match the layout in an entity.
+var_player_anchor_y:    DS      FIXNUM_SIZE
+var_player_anchor_x:    DS      FIXNUM_SIZE
 
 
 PERSISTENT_STATE_DATA_END:
@@ -390,17 +399,6 @@ var_scavenge_target:    DS      2
 
 
 var_entity_slab_weight: DS      1
-
-
-;;; Anchor vars:
-;;; For some animations, we need to move the sprite origin left/right to fit
-;;; the sprite within the 32x32 texture size. These anchor positions represent
-;;; the player's real position, and the player's entity coordinates will be
-;;; calculated by adding a texture origin to the entity's position fields, after
-;;; copying them from these anchor variables.
-;;; NOTE: y, followed by x, to match the layout in an entity.
-var_player_anchor_y:    DS      FIXNUM_SIZE
-var_player_anchor_x:    DS      FIXNUM_SIZE
 
 
 ;;; ############################################################################

@@ -55,9 +55,9 @@ Memset:
 	ld	[hl+], a
 .skip:
 	dec	c
-	jr	nz, .fill
+	jr	NZ, .fill
 	dec	b
-	jr	nz, .fill
+	jr	NZ, .fill
 .done:
 	ret
 
@@ -78,9 +78,32 @@ Memcpy:
 	inc	de
 .skip:
 	dec	c
-	jr	nz, .copy
+	jr	NZ, .copy
 	dec	b
-	jr	nz, .copy
+	jr	NZ, .copy
+	ret
+
+
+;;; ----------------------------------------------------------------------------
+
+Memeq:                          ; Equality test for up to 254 bytes of memory.
+;;; hl - lhs pointer
+;;; de - rhs pointer
+;;; c - count
+;;; return value: contents of the zero flag (zero if equal)
+	inc	c
+	jr	.skip
+.check:
+	ld	b, [hl]
+	ld	a, [de]
+        cp      b
+        ret     NZ              ; return nonzero flag
+	inc	de
+        inc     hl
+.skip:
+	dec	c
+	jr	NZ, .check
+        xor     a               ; set zero flag
 	ret
 
 

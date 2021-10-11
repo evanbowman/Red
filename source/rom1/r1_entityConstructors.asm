@@ -69,6 +69,11 @@ r1_PlayerNew:
         ld      bc, $65
         fcall   FixnumInit
 
+        ld      hl, var_player_coord_y  ; \
+        ld      de, var_player_anchor_y ; | Set View Anchor
+        ld      bc, FIXNUM_SIZE * 2     ; |
+        fcall   Memcpy                  ; /
+
         ld      a, SPRID_PLAYER_SD
         ld      [var_player_fb], a
 

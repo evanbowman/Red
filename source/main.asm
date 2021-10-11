@@ -278,7 +278,7 @@ Start:
 
         fcall   LcdOff
 
-	ld	a, 0
+	xor     a
 	ld	[rIF], a
 	ld	[rSTAT], a
 	ld	[rSCX], a
@@ -324,7 +324,6 @@ Main:
 
         ld      de, VoidVBlankFn
         fcall   SceneSetVBlankFn
-
 
         fcall   CreateWorld
 
@@ -398,13 +397,11 @@ Main:
         stop
 
 
-
-
-
 ;;; ----------------------------------------------------------------------------
 
-
 CreateWorld:
+        LONG_CALL r1_SaveExists
+        ;; TODO: load world if save exists...
 
         fcall   VBlankIntrWait
 
@@ -416,10 +413,15 @@ CreateWorld:
 
 	LONG_CALL r1_SetLevelupExp
 
+        ld      a, ITEM_DAGGER
+        ld      [var_equipped_item], a
+        ld      b, a
+        fcall   InventoryAddItem
+
         fcall   LoadDefaultMap
 
-        fcall   MapLoad2__rom0_only
 
+        fcall   MapLoad2__rom0_only
         fcall   MapShow
 
         LONG_CALL r1_PlayerNew
@@ -428,12 +430,8 @@ CreateWorld:
 
 	LONG_CALL r1_SetRoomVisited
 
-
-        ld      a, ITEM_DAGGER
-        ld      [var_equipped_item], a
-        ld      b, a
-        fcall   InventoryAddItem
-
+        LONG_CALL r1_SaveGame
+        LONG_CALL r1_InvalidateSave
         ret
 
 
@@ -566,6 +564,7 @@ TimerISR:
         INCLUDE "inventoryScene.asm"
         INCLUDE "introCutsceneScene.asm"
         INCLUDE "roomTransitionScene.asm"
+        INCLUDE "restoreCheckpointScene.asm"
         INCLUDE "worldmapScene.asm"
         INCLUDE "constructBonfireScene.asm"
         INCLUDE "scavengeScene.asm"

@@ -923,15 +923,39 @@ r8_InventoryAPressed:
         cp      INVENTORY_TAB_COOK
         jr      Z, .cook
 .items:
+        ld      a, [var_inventory_scene_selected_row] ; \
+        fcall   r8_InventoryAdjustOffset              ; |
+        ld      b, a                                  ; | Do nothing if the
+        fcall   InventoryGetItem                      ; | selected row is empty.
+        ld      a, b                                  ; |
+        or      a                                     ; |
+        ret     Z                                     ; /
+
         fcall   r8_InventoryUseItem
         ret
+
 .craft:
+        fcall   r8_InventoryGetSelectedIndex ; \
+        ld      b, a                         ; |
+        fcall   r8_GetCraftableItemRecipe    ; | Return if recipe pointer is
+        ld      a, h                         ; | null.
+        or      l                            ; |
+        ret     Z                            ; /
+
         ld      hl, r8_queryCraftItemText
         fcall   r8_ShowYesNoOptionBox
         ld      de, InventorySceneCraftOptionUpdate
         fcall   SceneSetUpdateFn
         ret
+
 .cook:
+        fcall   r8_InventoryGetSelectedIndex ; \
+        ld      b, a                         ; |
+        fcall   r8_GetCraftableItemRecipe    ; | Return if recipe pointer is
+        ld      a, h                         ; | null.
+        or      l                            ; |
+        ret     Z                            ; /
+
         ld      hl, r8_queryCookItemText
         fcall   r8_ShowYesNoOptionBox
         ld      de, InventorySceneCraftOptionUpdate
@@ -949,7 +973,7 @@ r8_InventoryCraftItem:
 
         ld      a, h                    ; \
         or      l                       ; | Null pointer check.
-        jr      Z, .skip                ; /
+        ret     Z                       ; /
 
         push    hl
 
@@ -982,8 +1006,6 @@ r8_InventoryCraftItem:
         fcall   r8_InventoryInitText
         fcall   r8_InventoryUpdateImage
         fcall   r8_InventoryDescribeItem
-
-.skip:
         ret
 
 
@@ -1381,7 +1403,7 @@ r8_InventoryClearItemInfoBox:
 r8_InventorySetTab:
         fcall   VBlankIntrWait
 
-        ld      a, 0
+        xor     a
         ld      [var_inventory_scene_selected_row], a
         ld      [var_inventory_scene_page], a
 
@@ -1516,10 +1538,8 @@ r8_InventoryMoveCursorDown:
         ld      b, $89
         fcall   r8_InventoryTextRowSetAttr
 
-        ld      a, 0
+        xor     a
         ld	[rVBK], a
-
-	ld      a, 0
         ld      [var_inventory_scene_selected_row], a
 
 	fcall   r8_InventoryInitText

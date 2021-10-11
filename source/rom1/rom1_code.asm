@@ -112,23 +112,69 @@ r1_GameboyAdvanceDetected:
 	ret
 
 
-r1_SaveGame:
-	RAM_BANK 1
+;;; ----------------------------------------------------------------------------
 
-        ld      a, $0a                  ; \ Enable SRAM writes
+r1_SaveMagic:
+DB      $52, $45, $44, $5f
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_InvalidateSave:
+        ld      a, $0a                  ; \ Enable SRAM read/write
         ld      [rRAMG], a              ; /
 
-        ld      a, 0
+        xor     a
         ld      [rRAMB], a
 
+        ld      hl, sram_var_magic
+        ld      a, $5f
+        ld      bc, 4
+        fcall   Memset
+
+        xor     a                       ; \ Disable SRAM read/write
+        ld      [rRAMG], a              ; /
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_SaveExists:
+;;; trashes all registers
+;;; Z if save exists, NZ otherwise
+        ld      a, $0a                  ; \ Enable SRAM read/write
+        ld      [rRAMG], a              ; /
+
+        ld      hl, r1_SaveMagic
+        ld      de, sram_var_magic
+        ld      c, 4
+        fcall   Memeq
+
+        ld      a, 0                    ; \ preserve z flag!!
+        ld      [rRAMG], a              ; / Disable SRAM read/write
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
+r1_SaveGame:
+        ld      a, $0a                  ; \ Enable SRAM read/write
+        ld      [rRAMG], a              ; /
+
+        xor     a
+        ld      [rRAMB], a
+
+        ld      hl, r1_SaveMagic
+        ld      bc, 4
+        ld      de, sram_var_magic
+        fcall   Memcpy
+
+
+        RAM_BANK 1
         ld      hl, wram1_var_world_map_info
         ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
         ld      de, sram_var_world_map_info
-        fcall   Memcpy
-
-        ld      hl, wram2_var_collectibles
-        ld      bc, wram2_var_collectibles_end - wram2_var_collectibles
-        ld      de, sram_var_collectibles
         fcall   Memcpy
 
         ld      hl, PERSISTENT_STATE_DATA
@@ -136,29 +182,31 @@ r1_SaveGame:
         ld      de, sram_var_persistent_data
         fcall   Memcpy
 
-        ld      a, 0                    ; \ Disable SRAM writes
+        RAM_BANK 2
+        ld      hl, wram2_var_collectibles
+        ld      bc, wram2_var_collectibles_end - wram2_var_collectibles
+        ld      de, sram_var_collectibles
+        fcall   Memcpy
+
+        xor     a                       ; \ Disable SRAM read/writes
         ld      [rRAMG], a              ; /
 
         ret
 
 
-r1_LoadGame:
-	RAM_BANK 1
+;;; ----------------------------------------------------------------------------
 
-        ld      a, $0a                  ; \ Enable SRAM writes
+r1_LoadGame:
+        ld      a, $0a                  ; \ Enable SRAM read/write
         ld      [rRAMG], a              ; /
 
         ld      a, 0
         ld      [rRAMB], a
 
+	RAM_BANK 1
         ld      de, wram1_var_world_map_info
         ld      bc, wram1_var_world_map_info_end - wram1_var_world_map_info
         ld      hl, sram_var_world_map_info
-        fcall   Memcpy
-
-        ld      de, wram2_var_collectibles
-        ld      bc, wram2_var_collectibles_end - wram2_var_collectibles
-        ld      hl, sram_var_collectibles
         fcall   Memcpy
 
         ld      de, PERSISTENT_STATE_DATA
@@ -166,7 +214,13 @@ r1_LoadGame:
         ld      hl, sram_var_persistent_data
         fcall   Memcpy
 
-        ld      a, 0                    ; \ Disable SRAM writes
+        RAM_BANK 2
+        ld      de, wram2_var_collectibles
+        ld      bc, wram2_var_collectibles_end - wram2_var_collectibles
+        ld      hl, sram_var_collectibles
+        fcall   Memcpy
+
+        xor     a                       ; \ Disable SRAM read/write
         ld      [rRAMG], a              ; /
 
         ret

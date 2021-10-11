@@ -1607,7 +1607,10 @@ r9_PlayerDepleteStamina:
         ret
 
 .exhausted:
-	fcall   SystemReboot    ; FIXME...
+	ld      de, RestoreCheckpointSceneUpdate
+        fcall   SceneSetUpdateFn
+        ld      de, VoidVBlankFn
+        fcall   SceneSetVBlankFn
         ret
 
 
