@@ -42,7 +42,7 @@ ConstructBonfireSceneEnter:
 
         LONG_CALL r1_BonfireNew
 
-
+        fcall   CreateCheckpoint
 
         ld      de, ConstructBonfireSceneUpdate
         fcall   SceneSetUpdateFn

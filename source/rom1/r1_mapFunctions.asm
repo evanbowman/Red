@@ -1876,9 +1876,9 @@ r1_CurrentRoomAppendEntityDesc:
 
 ;;; ---------------------------------------------------------------------------
 
-;;; Called when switching to a different room. Store entities info in memory.
-r1_StoreRoomEntities:
-	RAM_BANK 1
+;;; Write entity metadata to world map ram.
+r1_RecordRoomEntities:
+        RAM_BANK 1
 
         fcall   r1_CurrentRoomClearEntities
 
@@ -1925,10 +1925,17 @@ r1_StoreRoomEntities:
         jr      .loop
 
 .loopEnd:
-        ;; TODO: erase contents of room's entity array, serialize entities.
+	ret
 
+
+;;; ----------------------------------------------------------------------------
+
+;;; Called when switching to a different room. Store entities info in memory.
+;;; Destructive: moves entities from the entity buffer to world map ram. If you
+;;; only want to save entity info, call r1_RecordRoomEntities instead.
+r1_StoreRoomEntities:
+	fcall   r1_RecordRoomEntities
         fcall   EntityBufferReset
-
         ret
 
 

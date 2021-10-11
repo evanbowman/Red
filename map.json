@@ -550,5 +550,53 @@
         "variant": 0,
         "entities": [],
         "collectibles": []
+    },
+    {
+        "x": 4,
+        "y": 3,
+        "flags": [
+            "blizzard"
+        ],
+        "connections": {
+            "left": true,
+            "right": true,
+            "up": false,
+            "down": false
+        },
+        "variant": 2,
+        "entities": [],
+        "collectibles": []
+    },
+    {
+        "x": 5,
+        "y": 3,
+        "flags": [
+            "blizzard"
+        ],
+        "connections": {
+            "left": true,
+            "right": true,
+            "up": false,
+            "down": false
+        },
+        "variant": 2,
+        "entities": [],
+        "collectibles": []
+    },
+    {
+        "x": 6,
+        "y": 3,
+        "flags": [
+            "blizzard"
+        ],
+        "connections": {
+            "left": true,
+            "right": false,
+            "up": true,
+            "down": false
+        },
+        "variant": 1,
+        "entities": [],
+        "collectibles": []
     }
 ]

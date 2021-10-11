@@ -437,6 +437,14 @@ CreateWorld:
 
 ;;; ----------------------------------------------------------------------------
 
+CreateCheckpoint:
+        LONG_CALL r1_RecordRoomEntities
+        LONG_CALL r1_SaveGame
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 LoadDefaultMap:
 ;;; Sets ROM Bank to ten
 ;;; Sets RAM bank to two

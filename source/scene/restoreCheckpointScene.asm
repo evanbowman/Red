@@ -89,9 +89,6 @@ RestoreCheckpointSceneUpdate:
         ld      de, VoidVBlankFn
         fcall   SceneSetVBlankFn
 
-        LONG_CALL r1_SaveGame
-        LONG_CALL r1_InvalidateSave
-
         ret
 
 .gameover:
