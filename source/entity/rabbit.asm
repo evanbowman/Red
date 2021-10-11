@@ -33,26 +33,30 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-;;; ############################################################################
+RABBIT_VAR_RUN_X_DIR EQU 0
+RABBIT_VAR_RUN_Y_DIR EQU 1
+RABBIT_VAR_COUNTER   EQU 2
 
 
-SECTION "ROM9_CODE", ROMX, BANK[9]
+;;; ----------------------------------------------------------------------------
 
-;;;
-;;; Rom9 contains code related to entity state changes.
-;;;
-
-
-        INCLUDE "r9_wallCollision.asm"
-        INCLUDE "r9_playerImpl.asm"
-        INCLUDE "r9_greywolfImpl.asm"
-        INCLUDE "r9_bonfireImpl.asm"
-        INCLUDE "r9_boarImpl.asm"
-        INCLUDE "r9_spiderImpl.asm"
-        INCLUDE "r9_rabbitImpl.asm"
+RabbitUpdate:
+        LONG_CALL r9_RabbitUpdateImpl
+        jp      EntityUpdateLoopResume
 
 
-;;; SECTION ROM3_CODE
+;;; ----------------------------------------------------------------------------
+
+RabbitUpdateRun:
+        LONG_CALL r9_RabbitUpdateRunImpl
+        jp      EntityUpdateLoopResume
 
 
-;;; ############################################################################
+;;; ----------------------------------------------------------------------------
+
+RabbitUpdateDead:
+        LONG_CALL r9_RabbitUpdateDeadImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------

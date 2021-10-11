@@ -1796,6 +1796,8 @@ DW      r1_GreywolfDeadNew
 DW      r1_BoarNew
 DW      r1_BoarDeadNew
 DW      r1_SpiderDeadNew
+DW      r1_RabbitNew
+DW      r1_RabbitDeadNew
 .spawnEntityJumpTableEnd:
 ASSERT((.spawnEntityJumpTableEnd - .spawnEntityJumpTable) / 2 == ENTITY_TYPE_COUNT)
 

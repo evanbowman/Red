@@ -246,6 +246,61 @@ r1_GreywolfNew:
 
 ;;; ----------------------------------------------------------------------------
 
+r1_RabbitNew:
+;;; b - x
+;;; c - y
+;;; e - type modifier bits
+
+        fcall   r1_EntityNew
+
+        ld      a, SPRID_RABBIT_R
+        fcall   EntitySetFrameBase
+
+        ld      a, 3
+        fcall   EntitySetHWGraphicsAttributes
+
+        ld      a, ENTITY_TYPE_RABBIT
+        fcall   EntitySetType
+
+        ld      de, RabbitUpdate
+        fcall   EntitySetUpdateFn
+
+        ld      a, SPRITE_SHAPE_SQUARE_16 | ENTITY_ATTR_HAS_SHADOW | ENTITY_ATTR_SHADOW_EVEN_PARITY | ENTITY_ATTR_SMALL_SHADOW
+        fcall   EntitySetDisplayFlags
+
+        ;; TODO: assign slab...
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r1_RabbitDeadNew:
+;;; b - x
+;;; c - y
+;;; e - type modifier bits
+
+        fcall   r1_EntityNew
+
+        ld      a, SPRID_RABBIT_R ; FIXME
+        fcall   EntitySetFrameBase
+
+        ld      a, 3
+        fcall   EntitySetHWGraphicsAttributes
+
+        ld      a, ENTITY_TYPE_RABBIT_DEAD
+        fcall   EntitySetType
+
+        ld      de, RabbitUpdateDead
+        fcall   EntitySetUpdateFn
+
+        ld      a, SPRITE_SHAPE_SQUARE_16
+        fcall   EntitySetDisplayFlags
+	ret
+
+
+;;; ----------------------------------------------------------------------------
+
 
 r1_SpiderNew:
 ;;; b - x

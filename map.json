@@ -232,7 +232,13 @@
             "up": false
         },
         "variant": 1,
-        "entities": [],
+        "entities": [
+            {
+                "type": 8,
+                "x": 11,
+                "y": 8
+            }
+        ],
         "collectibles": []
     },
     {
@@ -268,7 +274,8 @@
             "down": false
         },
         "variant": 0,
-        "entities": [],
+        "entities": [
+        ],
         "collectibles": [
             {
                 "type": 16,
@@ -489,7 +496,16 @@
         },
         "variant": 0,
         "entities": [
-
+            {
+                "type": 8,
+                "x": 5,
+                "y": 3
+            },
+            {
+                "type": 8,
+                "x": 8,
+                "y": 9
+            }
         ],
         "collectibles": [
 

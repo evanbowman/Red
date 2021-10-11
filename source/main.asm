@@ -564,6 +564,7 @@ TimerISR:
         INCLUDE "player.asm"
         INCLUDE "greywolf.asm"
         INCLUDE "spider.asm"
+        INCLUDE "rabbit.asm"
         INCLUDE "scene.asm"
         INCLUDE "rect.asm"
         INCLUDE "inventory.asm"

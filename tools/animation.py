@@ -58,6 +58,12 @@ while True:
             return 2
         elif rgb == (76, 206, 250):
             return 1
+        elif rgb == (184, 207, 239):
+            return 1
+        elif rgb == (80, 72, 112):
+            return 2
+        elif rgb == (8, 4, 23):
+            return 3
         else:
             raise Exception("unexpected color in cutscene frame " + str(rgb))
 
