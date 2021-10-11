@@ -176,6 +176,8 @@ r9_BoarUpdateDashLeftImpl:
         ld      h, b
         ld      l, c
 
+        fcall   r9_BoarDashCheckPlayerCollision
+
         push    hl
         fcall   r9_BoarSetupCollisionRect
         ld      a, 0
