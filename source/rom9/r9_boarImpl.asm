@@ -530,8 +530,59 @@ r9_BoarOnMessage:
         ld      a, [bc]
         cp      a, MESSAGE_PLAYER_KNIFE_ATTACK
         jr      Z, .onPlayerKnifeAttack
+        cp      a, MESSAGE_PLAYER_HAMMER_ATTACK
+        jr      Z, .onPlayerHammerAttack
 
         ret
+
+.onPlayerHammerAttack:
+        ld      h, d
+        ld      l, e
+
+        push    hl
+        push    hl
+        inc     bc
+        ld      a, [bc]         ; player sprite id from message
+        ld      hl, var_temp_hitbox2
+        fcall   r9_PlayerHammerAttackPopulateHitbox
+        pop     hl
+
+        fcall   EntityGetPos
+        ld      hl, var_temp_hitbox1
+        fcall   r9_GreywolfPopulateHitbox
+
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection ; sets carry flag
+        pop     hl
+
+        ret     NC
+
+        ld      a, 7
+        fcall   EntitySetHWGraphicsAttributes
+
+        ld      bc, BOAR_VAR_COLOR_COUNTER
+        fcall   EntityGetSlack
+        ld      a, 20
+        ld      [bc], a
+
+        push    hl
+        ld      hl, HAMMER_BASE_DAMAGE
+	fcall   r9_BoarDefenseLevel
+        ld      c, a
+        ld      a, [var_level]
+        ld      b, a
+        fcall   CalculateDamage
+        fcall   FormatDamage
+        pop     hl
+        fcall   r9_BoarDepleteStamina
+
+        push    hl
+        ld      b, 1
+        WIDE_CALL r1_StartScreenshake
+        pop     hl
+        ret
+
 
 .onPlayerKnifeAttack:
         ld      h, d

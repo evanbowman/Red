@@ -830,8 +830,66 @@ r9_GreywolfOnMessage:
         ld      a, [bc]
         cp      a, MESSAGE_PLAYER_KNIFE_ATTACK
         jr      Z, .onPlayerKnifeAttack
-
+        cp      a, MESSAGE_PLAYER_HAMMER_ATTACK
+        jr      Z, .onPlayerHammerAttack
         ret
+
+
+;;; TODO: refactor this code
+.onPlayerHammerAttack:
+        ld      h, d
+        ld      l, e
+
+        push    hl
+        push    hl
+        inc     bc
+        ld      a, [bc]         ; player sprite id from message
+        ld      hl, var_temp_hitbox2
+        fcall   r9_PlayerHammerAttackPopulateHitbox
+        pop     hl
+
+        fcall   EntityGetPos
+        ld      hl, var_temp_hitbox1
+        fcall   r9_GreywolfPopulateHitbox
+
+        ld      hl, var_temp_hitbox1
+        ld      de, var_temp_hitbox2
+        fcall   CheckIntersection ; sets carry flag
+        pop     hl
+
+        ret     NC
+
+        ld      a, 7
+        fcall   EntitySetHWGraphicsAttributes
+
+        push    hl
+        ld      b, 1
+        WIDE_CALL r1_StartScreenshake
+        pop     hl
+
+
+        ld      bc, GREYWOLF_VAR_COLOR_COUNTER
+        fcall   EntityGetSlack
+        ld      a, 20
+        ld      [bc], a
+
+        push    hl
+        ld      hl, HAMMER_BASE_DAMAGE
+        fcall   r9_GreywolfDefenseLevel
+        ld      c, a
+        ld      a, [var_level]
+        ld      b, a
+        fcall   CalculateDamage
+        fcall   FormatDamage
+        pop     hl
+        fcall   r9_GreywolfDepleteStamina
+        jr      NC, .dead
+
+	ld      d, 255
+        fcall   r9_GreywolfSetKnockback
+
+        jr      .takeDamageCommon
+
 
 .onPlayerKnifeAttack:
         ld      h, d
@@ -867,11 +925,13 @@ r9_GreywolfOnMessage:
         fcall   r9_GreywolfDepleteStamina
         jr      NC, .dead
 
+	ld      d, 50
+        fcall   r9_GreywolfSetKnockback
+
+.takeDamageCommon:
         ld      de, GreywolfUpdateStunned
         fcall   EntitySetUpdateFn
 
-	ld      d, 50
-        fcall   r9_GreywolfSetKnockback
 
 .dead:
         fcall   r9_GreywolfResetCounter
