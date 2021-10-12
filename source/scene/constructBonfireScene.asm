@@ -36,13 +36,16 @@
 ConstructBonfireSceneEnter:
 ;;; TODO: create ui for placing bonfire...
         ld      a, [var_player_coord_x]
+        and     $f0             ; align to 16x16 grid
         ld      b, a
         ld      a, [var_player_coord_y]
+        and     $f0
         ld      c, a
 
         LONG_CALL r1_BonfireNew
 
         fcall   CreateCheckpoint
+        LONG_CALL r1_InvalidateSave
 
         ld      de, ConstructBonfireSceneUpdate
         fcall   SceneSetUpdateFn

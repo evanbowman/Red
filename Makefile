@@ -3,7 +3,7 @@ RGBASM  := $(RGBDS)rgbasm
 RGBLINK := $(RGBDS)rgblink
 RGBFIX  := $(RGBDS)rgbfix
 
-NAME := project
+NAME := Red
 
 ROM := $(NAME).gbc
 
