@@ -1293,7 +1293,7 @@ DB      0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0
 
 
 r9_PlayerHammerFrameTimes:
-DB      6, 6, 6, 6, 6, 12, 15, 12, 6, 6, 32
+DB      6, 6, 6, 6, 6, 12, 15, 12, 6, 6, 40
 
 
 r9_PlayerRaiseHammerImpl:
@@ -1611,7 +1611,8 @@ r9_PlayerDepleteStamina:
         fcall   SceneSetUpdateFn
         ld      de, VoidVBlankFn
         fcall   SceneSetVBlankFn
-        ret
+
+        jp      SceneUnwind
 
 
 ;;; ----------------------------------------------------------------------------
@@ -2044,8 +2045,8 @@ r9_PlayerHammerAttackPopulateHitbox:
 ;;; a - player sprite id
         cp      SPRID_PLAYER_HAMMER_L
         jr      Z, .left
-        cp      SPRID_PLAYER_HAMMER_R
-        jr      Z, .right
+        cp      SPRID_PLAYER_HAMMER_D
+        jr      Z, .down
         cp      SPRID_PLAYER_HAMMER_U
         jr      Z, .up
 

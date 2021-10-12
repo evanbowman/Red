@@ -81,6 +81,7 @@ r9_BonfireOnMessage:
 	ld      h, d
         ld      l, e
 
+        push    hl
         fcall   EntityGetPos
         ld      hl, var_temp_hitbox1
         fcall   r9_BonfirePopulateHitbox
@@ -91,10 +92,8 @@ r9_BonfireOnMessage:
         ld      hl, var_temp_hitbox1
         ld      de, var_temp_hitbox2
         fcall   CheckIntersection
+        pop     hl
         ret     NC
-
-        ld      de, InventorySceneEnter
-        fcall   SceneSetUpdateFn
 
         ld      a, 1
         ld      [var_inventory_scene_cooking_tab_avail], a
@@ -102,7 +101,8 @@ r9_BonfireOnMessage:
         ld      a, INVENTORY_TAB_COOK
         ld      [var_inventory_scene_tab], a
 
-        ret
+        ld      de, InventorySceneEnter
+        jp      EntityMessageLoopJumpToScene
 
 
 ;;; ----------------------------------------------------------------------------

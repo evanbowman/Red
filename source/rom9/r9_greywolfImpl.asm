@@ -1266,14 +1266,10 @@ r9_GreywolfDeadOnMessage:
 
         ret     NC
 
-        push    hl
-        ld      de, ScavengeSceneEnter
-        fcall   SceneSetUpdateFn
-        pop     hl
-
 	call    r9_GreywolfSetupScavenge
 
-	ret
+        ld      de, ScavengeSceneEnter
+        jp      EntityMessageLoopJumpToScene
 
 
 ;;; ----------------------------------------------------------------------------

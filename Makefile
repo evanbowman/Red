@@ -41,3 +41,7 @@ $(ROM): $(OBJ)
 
 run: $(ROM) all
 	sameboy $(ROM)
+
+
+bgb: $(ROM) all
+	wine ~/Desktop/bgb.exe $(ROM)

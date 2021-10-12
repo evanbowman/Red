@@ -227,8 +227,6 @@ CutsceneWriteFrame:
 	add     hl, de          ; Add previously calculated offset to texture array
 
         ld      de, $8800
-        ;; Ok, so this is really bizarre. I am able to copy 89+ tiles on an AGS
-        ;; 101 in CGB mode, but only 49 tiles on an actual CGB (model C). Weird.
         ld      b, 85           ; FIXME: could copy 89, except for palette swap in cutscene
         fcall   GDMABlockCopy
 

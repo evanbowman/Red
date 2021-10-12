@@ -69,3 +69,17 @@ SceneSetVBlankFn:
 
 
 ;;; ----------------------------------------------------------------------------
+
+SceneUnwind:
+;;; NOTE: destroys the stack, returns to the top level, and immediately begins
+;;; executing the next scene. Use in scenarios where multiple code paths could
+;;; theoretically set the scene update function pointer at the same time, thus
+;;; creating ambiguity about which scene will execute next. Mainly, when an
+;;; entity needs to overwrite the current scene, rather than a scene itself
+;;; setting the next scene. Ideally, in a higher-level application, we might use
+;;; some sort of scene queue, but then we'd need to write code to implement a
+;;; queue, and doing this is simply easier.
+        jp      SceneGraphEvaluate
+
+
+;;; ----------------------------------------------------------------------------

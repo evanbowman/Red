@@ -42,6 +42,8 @@ ConstructBonfireSceneEnter:
         and     $f0
         ld      c, a
 
+
+
         LONG_CALL r1_BonfireNew
 
         fcall   CreateCheckpoint

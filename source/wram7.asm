@@ -38,8 +38,8 @@
         SECTION "WRAM7_UNUSED", WRAMX, BANK[7]
 
 
-;;; TODO...
-var_wram7_TODO:   DS      1
+wram7_var_shell_command_buffer: DS      32
+wram7_var_shell_parse_buffer:   DS      32
 
 
 ;;; ############################################################################

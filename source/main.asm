@@ -60,6 +60,14 @@ fcall: MACRO                    ; fast call, as opposed to a long call
 ENDM
 
 
+tcall: MACRO                    ; call in tail position.
+;;; We could simply use a jp instruction, but we want an assertion that the
+;;; target address is safe to jump to.
+        ASSERT (BANK(\1) == BANK(@) || BANK(\1) == BANK(EntryPoint))
+        jp      \1
+ENDM
+
+
 fcallc: MACRO
         ASSERT (BANK(\2) == BANK(@) || BANK(\2) == BANK(EntryPoint))
         call   \1, \2
@@ -116,10 +124,8 @@ ENDM
 SET_BANK: MACRO
         ;; Makes no sense for a ROMX bank to manually switch to another bank.
         ASSERT (BANK(@) == BANK(EntryPoint))
-
         ld      a, \1
         SET_BANK_FROM_A
-
 ENDM
 
 
@@ -330,8 +336,15 @@ Main:
         ld      a, $ff
         ld      [hvar_shadow_state], a
 
+
+SceneGraphEvaluate:
+        ld      sp, STACK_BEGIN
+
 .loop:
+        ;; NOTE: Updating the random seed upon each frame makes the random
+        ;; number sequence less predictable for players.
         fcall   GetRandom
+
 
         LONG_CALL r1_ReadKeys
         ld      a, b
@@ -388,7 +401,7 @@ Main:
         cp      SCRN_Y          ; / start of the vblank, we exceeded the vblank.
         jr      C, .vbl_window_exceeded
 
-        jr      Main.loop
+        jr      .loop
 
 
 ;;; This is just some debugging code. I'm trying to figure out how much stuff
@@ -417,6 +430,10 @@ CreateWorld:
         ld      [var_equipped_item], a
         ld      b, a
         fcall   InventoryAddItem
+
+        ld      b, ITEM_HAMMER
+        fcall   InventoryAddItem
+
 
         fcall   LoadDefaultMap
 

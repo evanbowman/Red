@@ -815,14 +815,10 @@ r9_BoarDeadOnMessage:
 
         ret     NC
 
-        push    hl
-        ld      de, ScavengeSceneEnter
-        fcall   SceneSetUpdateFn
-        pop     hl
-
 	call    r9_BoarSetupScavenge
 
-	ret
+        ld      de, ScavengeSceneEnter
+        jp      EntityMessageLoopJumpToScene
 
 
 ;;; ----------------------------------------------------------------------------

@@ -113,6 +113,14 @@ MessageQueueLoad:
 
 ;;; ----------------------------------------------------------------------------
 
+MessageQueueClear:
+;;; hl - queue
+        xor     a               ; \ Set queue size to zero.
+        ld      [hl], a         ; /
+        ret
+
+
+;;; ----------------------------------------------------------------------------
 
 
 ;;; NOTE: For each message in the message queue, invokes function pointer in bc,
@@ -124,7 +132,10 @@ MessageQueueDrain:
 ;;; bc - message handler callback
 ;;; Promises not to touch de.
 
-	ld      a, [hl]
+	ld      a, [hl]         ; Load queue size
+        or      a               ; \ Early exit if nothing's in the queue.
+        ret     Z               ; /
+
         push    hl              ; Store queue header ptr on stack
 
         inc     hl              ; I could push, add, and pop, but that's four
@@ -163,8 +174,7 @@ MessageQueueDrain:
         pop     af              ; pop loop counter from stack
         pop     hl              ; Restore pointer to msg queue header
 
-        xor     a               ; \ Set the queue size to zero, we drained all
-        ld      [hl], a         ; / of the messages.
+        fcall   MessageQueueClear
 
         ret
 

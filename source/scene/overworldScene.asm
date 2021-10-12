@@ -281,7 +281,7 @@ OverworldSceneUpdate:
 .checkStart:
         bit     PADB_START, a
         jr      Z, .updateEntities
-
+.here:
 	ld      a, 0
         ld      [var_inventory_scene_cooking_tab_avail], a
         ld      a, INVENTORY_TAB_ITEMS

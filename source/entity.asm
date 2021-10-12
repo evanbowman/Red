@@ -287,7 +287,6 @@ EntitySetTypeModifier:
         ret
 
 
-
 ;;; ----------------------------------------------------------------------------
 
 EntitySetType:
@@ -1012,6 +1011,18 @@ EntityGetMessageQueue:
 
 ;;; ----------------------------------------------------------------------------
 
+EntityMessageQueueClear:
+;;; hl - entity
+        push    hl
+        fcall   EntityGetMessageQueue
+        fcall   MessageQueueLoad
+        fcall   MessageQueueClear
+        pop     hl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 
 ;;; Entities are 32 bytes in size, and the entity header only consumes about
 ;;; half of the reserved space. The rest of the slack space may be used by
@@ -1029,6 +1040,26 @@ EntityGetSlack:
         ld      c, l
         pop     hl
         ret
+
+
+;;; ----------------------------------------------------------------------------
+
+;;; A somewhat specialized helper function, for safely exiting a message loop
+;;; and jumping to a new scene. If you jump out of a message loop before it
+;;; completes, messages will still be left in the queue. We clear the entity's
+;;; message queue, and then jump out of the loop, to begin executing the next
+;;; scene. Most entities respond to at least one message type which requires a
+;;; scene change (interacting with a dead enemy, for example, switches to a
+;;; scene that opens the scavenge menu, interacting with a bonfire switches to
+;;; a scene that opens the inventory, etc.).
+EntityMessageLoopJumpToScene:
+;;; hl - entity
+;;; de - scene
+        push    de
+        fcall   EntityMessageQueueClear
+        pop     de
+        fcall   SceneSetUpdateFn
+        jp      SceneUnwind
 
 
 ;;; ----------------------------------------------------------------------------

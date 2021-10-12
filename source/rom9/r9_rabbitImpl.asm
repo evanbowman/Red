@@ -404,13 +404,10 @@ r9_RabbitUpdateDeadImpl:
         pop     hl
         ret     NC
 
-        push    hl
-        ld      de, ScavengeSceneEnter
-        fcall   SceneSetUpdateFn
-        pop     hl
-
         fcall   r9_RabbitSetupScavenge
-        ret
+
+        ld      de, ScavengeSceneEnter
+        jp      EntityMessageLoopJumpToScene
 
 
 ;;; ----------------------------------------------------------------------------

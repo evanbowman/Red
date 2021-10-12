@@ -103,14 +103,10 @@ r9_SpiderUpdateDeadImpl:
         pop     hl
         ret     NC
 
-        push    hl
-        ld      de, ScavengeSceneEnter
-        fcall   SceneSetUpdateFn
-        pop     hl
-
         call    r9_SpiderSetupScavenge
 
-        ret
+        ld      de, ScavengeSceneEnter
+        jp      EntityMessageLoopJumpToScene
 
 
 ;;; ----------------------------------------------------------------------------
