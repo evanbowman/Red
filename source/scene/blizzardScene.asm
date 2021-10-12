@@ -154,7 +154,7 @@ BlizzardSceneVBlank:
         fcallc  NZ, VBlankCopyWaterTextures
 
 .noWaterUpdate:
-        ld      a, [var_overlay_y_offset]
+        ldh     a, [hvar_overlay_y_offset]
         ld      [rWY], a
 
         ld      a, [var_player_stamina]

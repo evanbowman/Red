@@ -196,7 +196,7 @@ RoomTransitionSceneSetPlayerAnchor:
 ;;; ----------------------------------------------------------------------------
 
 RoomTransitionSceneDownUpdate:
-        ld      a, [var_view_y]
+        ldh     a, [hvar_view_y]
         cp      0
         jr      Z, .done
 
@@ -210,7 +210,7 @@ RoomTransitionSceneDownUpdate:
 
 
 .skip:
-        ld      [var_view_y], a
+        ldh     [hvar_view_y], a
 
 	ld      hl, var_player_coord_y
         ld      b, 0
@@ -247,7 +247,7 @@ RoomTransitionSceneDownUpdate:
 ;;; ----------------------------------------------------------------------------
 
 RoomTransitionSceneUpUpdate:
-        ld      a, [var_view_y]
+        ldh     a, [hvar_view_y]
         cp      121
         jr      Z, .done
 
@@ -260,7 +260,7 @@ RoomTransitionSceneUpUpdate:
         ld      a, 121
 
 .setView:
-        ld      [var_view_y], a
+        ldh     [hvar_view_y], a
 
         ld      hl, var_player_coord_y
         ld      b, 0
@@ -346,7 +346,7 @@ RoomTransitionSceneUpFinishUpVBlank:
 ;;; ----------------------------------------------------------------------------
 
 RoomTransitionSceneRightUpdate:
-        ld      a, [var_view_x]
+        ldh     a, [hvar_view_x]
         cp      0
         jr      Z, .done
 
@@ -359,7 +359,7 @@ RoomTransitionSceneRightUpdate:
         ld      a, 0
 
 .skip:
-        ld      [var_view_x], a
+        ldh     [hvar_view_x], a
 
 	ld      hl, var_player_coord_x
         ld      b, 0
@@ -445,7 +445,7 @@ RoomTransitionSceneRightVBlank:
 ;;; ----------------------------------------------------------------------------
 
 RoomTransitionSceneLeftUpdate:
-        ld      a, [var_view_x]
+        ldh     a, [hvar_view_x]
         cp      95
         jr      Z, .done
 
@@ -458,7 +458,7 @@ RoomTransitionSceneLeftUpdate:
         ld      a, 95
 
 .setView:
-        ld      [var_view_x], a
+        ldh     [hvar_view_x], a
 
         ld      hl, var_player_coord_x
         ld      b, 0

@@ -270,9 +270,6 @@ var_texture_slots_end::
 
         SECTION "VIEW", WRAM0
 
-var_view_x:    DS      1
-var_view_y:    DS      1
-
 
 var_shake_magnitude:    DS      1
 var_shake_timer:        DS      1
@@ -281,8 +278,6 @@ var_shake_timer:        DS      1
 var_overlay_alternate_pos:    DS      1
 var_stamina_last_val:         DS      1
 var_overlay_back_buffer:      DS      20
-
-var_overlay_y_offset:         DS      1
 
 
 ;;; ############################################################################

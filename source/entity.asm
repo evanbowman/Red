@@ -582,14 +582,14 @@ FIXMEReallyBadHackManuallyDrawPlayerShadow:
         ;; FIXME: ultimately, the solution would be to put additional variables
         ;; into the entity header, whereby the origin of the dropshadow with
         ;; respect to the entity center could be adjusted.
-        ld      a, [var_view_y]
+        ldh     a, [hvar_view_y]
         ld      d, a
         ld      a, [var_player_anchor_y]
         sub     d
         add     17              ; shadow offset from spr top
         ld      c, a
 
-        ld      a, [var_view_x]
+        ldh     a, [hvar_view_x]
         ld      d, a
         ld      a, [var_player_anchor_x]
         sub     d
@@ -655,7 +655,7 @@ EntityDrawLoop:
 
 	inc     hl              ; hl now points to y coord in entity struct
 
-        ld      a, [var_view_y]
+        ldh     a, [hvar_view_y]
         ld      d, a
         ld      a, [hl+]         ; this is fine, due to layout of fixnum
         sub     d
@@ -667,7 +667,7 @@ EntityDrawLoop:
         inc     hl                      ; jump to location of x coord in entity
         inc     hl                      ; fixnum occupies 3 bytes (see hl+ above)
 
-        ld      a, [var_view_x]
+        ldh     a, [hvar_view_x]
         ld      d, a
         ld      a, [hl]
         sub     d
@@ -691,9 +691,12 @@ EntityDrawLoop:
 ;;; the lower four bits of the index to the upper four bits (i.e. n x 16).
         swap    e                       ; ShowSprite... uses e as a start tile.
 
-        ld      a, [hl]                 ; Load flags
         push    hl                      ; Store entity pointer
+        ldh     a, [hvar_overlay_y_offset] ; \ If the sprite is behind the
+        cp      c                          ; | overlay, hide. Overlay color 0
+        jr      C, .putSpriteFinished      ; / will not cover the sprite.
 
+        ld      a, [hl]                 ; Load flags
         and     ENTITY_ATTR_SPRITE_SHAPE_MASK
 
         ;; NOTE: I thought about re-writing this as a jump table, but with only

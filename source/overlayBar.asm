@@ -139,7 +139,7 @@ UpdateStaminaBar:
 
 .done:
 
-        ld      a, [var_overlay_y_offset]
+        ldh     a, [hvar_overlay_y_offset]
         ld      b, a
         ld      a, 128
         cp      b
@@ -148,7 +148,7 @@ UpdateStaminaBar:
 .dec:
         dec     b
         ld      a, b
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
 
         ret
 

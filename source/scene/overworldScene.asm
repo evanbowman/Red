@@ -164,18 +164,18 @@ OverworldSceneUpdateView:
         ld      d, 80
 	sub     d
         jr      C, .xFixedLeft
-        ld      [var_view_x], a
+        ldh     [hvar_view_x], a
 
         jr      .setY
 
 .xFixedLeft:
         ld      a, 0
-        ld      [var_view_x], a
+        ldh     [hvar_view_x], a
         jr      .setY
 
 .xFixedRight:
         ld      a, 95                   ; 255 - screen_width
-        ld      [var_view_x], a
+        ldh     [hvar_view_x], a
 
 .setY:
         ld      a, [var_player_anchor_y]
@@ -188,18 +188,18 @@ OverworldSceneUpdateView:
         ld      d, 80
         sub     d
         jr      C, .yFixedTop
-        ld      [var_view_y], a
+        ldh     [hvar_view_y], a
 
         jr      .done
 
 .yFixedTop:
         ld      a, 0
-        ld      [var_view_y], a
+        ldh     [hvar_view_y], a
         jr      .done
 
 .yFixedBottom:
         ld      a, 121                  ; FIXME: how'd I decide on this number?
-        ld      [var_view_y], a
+        ldh     [hvar_view_y], a
 
 .done:
         fcall   UpdateStaminaBar
@@ -403,7 +403,7 @@ OverworldSceneOnVBlank:
         jr      Z, .skip
         fcall   ShowOverlay
 .skip:
-        ld      a, [var_overlay_y_offset]
+        ldh     a, [hvar_overlay_y_offset]
         ld      [rWY], a
 
         ld      a, [var_player_stamina]

@@ -302,7 +302,7 @@ Main:
 	ld	[rIE], a	        ; setup
 
         ld      a, 128
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
 
         LONG_CALL r1_SetCgbColorProfile
 
@@ -363,10 +363,10 @@ Main:
 .vsync:
         fcall   VBlankIntrWait          ; vsync
 
-        ld      a, [var_view_x]
+        ldh     a, [hvar_view_x]
         ld      [rSCX], a
 
-        ld      a, [var_view_y]
+        ldh     a, [hvar_view_y]
         ld      [rSCY], a
 
         ld      a, HIGH(var_oam_back_buffer)

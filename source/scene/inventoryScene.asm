@@ -68,7 +68,7 @@ InventorySceneExit:
         fcall   VBlankIntrWait
         ld      a, 136
         ld      [rWY], a
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
 
         xor     a
         ld      [var_overlay_alternate_pos], a
@@ -148,17 +148,17 @@ InventorySceneFadeinVBlank:
 
         SET_BANK 7
 
-        ld      a, [var_overlay_y_offset]
+        ldh     a, [hvar_overlay_y_offset]
         ld      b, 136
         cp      b
         jr      C, .inc
         jr      .skip
 .inc:
         inc     a
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
 .skip:
 
-        ld      a, [var_overlay_y_offset]
+        ldh     a, [hvar_overlay_y_offset]
         ld      [rWY], a
 
         ld      a, [var_scene_counter]

@@ -44,7 +44,7 @@ ScavengeSceneEnter:
 
 
         ld      a, 128
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
 
         ld      a, 0
         ld      [var_scene_counter], a
@@ -73,7 +73,7 @@ ScavengeSceneAnimateIn0:
         and     $0f             ; /
         srl     a               ; Actually, I changed my mind, only offset by 8
         add     128             ; Start offset
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
 
         ret
 .next:
@@ -123,7 +123,7 @@ ScavengeSceneAnimateIn1:
         ld      c, a
         ld      a, 136
         sub     c
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
         ret
 .next:
         ld      a, 0
@@ -165,12 +165,12 @@ ScavengeSceneAnimateOut1:
         ld      b, a
         ld      a, 136
         sub     b
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
 
         ret
 .next:
         ld      a, 128
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
 
         fcall   ScavengeSceneExit
         ret
@@ -228,7 +228,7 @@ ScavengeSceneAnimateOut0:
         ld      c, a
         ld      a, 112
         add     c
-        ld      [var_overlay_y_offset], a
+        ldh     [hvar_overlay_y_offset], a
         ret
 .next:
         fcall   VBlankIntrWait

@@ -342,14 +342,14 @@ r1_Screenshake:
         add     hl, bc          ; /
         ld      b, [hl]
 
-        ld      a, [var_view_y]
+        ldh     a, [hvar_view_y]
         ld      c, a
         fcall   r1_ViewAnchorAddSignedOffset
 
         ld      b, 121
         ld      c, 0
         fcall   Clamp
-        ld      [var_view_y], a
+        ldh     [hvar_view_y], a
         ret
 
 
