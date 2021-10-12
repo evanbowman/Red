@@ -298,6 +298,8 @@ var_world_map_cursor_tx:      DS      1
 var_world_map_cursor_ty:      DS      1
 var_world_map_cursor_visible: DS      1
 var_world_map_cursor_moving:  DS      1
+
+var_world_map_debug_counter:  DS      1
         NEXTU
 ;;; Room loading vars
 var_room_load_counter:        DS      1
@@ -335,6 +337,9 @@ var_blizzard_fadein_counter:            DS      1
 
 var_blizzard_snowflakes:   DS BLIZZARD_SNOWFLAKE_SIZE * BLIZZARD_SNOWFLAKE_COUNT
 
+        NEXTU
+var_shell_cursor_x:     DS      1
+var_shell_cursor_y:     DS      1
         NEXTU
         ENDU
 var_scene_union_end:

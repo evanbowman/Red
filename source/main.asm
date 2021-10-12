@@ -431,9 +431,6 @@ CreateWorld:
         ld      b, a
         fcall   InventoryAddItem
 
-        ld      b, ITEM_HAMMER
-        fcall   InventoryAddItem
-
 
         fcall   LoadDefaultMap
 
@@ -594,6 +591,7 @@ TimerISR:
         INCLUDE "worldmapScene.asm"
         INCLUDE "constructBonfireScene.asm"
         INCLUDE "scavengeScene.asm"
+        INCLUDE "shellCommandScene.asm"
         INCLUDE "messageBus.asm"
         INCLUDE "slabTable.asm"
         INCLUDE "utility.asm"
@@ -622,6 +620,7 @@ TimerISR:
         INCLUDE "rom12_intro_cutscene_data.asm"
         INCLUDE "rom13_intro_cutscene_data.asm"
         INCLUDE "rom14_intro_cutscene_data.asm"
+        INCLUDE "r14_shell.asm"
         INCLUDE "rom20_intro_cutscene_texture_data.asm"
         INCLUDE "rom21_intro_cutscene_texture_data.asm"
         INCLUDE "rom22_intro_cutscene_texture_data.asm"

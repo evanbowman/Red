@@ -49,6 +49,7 @@ WorldmapSceneEnter:
         ld      [var_world_map_cursor_visible], a
         ld      [var_world_map_cursor_tx], a
         ld      [var_world_map_cursor_ty], a
+        ld      [var_world_map_debug_counter], a
 
         ld      a, [var_room_x]
         ld      [var_world_map_cursor_x], a
@@ -70,6 +71,21 @@ WorldmapSceneEnter:
 WorldmapSceneUpdate:
         LONG_CALL r1_WorldMapUpdateCursor
 
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_START, a
+        jr      Z, .checkSelect
+
+        ld      a, [var_world_map_debug_counter]
+        inc     a
+        ld      [var_world_map_debug_counter], a
+        cp      7
+	jr      NZ, .checkSelect
+
+        ld      de, ShellCommandSceneEnter
+        fcall   SceneSetUpdateFn
+        ret
+
+.checkSelect:
         ldh     a, [hvar_joypad_current]
         bit     PADB_SELECT, a
         ret     Z

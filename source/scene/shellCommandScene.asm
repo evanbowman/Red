@@ -33,14 +33,21 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-;;; ############################################################################
 
-        SECTION "WRAM7_UNUSED", WRAMX, BANK[7]
+;;; ----------------------------------------------------------------------------
+
+ShellCommandSceneEnter:
+        LONG_CALL       r14_ShellCommandSceneEnterImpl
+        ld      de, ShellCommandSceneUpdate
+        fcall   SceneSetUpdateFn
+        ret
 
 
-wram7_var_shell_command_buffer: DS      32
-wram7_var_shell_parse_buffer:   DS      32
-wram7_var_shell_argstring:      DS      2
+;;; ----------------------------------------------------------------------------
+
+ShellCommandSceneUpdate:
+        LONG_CALL       r14_ShellCommandSceneUpdateImpl
+        ret
 
 
-;;; ############################################################################
+;;; ----------------------------------------------------------------------------
