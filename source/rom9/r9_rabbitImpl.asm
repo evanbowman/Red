@@ -299,15 +299,6 @@ r9_RabbitMessageLoop:
         ld      h, d
         ld      l, e
 
-        ld      bc, GREYWOLF_VAR_COLOR_COUNTER
-        fcall   EntityGetSlack
-        ld      a, 20
-        ld      [bc], a
-
-        ld      a, 7
-        fcall   EntitySetHWGraphicsAttributes
-
-
         push    hl
         fcall   EntityGetPos
         ld      hl, var_temp_hitbox1
@@ -321,6 +312,16 @@ r9_RabbitMessageLoop:
         fcall   CheckIntersection
         pop     hl
         ret     NC
+
+
+        ld      bc, GREYWOLF_VAR_COLOR_COUNTER ; FIXME
+        fcall   EntityGetSlack
+        ld      a, 20
+        ld      [bc], a
+
+        ld      a, 7
+        fcall   EntitySetHWGraphicsAttributes
+
 
         push    hl
         ld      b, 1

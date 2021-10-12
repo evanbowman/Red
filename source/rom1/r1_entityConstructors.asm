@@ -282,7 +282,7 @@ r1_RabbitDeadNew:
 
         fcall   r1_EntityNew
 
-        ld      a, SPRID_RABBIT_R ; FIXME
+        ld      a, SPRID_RABBIT_DEAD_R
         fcall   EntitySetFrameBase
 
         ld      a, 3
