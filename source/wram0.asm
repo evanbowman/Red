@@ -340,6 +340,12 @@ var_blizzard_snowflakes:   DS BLIZZARD_SNOWFLAKE_SIZE * BLIZZARD_SNOWFLAKE_COUNT
         NEXTU
 var_shell_cursor_x:     DS      1
 var_shell_cursor_y:     DS      1
+
+var_shell_command_buffer: DS      32
+var_shell_parse_buffer:   DS      32
+var_shell_argstring:      DS      2
+var_command_buffer_size:  DS      1
+
         NEXTU
         ENDU
 var_scene_union_end:

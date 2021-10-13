@@ -38,9 +38,6 @@
         SECTION "WRAM7_UNUSED", WRAMX, BANK[7]
 
 
-wram7_var_shell_command_buffer: DS      32
-wram7_var_shell_parse_buffer:   DS      32
-wram7_var_shell_argstring:      DS      2
 
 
 ;;; ############################################################################

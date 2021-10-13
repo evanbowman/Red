@@ -57,7 +57,7 @@ DB      "456789", 0, 0
 ;;; ----------------------------------------------------------------------------
 
 r14_InventoryPalettes::
-DB $BF,$73, $1A,$20, $1A,$20, $00,$04,
+DB $00,$04, $1A,$20, $1A,$20, $1A,$20,
 DB $BF,$73, $53,$5E, $2A,$39, $86,$18,
 DB $BF,$73, $EC,$31, $54,$62, $06,$2D,
 DB $D7,$6A, $6B,$49, $00,$00, $00,$04,
@@ -71,6 +71,8 @@ r14_InventoryPalettesEnd::
 ;;; ----------------------------------------------------------------------------
 
 r14_ShellCommandSceneEnterImpl:
+        fcall   r14_ShellInit
+
         ld      de, VoidVBlankFn
         fcall   SceneSetVBlankFn
 
@@ -175,11 +177,133 @@ r14_ShellCursorTileAddress:
 r14_ShellCommandSceneUpdateImpl:
         fcall   VBlankIntrWait
         fcall   r14_ShellCursorTileAddress
-
         VIDEO_BANK 1
-        ld      a, $81
+        ld      a, $8b
         ld      [hl], a
         VIDEO_BANK 0
+
+.checkUp:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_UP, a
+        jr      Z, .checkDown
+
+	ld      a, [var_shell_cursor_y]
+        cp      0
+        jr      Z, .checkDown
+
+        dec     a
+        ld      [var_shell_cursor_y], a
+
+.checkDown:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_DOWN, a
+        jr      Z, .checkLeft
+
+        ld      a, [var_shell_cursor_y]
+        ld      b, a
+        ld      a, 5
+        cp      b
+        jr      C, .checkLeft
+
+        inc     b
+        ld      a, b
+        ld      [var_shell_cursor_y], a
+
+.checkLeft:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_LEFT, a
+        jr      Z, .checkRight
+
+        ld      a, [var_shell_cursor_x]
+        cp      0
+        jr      Z, .checkRight
+        dec     a
+        ld      [var_shell_cursor_x], a
+
+.checkRight:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_RIGHT, a
+        jr      Z, .update
+
+        ld      a, [var_shell_cursor_x]
+        ld      b, a
+        ld      a, 4
+        cp      b
+        jr      C, .update
+
+        inc     b
+        ld      a, b
+        ld      [var_shell_cursor_x], a
+
+.update:
+        fcall   r14_ShellCursorTileAddress
+        VIDEO_BANK 1
+        ld      a, $88
+        ld      [hl], a
+        VIDEO_BANK 0
+
+
+.tryAppendChar:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_A, a
+        jr      Z, .tryPopChar
+
+        ld      hl, var_shell_command_buffer ; \
+        ld      a, [var_command_buffer_size] ; |
+        cp      18                           ; | \ Skip if screen is full
+        jr      Z, .tryPopChar               ; | /
+        inc     a                            ; |
+        ld      [var_command_buffer_size], a ; | Seek write position in command
+        dec     a                            ; | buffer.
+        ld      c, a                         ; |
+        ld      b, 0                         ; |
+        add     hl, bc                       ; /
+
+        push    hl                         ; \
+        fcall   r14_ShellCursorTileAddress ; | Load tile at cursor.
+        ld      a, [hl]                    ; |
+        pop     hl                         ; /
+
+        ld      [hl], a         ; Put cursor tile into command buffer
+
+.tryPopChar:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_B, a
+        jr      Z, .showBuffer
+
+        ld      hl, var_shell_command_buffer ; \
+        ld      a, [var_command_buffer_size] ; |
+        or      a                            ; | \ If empty, exit.
+        jr      Z, .exitScene                ; | /
+        dec     a                            ; |
+        ld      [var_command_buffer_size], a ; | Seek write position in command
+                                             ; | buffer.
+        ld      c, a                         ; |
+        ld      b, 0                         ; |
+        add     hl, bc                       ; /
+        ld      a, $32
+        ld      [hl], a
+
+
+.showBuffer:
+        ld      hl, var_shell_command_buffer
+        ld      de, $9e01
+        ld      b, $8B
+        fcall   PutText
+
+
+.checkCommandEntry:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_START, a
+        ret     Z
+        fcall   r14_ShellEvalCommand
+
+        fcall   r14_ShellInit
+        ret
+
+.exitScene:
+        ld      de, OverworldSceneEnter
+        fcall   SceneSetUpdateFn
         ret
 
 
@@ -263,7 +387,7 @@ r14_ShellTest:
         fcall   r14_ShellInit
 
         ld      hl, TEST_STR
-        ld      de, wram7_var_shell_command_buffer
+        ld      de, var_shell_command_buffer
         ld      bc, 11
         fcall   Memcpy
 
@@ -274,9 +398,15 @@ r14_ShellTest:
 ;;; ----------------------------------------------------------------------------
 
 r14_ShellInit:
-	ld      hl, wram7_var_shell_command_buffer
-        ld      a, 0
+	ld      hl, var_shell_command_buffer
+        xor     a
+        ld      [var_command_buffer_size], a
         ld      bc, 32
+        fcall   Memset
+
+	ld      hl, var_shell_command_buffer
+        ld      a, $32
+        ld      bc, 18
         fcall   Memset
         ret
 
@@ -284,13 +414,13 @@ r14_ShellInit:
 ;;; ----------------------------------------------------------------------------
 
 r14_ShellParseCommandName:
-        ld      hl, wram7_var_shell_parse_buffer
+        ld      hl, var_shell_parse_buffer
         ld      a, 0
         ld      bc, 32
         fcall   Memset
 
-        ld      hl, wram7_var_shell_parse_buffer
-        ld      de, wram7_var_shell_command_buffer
+        ld      hl, var_shell_parse_buffer
+        ld      de, var_shell_command_buffer
 
 .skipLeadingWhitespace:
         ld      a, [de]
@@ -312,9 +442,9 @@ r14_ShellParseCommandName:
 
 .done:
         ld      a, d
-        ld      [wram7_var_shell_argstring], a
+        ld      [var_shell_argstring], a
         ld      a, e
-        ld      [wram7_var_shell_argstring + 1], a
+        ld      [var_shell_argstring + 1], a
         ret
 
 
@@ -344,7 +474,7 @@ r14_StringCompare:
 r14_ShellEvalCommand:
         fcall   r14_ShellParseCommandName
 
-        ld      hl, wram7_var_shell_parse_buffer
+        ld      hl, var_shell_parse_buffer
         fcall   r14_ShellLookupCommand
         jr      NC, .notFound
 
