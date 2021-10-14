@@ -298,6 +298,7 @@ Start:
 ;;; ----------------------------------------------------------------------------
 
 
+
 Main:
         ld	a, IEF_VBLANK	        ; vblank interrupt
 	ld	[rIE], a	        ; setup
@@ -585,6 +586,7 @@ TimerISR:
         INCLUDE "worldmapScene.asm"
         INCLUDE "constructBonfireScene.asm"
         INCLUDE "scavengeScene.asm"
+        INCLUDE "dialogScene.asm"
         INCLUDE "shellCommandScene.asm"
         INCLUDE "messageBus.asm"
         INCLUDE "slabTable.asm"
@@ -613,6 +615,7 @@ TimerISR:
         INCLUDE "rom11_data.asm"
         INCLUDE "rom12_intro_cutscene_data.asm"
         INCLUDE "rom13_intro_cutscene_data.asm"
+        INCLUDE "r13_dialog.asm"
         INCLUDE "rom14_intro_cutscene_data.asm"
         INCLUDE "r14_shell.asm"
         INCLUDE "rom20_intro_cutscene_texture_data.asm"

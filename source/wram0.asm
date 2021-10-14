@@ -353,6 +353,14 @@ var_shell_completion_select:    DS      1
 var_shell_parse_argument:       DS      32
 
         NEXTU
+var_dialog_string:              DS      2
+var_dialog_current_word:        DS      18
+var_dialog_current_char:        DS      1
+var_dialog_counter:             DS      1
+var_dialog_finished:            DS      1
+var_dialog_cursor_x:            DS      1
+var_dialog_cursor_y:            DS      1
+        NEXTU
         ENDU
 var_scene_union_end:
 

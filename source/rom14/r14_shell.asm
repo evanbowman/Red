@@ -251,6 +251,12 @@ r14_ShellClearCommand:
 
 ;;; ----------------------------------------------------------------------------
 
+r14_ShellRebootCommandName:
+DB      "reboot", 0
+
+
+;;; ----------------------------------------------------------------------------
+
 ;;; NOTE: command names should be no longer than nine characters.
 r14_ShellCommandTable:
 DW      r14_ShellRoomCommandName, r14_ShellRoomCommand
@@ -261,6 +267,7 @@ DW      r14_ShellAddEntityCommandName, r14_ShellAddEntityCommand
 DW      r14_ShellRoomSetFlagsCommandName, r14_ShellRoomSetFlagsCommand
 DW      r14_ShellRoomSetVariantCommandName, r14_ShellRoomSetVariantCommand
 DW      r14_ShellClearCommandName, r14_ShellClearCommand
+DW      r14_ShellRebootCommandName, SystemReboot
 DW      $0000, $0000            ; Last row should contain null pointers.
 r14_ShellCommandTableEnd:
 

@@ -351,8 +351,26 @@ r9_PlayerOnMessage:
         ld      a, [bc]                 ; Load message type
         cp      MESSAGE_WOLF_ATTACK
         jr      Z, .onWolfAttack
+        cp      MESSAGE_DIALOG_BOX_OPENED
+        jr      Z, .onDialogOpened
+	cp      MESSAGE_DIALOG_BOX_CLOSED
+        jr      Z, .onDialogClosed
 
         ;; TODO... currently, we're ignoring all messages.
+        ret
+
+.onDialogOpened:
+        ld      hl, var_player_struct
+        ld      de, PlayerDialogIdle
+        fcall   EntitySetUpdateFn
+
+        fcall   r9_PlayerSetIdleSprite
+        ret
+
+.onDialogClosed:
+        ld      hl, var_player_struct
+        ld      de, PlayerUpdate
+        fcall   EntitySetUpdateFn
         ret
 
 .onWolfAttack:
@@ -405,8 +423,6 @@ r9_PlayerMessageLoop:
 ;;; ----------------------------------------------------------------------------
 
 r9_PlayerUpdateImpl:
-        fcall   r9_PlayerMessageLoop
-
         fcall   r9_PlayerUpdateInjuredColor
 
         fcall   r9_PlayerUpdateMovement
@@ -415,6 +431,7 @@ r9_PlayerUpdateImpl:
         and     PADF_DOWN
         jr      Z, .checkUpReleased
 
+.checkDownReleased:
         ldh     a, [hvar_joypad_raw]
         and     PADF_LEFT | PADF_RIGHT | PADF_UP
         jr      NZ, .checkUpReleased
@@ -511,6 +528,7 @@ r9_PlayerUpdateImpl:
         and     PADF_LEFT | PADF_RIGHT | PADF_UP | PADF_DOWN
         fcallc  Z, r9_PlayerSetIdleSprite
 .return:
+        fcall   r9_PlayerMessageLoop
         ret
 
 .tryInteractEntities:
@@ -2175,6 +2193,14 @@ r9_PlayerSetIdleSprite:
         fcall   EntitySetFrameBase
         ret
 
+
+
+;;; ----------------------------------------------------------------------------
+
+r9_PlayerDialogIdleImpl:
+        fcall   r9_PlayerMessageLoop
+        fcall   r9_PlayerUpdateInjuredColor
+        ret
 
 
 ;;; ----------------------------------------------------------------------------

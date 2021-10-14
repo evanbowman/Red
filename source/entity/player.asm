@@ -151,3 +151,10 @@ PlayerDropHammerRecover:
 
 
 ;;; ----------------------------------------------------------------------------
+
+PlayerDialogIdle:
+        LONG_CALL r9_PlayerDialogIdleImpl
+        jp      EntityUpdateLoopResume
+
+
+;;; ----------------------------------------------------------------------------
