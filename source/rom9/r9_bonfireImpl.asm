@@ -101,6 +101,21 @@ r9_BonfireOnMessage:
         ld      a, INVENTORY_TAB_COOK
         ld      [var_inventory_scene_tab], a
 
+        ld      a, [var_bonfire_dialog_played]
+        or      a
+        jr      NZ, .skipDialog
+
+	ld      a, 1
+        ld      [var_bonfire_dialog_played], a
+
+	ld      bc, TEST_STR
+        ld      de, InventorySceneEnter
+        fcall   DialogSetup
+
+        ld      de, DialogSceneEnter
+        jp      EntityMessageLoopJumpToScene
+
+.skipDialog:
         ld      de, InventorySceneEnter
         jp      EntityMessageLoopJumpToScene
 

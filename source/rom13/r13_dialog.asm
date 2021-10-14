@@ -160,8 +160,9 @@ r13_DialogEngineStep:
 
         ld      a, [var_dialog_cursor_x] ; \
         ld      b, a                     ; | A now contains remaining chars
-        ld      a, 18                    ; | in row.
+        ld      a, 17                    ; | in row.
         sub     b                        ; /
+        jr      C, .nextRow
 
         cp      c               ; \ If remaining less than required, go to next
         jr      C, .nextRow     ; / screen row...
@@ -281,9 +282,6 @@ r13_DialogOpen:
         ld      hl, r13_InventoryPalettes
         ld      b, 32
         fcall   LoadBackgroundColors
-
-        ld      a, 104
-        ld      [rWY], a
 
         ld      hl, r13_DialogBoxTemplate
         ld      de, $9c00

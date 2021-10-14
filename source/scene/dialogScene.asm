@@ -33,23 +33,34 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-DialogSetString:
+DialogSetup:
 ;;; bc - string
+;;; de - scene to run after the dialog completes.
         ld      a, b
         ld      [var_dialog_string], a
         ld      a, c
         ld      [var_dialog_string + 1], a
+
+        ld      a, d
+        ld      [var_dialog_next_scene], a
+        ld      a, e
+        ld      [var_dialog_next_scene + 1], a
         ret
 
 
 ;;; ----------------------------------------------------------------------------
 
 DialogSceneEnter:
+        fcall   DrawEntitiesSimple
+
         ld      de, DialogSceneEnterVBlank
         fcall   SceneSetVBlankFn
 
         ld      de, VoidUpdateFn
         fcall   SceneSetUpdateFn
+
+        xor     a
+        ld      [var_dialog_a_released], a
         ret
 
 
@@ -68,17 +79,47 @@ DialogSceneEnterVBlank:
 
 ;;; ----------------------------------------------------------------------------
 
+DialogSceneScrollInVBlank:
+        ld      a, [var_water_anim_changed]
+        or      a
+        fcallc  NZ, VBlankCopyWaterTextures
+
+        fcall   VBlankCopySpriteTextures
+
+        ld      a, [var_dialog_scroll_in_y]
+        cp      104
+        jr      Z, .done
+
+        sub     4
+        ld      [var_dialog_scroll_in_y], a
+
+        ld      [rWY], a
+        ret
+
+.done:
+        ld      de, DialogScenePutcharVBlank
+        fcall   SceneSetVBlankFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 DialogSceneOnOpen:
         LONG_CALL r13_DialogOpenedMessageBroadcast
         ld      de, DialogSceneUpdate
         fcall   SceneSetUpdateFn
 
-        ld      de, DialogScenePutcharVBlank
+        fcall   DrawEntitiesSimple
+
+        ld      de, DialogSceneScrollInVBlank
         fcall   SceneSetVBlankFn
 
         LONG_CALL r13_DialogInit
 
         LONG_CALL r13_DialogLoadWord
+
+        ld      a, 128
+        ld      [var_dialog_scroll_in_y], a
         ret
 
 
@@ -115,7 +156,10 @@ DialogSceneExitVBlank:
 
         fcall   FadeNone
 
-        ld      de, OverworldSceneUpdate
+        ld      a, [var_dialog_next_scene]
+        ld      d, a
+        ld      a, [var_dialog_next_scene + 1]
+        ld      e, a
         fcall   SceneSetUpdateFn
 
         ld      de, OverworldSceneOnVBlank
@@ -131,6 +175,9 @@ DialogSceneAwaitButtonVBlank:
         fcallc  NZ, VBlankCopyWaterTextures
 
         fcall   VBlankCopySpriteTextures
+
+        xor     a
+        ld      [var_dialog_a_released], a
 
         ldh     a, [hvar_joypad_current]
         bit     PADB_A, a
@@ -177,15 +224,25 @@ DialogSceneVBlank:
         ldh     a, [hvar_joypad_raw]
         ld      b, a
 
-        ld      a, [var_dialog_counter]
-        inc     a
-        bit     PADB_B, b
+        ld      a, [var_dialog_a_released]
+        or      a
+        jr      NZ, .setSpeed
+
+        bit     PADB_A, b
+        jr      NZ, .slow
+
+        ld      a, 1
+        ld      [var_dialog_a_released], a
+
+.setSpeed:
+        bit     PADB_A, b
 	jr      Z, .slow
 .fast:
-        cp      1
-        jr      Z, .putChar
+        jr      .putChar
 .slow:
-        cp      5
+        ld      a, [var_dialog_counter]
+        inc     a
+        cp      2
         jr      Z, .putChar
 .wait:
         ld      [var_dialog_counter], a

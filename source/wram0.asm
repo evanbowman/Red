@@ -360,6 +360,9 @@ var_dialog_counter:             DS      1
 var_dialog_finished:            DS      1
 var_dialog_cursor_x:            DS      1
 var_dialog_cursor_y:            DS      1
+var_dialog_scroll_in_y:         DS      1
+var_dialog_a_released:          DS      1
+var_dialog_next_scene:          DS      2
         NEXTU
         ENDU
 var_scene_union_end:
@@ -419,6 +422,8 @@ var_scavenge_target:    DS      2
 
 
 var_entity_slab_weight: DS      1
+
+var_bonfire_dialog_played:      DS      1
 
 
 ;;; ############################################################################
