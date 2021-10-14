@@ -70,6 +70,273 @@ r14_InventoryPalettesEnd::
 
 ;;; ----------------------------------------------------------------------------
 
+r14_RefreshRoom:
+;;; Redisplay room after updating room variables.
+        WIDE_CALL r1_StoreRoomEntities ; ...
+        WIDE_CALL MapLoad2__rom0_only  ; Load the room data into ram.
+        WIDE_CALL MapShow              ; Write the room's tiles to vram
+        WIDE_CALL r1_PlayerNew         ; Add the player to the room
+        WIDE_CALL r1_LoadRoomEntities  ; Load entities from the new room's data
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r14_ShellRoomCommandName:
+DB      "room", 0
+r14_ShellRoomCommand:
+;;; Jump to a specific room. room <x> <y>
+
+        ;; Probably the most complex command, in its implementation. Requires
+        ;; a bunch of stuff to be called in a specific order.
+
+        fcall   r14_ShellCommandReadIntegerArgument
+        ld      b, a
+        push    bc
+        fcall   r14_ShellCommandReadIntegerArgument
+        pop     bc
+        ld      c, a
+
+        push    bc                     ; \
+        WIDE_CALL r1_StoreRoomEntities ; | Write back current room entities to
+        pop     bc                     ; / map ram.
+
+        ld      a, b            ; \
+        ld      [var_room_x], a ; | Adjust current room coordinates to desired
+        ld      a, c            ; | room.
+        ld      [var_room_y], a ; /
+
+        ;; MapLoad2 switches banks, i.e. must use widecall
+        WIDE_CALL MapLoad2__rom0_only ; Load the room data into ram.
+        ;; MapShow contains a plain LONG_CALL, i.e. must use widecall
+        WIDE_CALL MapShow       ; Write the room's tiles to vram
+
+        WIDE_CALL r1_PlayerNew  ; Add the player to the room
+        WIDE_CALL r1_LoadRoomEntities ; Load entities from the new room's data
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r14_ShellItemCommandName:
+DB      "item", 0
+r14_ShellItemCommand:
+;;; Add an item to the player's inventory. item <n>
+        fcall   r14_ShellCommandReadIntegerArgument
+        ld      b, a
+        fcall   InventoryAddItem
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r14_ShellLivesCommandName:
+DB      "lives", 0
+r14_ShellLivesCommand:
+;;; Set lives. lives <n>
+        fcall   r14_ShellCommandReadIntegerArgument
+        or      a               ; \ Cannot set lives to zero.
+        ret     Z               ; /
+
+        ld      b, a
+        ld      a, 9
+        cp      b
+        ret     C               ; cannot set lives > 9.
+        ld      a, b
+        ld      [var_lives], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r14_ShellLevelCommandName:
+DB      "level", 0
+r14_ShellLevelCommand:
+;;; Set player's level. level <n>
+        fcall   r14_ShellCommandReadIntegerArgument
+        ld      [var_level], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r14_ShellRoomSetFlagsCommandName:
+DB      "rm-set-fl", 0
+r14_ShellRoomSetFlagsCommand:
+;;; Set flags for the current room. rm-set-fl <byte>
+        ld      a, [var_room_x]
+        ld      b, a
+
+        ld      a, [var_room_y]
+        ld      c, a
+
+        RAM_BANK 1
+        WIDE_CALL r1_LoadRoom
+
+        push    hl
+        fcall   r14_ShellCommandReadIntegerArgument
+        pop     hl
+
+        ld      [hl], a
+
+        fcall   r14_RefreshRoom
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r14_ShellRoomSetVariantCommandName:
+DB      "rm-set-vr", 0
+r14_ShellRoomSetVariantCommand:
+;;; Set the current room's variant. rm-set-vr <n>
+        ld      a, [var_room_x]
+        ld      b, a
+
+        ld      a, [var_room_y]
+        ld      c, a
+
+        RAM_BANK 1
+        WIDE_CALL r1_LoadRoom
+        inc     hl
+
+        push    hl
+        fcall   r14_ShellCommandReadIntegerArgument
+        pop     hl
+
+        ld      [hl], a
+
+        fcall   r14_RefreshRoom
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r14_ShellAddEntityCommandName:
+DB      "entity", 0
+r14_ShellAddEntityCommand:
+;;; Put an entity into the current room. entity <x> <y> <type>
+        fcall   r14_ShellCommandReadIntegerArgument
+        and     $0f
+        swap    a
+        ld      b, a
+        push    bc
+        fcall   r14_ShellCommandReadIntegerArgument
+        and     $0f
+        swap    a
+        pop     bc
+        ld      c, a
+
+        push    bc
+        fcall   r14_ShellCommandReadIntegerArgument
+        pop     bc
+        ld      e, a
+
+        WIDE_CALL r1_SpawnEntityAlt
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+r14_ShellClearCommandName:
+DB      "clear", 0
+r14_ShellClearCommand:
+;;; Clear entities from the current room.
+        fcall   EntityBufferReset
+        WIDE_CALL r1_PlayerNew
+
+        ;; TODO: also clear collectibles (which requires a room refresh!).
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+;;; NOTE: command names should be no longer than nine characters.
+r14_ShellCommandTable:
+DW      r14_ShellRoomCommandName, r14_ShellRoomCommand
+DW      r14_ShellItemCommandName, r14_ShellItemCommand
+DW      r14_ShellLivesCommandName, r14_ShellLivesCommand
+DW      r14_ShellLevelCommandName, r14_ShellLevelCommand
+DW      r14_ShellAddEntityCommandName, r14_ShellAddEntityCommand
+DW      r14_ShellRoomSetFlagsCommandName, r14_ShellRoomSetFlagsCommand
+DW      r14_ShellRoomSetVariantCommandName, r14_ShellRoomSetVariantCommand
+DW      r14_ShellClearCommandName, r14_ShellClearCommand
+DW      $0000, $0000            ; Last row should contain null pointers.
+r14_ShellCommandTableEnd:
+
+
+;;; ----------------------------------------------------------------------------
+
+r14_ShellCommandParseNextArgument:
+;;; trashes a bunch of registers
+;;; overwrites var_shell_parse_argument with the parsed string
+        ld      hl, var_shell_parse_argument
+        xor     a
+        ld      bc, 32
+        fcall   Memset
+
+        ld      a, [var_shell_argstring]
+        ld      d, a
+        ld      a, [var_shell_argstring + 1]
+        ld      e, a
+
+.skipLeadingWhitespace:
+        ld      a, [de]
+        cp      $32
+        jr      NZ, .setupStore
+        inc     de
+        jr      .skipLeadingWhitespace
+
+.setupStore:
+        ld      hl, var_shell_parse_argument
+
+.store:
+        ld      a, [de]
+        cp      $32
+        jr      Z, .done
+        cp      0
+        jr      Z, .done
+
+        ld      [hl+], a
+        inc     de
+
+        jr      .store
+
+.done:
+        ld      a, d
+        ld      [var_shell_argstring], a
+        ld      a, e
+        ld      [var_shell_argstring + 1], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+;;; r14_ShellParseCommandName stores a pointer to the command argument vector in
+;;; ram. You may call r14_shellCommandReadInteger to parse each integer
+;;; argument. NOTE: an argument must be either a decimal value, or of the form
+;;; h<hex value>.
+r14_ShellCommandReadIntegerArgument:
+;;; trashes a bunch of registers
+;;; result in a
+        fcall   r14_ShellCommandParseNextArgument
+        ld      hl, var_shell_parse_argument
+        ld      a, [hl]
+        cp      $44             ; 'h', see charmap
+        jr      Z, .parseHexNumber
+
+.parseDecimalNumber:
+        fcall   strtob
+        ret
+
+.parseHexNumber:
+        inc     hl              ; move to next byte, as first byte was 'h'
+        fcall   strtoh
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 r14_ShellCommandSceneEnterImpl:
         fcall   r14_ShellInit
 
@@ -135,6 +402,10 @@ r14_ShellCommandSceneEnterImpl:
         ld      b, $8B
         fcall   PutText
 
+        ld      de, $9e20
+        ld      a, $79
+        ld      [de], a
+
         ld      b, r14_InventoryPalettesEnd - r14_InventoryPalettes
         ld      hl, r14_InventoryPalettes
         fcall   LoadBackgroundColors
@@ -189,9 +460,14 @@ r14_ShellCommandSceneUpdateImpl:
 
 	ld      a, [var_shell_cursor_y]
         cp      0
-        jr      Z, .checkDown
+        jr      Z, .wrapUp
 
         dec     a
+        ld      [var_shell_cursor_y], a
+        jr      .checkDown
+
+.wrapUp:
+        ld      a, 6
         ld      [var_shell_cursor_y], a
 
 .checkDown:
@@ -203,10 +479,15 @@ r14_ShellCommandSceneUpdateImpl:
         ld      b, a
         ld      a, 5
         cp      b
-        jr      C, .checkLeft
+        jr      C, .wrapDown
 
         inc     b
         ld      a, b
+        ld      [var_shell_cursor_y], a
+        jr      .checkLeft
+
+.wrapDown:
+        xor     a
         ld      [var_shell_cursor_y], a
 
 .checkLeft:
@@ -216,8 +497,13 @@ r14_ShellCommandSceneUpdateImpl:
 
         ld      a, [var_shell_cursor_x]
         cp      0
-        jr      Z, .checkRight
+        jr      Z, .wrapLeft
         dec     a
+        ld      [var_shell_cursor_x], a
+        jr      .checkRight
+
+.wrapLeft:
+        ld      a, 5
         ld      [var_shell_cursor_x], a
 
 .checkRight:
@@ -229,10 +515,15 @@ r14_ShellCommandSceneUpdateImpl:
         ld      b, a
         ld      a, 4
         cp      b
-        jr      C, .update
+        jr      C, .wrapRight
 
         inc     b
         ld      a, b
+        ld      [var_shell_cursor_x], a
+        jr      .update
+
+.wrapRight:
+        xor     a
         ld      [var_shell_cursor_x], a
 
 .update:
@@ -287,7 +578,7 @@ r14_ShellCommandSceneUpdateImpl:
 
 .showBuffer:
         ld      hl, var_shell_command_buffer
-        ld      de, $9e01
+        ld      de, $9e21
         ld      b, $8B
         fcall   PutText
 
@@ -295,10 +586,32 @@ r14_ShellCommandSceneUpdateImpl:
 .checkCommandEntry:
         ldh     a, [hvar_joypad_current]
         bit     PADB_START, a
-        ret     Z
+        jr      Z, .checkAutocomplete
         fcall   r14_ShellEvalCommand
 
         fcall   r14_ShellInit
+        ret
+
+.checkAutocomplete:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_SELECT, a
+        ret     Z
+        fcall   r14_ShellFindCompletions
+        ld      a, [var_shell_completion_count]
+        or      a
+        ret     Z
+
+	xor     a
+        ld      [var_shell_completion_select], a
+
+        ld      de, ShellCommandSceneSelectCompletion
+        fcall   SceneSetUpdateFn
+
+        fcall   r14_ShellCursorTileAddress
+        VIDEO_BANK 1
+        ld      a, $8b
+        ld      [hl], a
+        VIDEO_BANK 0
         ret
 
 .exitScene:
@@ -309,27 +622,220 @@ r14_ShellCommandSceneUpdateImpl:
 
 ;;; ----------------------------------------------------------------------------
 
-TEST_STR:
-DB      "  room 3 5", 0
+r14_ShellCommandSceneSelectCompletion:
+        call    VBlankIntrWait
+
+        VIDEO_BANK 1
+
+        ld      a, [var_shell_completion_select]
+        ld      c, a
+        ld      b, 0
+        fcall   Mul32
+        ld      hl, $9c28
+        add     hl, bc
+        ld      a, $8b
+        ld      bc, 10
+        fcall   Memset
 
 
+.checkUp:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_UP, a
+        jr      Z, .checkDown
 
-r14_ShellRoomCommandName:
-DB      "room", 0
-r14_ShellRoomCommand:
-        ;; ...
+	ld      a, [var_shell_completion_select]
+        cp      0
+        jr      Z, .wrapUp
+
+        dec     a
+        ld      [var_shell_completion_select], a
+        jr      .checkDown
+
+.wrapUp:
+        ld      a, [var_shell_completion_count]
+        dec     a
+        ld      [var_shell_completion_select], a
+
+.checkDown:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_DOWN, a
+        jr      Z, .checkA
+
+        ld      a, [var_shell_completion_select]
+        ld      b, a
+        ld      a, [var_shell_completion_count]
+        dec     a
+        dec     a
+        cp      b
+        jr      C, .wrapDown
+
+        inc     b
+        ld      a, b
+        ld      [var_shell_completion_select], a
+        jr      .checkA
+
+.wrapDown:
+        xor     a
+        ld      [var_shell_completion_select], a
+
+.checkA:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_A, a
+        jr      Z, .checkB
+
+        VIDEO_BANK 0
+
+        fcall   r14_ShellInit
+        ld      a, [var_shell_completion_select]
+        ld      c, a
+        ld      b, 0
+        fcall   Mul32
+        ld      hl, $9c28
+        add     hl, bc
+
+        ld      de, var_shell_command_buffer
+        ld      bc, 10
+        fcall   Memcpy
+
+        ld      a, 5                    ; \
+        ld      [var_shell_cursor_x], a ; | Move cursor to space character on
+        dec     a                       ; | keyboard.
+        ld      [var_shell_cursor_y], a ; /
+
+        ld      hl, var_shell_command_buffer
+        ld      d, 0
+.countLoop:
+        ld      a, [hl+]
+        cp      $32
+        jr      Z, .return
+        inc     d
+        ld      a, d
+        ld      [var_command_buffer_size], a
+        jr      .countLoop
+
+
+.checkB:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_B, a
+        jr      Z, .update
+
+.return:
+        ld      de, ShellCommandSceneUpdate
+        fcall   SceneSetUpdateFn
+
+        ld      d, 0
+.clearLoop:
+        ld      a, [var_shell_completion_count]
+        cp      d
+        ret     Z
+
+        fcall   VBlankIntrWait
+
+        push    de
+        ld      c, d
+        ld      b, 0
+        fcall   Mul32
+        ld      hl, $9c28
+        add     hl, bc
+        pop     de
+
+        VIDEO_BANK 1
+        push    hl
+        ld      a, $8b
+        ld      bc, 10
+        fcall   Memset
+        pop     hl
+        VIDEO_BANK 0
+        ld      a, $32
+        ld      bc, 10
+        fcall   Memset
+
+        inc     d
+        jr      .clearLoop
+
+
+.update:
+        ld      a, [var_shell_completion_select]
+        ld      c, a
+        ld      b, 0
+        fcall   Mul32
+        ld      hl, $9c28
+        add     hl, bc
+        ld      a, $88
+        ld      bc, 10
+        fcall   Memset
+
+        VIDEO_BANK 0
+
         ret
-
 
 
 ;;; ----------------------------------------------------------------------------
 
+r14_ShellFindCompletions:
+        xor     a
+        ld      [var_shell_completion_count], a
 
-r14_ShellCommandTable:
-DW      r14_ShellRoomCommandName, r14_ShellRoomCommand
-DW      $0000, $0000            ; Last row should contain null pointers.
-r14_ShellCommandTableEnd:
+        fcall   r14_ShellParseCommandName
+        ld      hl, var_shell_parse_buffer
+        ld      bc, r14_ShellCommandTable
+.loop:
+        ld      a, [bc]
+        ld      e, a
+        inc     bc
+        ld      a, [bc]
+        ld      d, a
+        inc     bc
 
+        ld      a, d            ; \
+        or      e               ; | Check if loaded command name is null
+        ret     Z               ; /
+
+	push    de
+        push    hl
+        push    bc
+        fcall   r14_StringComparePrefix
+        pop     bc
+        pop     hl
+        pop     de
+        jr      NZ, .next
+
+.match:
+        push    hl
+        push    bc
+
+        fcall   VBlankIntrWait
+        ld      h, d
+        ld      l, e
+
+        push    hl
+        ld      a, [var_shell_completion_count]
+        ld      c, a
+        ld      b, 0
+        fcall   Mul32
+        ld      hl, $9c28
+        add     hl, bc
+        ld      d, h
+        ld      e, l
+        pop     hl
+
+        ld      b, $8B
+        fcall   PutText
+
+        ld      a, [var_shell_completion_count]
+        inc     a
+        ld      [var_shell_completion_count], a
+
+        pop     bc
+        pop     hl
+
+.next:
+        inc     bc
+        inc     bc
+        jr      .loop
+
+
+;;; ----------------------------------------------------------------------------
 
 r14_ShellLookupCommand:
 ;;; hl - command name
@@ -352,7 +858,7 @@ r14_ShellLookupCommand:
 
         push    hl
         push    bc
-        fcall   r14_StringCompare
+        fcall   StringCompare
         pop     bc
         pop     hl
         jr      Z, .found
@@ -361,7 +867,6 @@ r14_ShellLookupCommand:
         inc     bc              ; /
 
         jr      .loop
-        ret
 
 .found:
         ld      a, [bc]
@@ -374,24 +879,6 @@ r14_ShellLookupCommand:
 
 .notFound:
         or      a               ; reset C flag, not found
-        ret
-
-
-;;; ----------------------------------------------------------------------------
-
-
-
-r14_ShellTest:
-        RAM_BANK 7
-
-        fcall   r14_ShellInit
-
-        ld      hl, TEST_STR
-        ld      de, var_shell_command_buffer
-        ld      bc, 11
-        fcall   Memcpy
-
-        fcall   r14_ShellEvalCommand
         ret
 
 
@@ -451,22 +938,25 @@ r14_ShellParseCommandName:
 
 ;;; ----------------------------------------------------------------------------
 
-
-r14_StringCompare:
+r14_StringComparePrefix:
 ;;; hl - string 1
 ;;; de - string 2
 ;;; trashes b
-;;; return Z flag if equal, NZ flag otherwise
-	ld      a, [de]
-	ld      b, a
-	ld      a, [hl]
-	cp      b
-	ret     NZ
-	cp      0
-	ret     Z
-	inc     hl
-	inc     de
-	jr      r14_StringCompare
+;;; return Z flag if prefix equal, NZ flag otherwise
+        ld      a, [hl+]
+        or      a
+        ret     Z
+        ld      b, a
+
+        ld      a, [de]
+        or      a
+        ret     Z
+
+        cp      b
+        ret     NZ
+
+        inc     de
+        jr      r14_StringComparePrefix
 
 
 ;;; ----------------------------------------------------------------------------

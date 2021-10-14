@@ -93,12 +93,7 @@ ENDM
 WIDE_CALL: MACRO
         ASSERT (BANK(\1) != BANK(@)) ; pointless call to current bank
 
-        ;; Wasteful to call from bank0... Or is it? I suppose I could see some
-        ;; usefullness in being able to call ROMX functions without messing with
-        ;; the currently-assigned ROM bank. But I think it's ultimately best to
-        ;; discourage doing this, hence the assertion.
-        ASSERT (BANK(@) != BANK(EntryPoint))
-	ASSERT (BANK(__Widecall) == BANK(EntryPoint))
+        ASSERT (BANK(__Widecall) == BANK(EntryPoint))
 
         ld      d, BANK(@)
         ld      a, BANK(\1)
@@ -565,7 +560,6 @@ TimerISR:
 
 
 ;;; ----------------------------------------------------------------------------
-
 
 
 ;;; I ran into issues where the I see illegal instruction errors when separating

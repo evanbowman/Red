@@ -375,3 +375,81 @@ Clamp:
 
 
 ;;; ----------------------------------------------------------------------------
+
+strtob:
+;;; hl - string containing a number
+;;; a - parsed number
+        xor     a
+        call    .loop
+        ld      a, d
+        ret
+.loop:
+        ld      d, a
+        ld      a, [hl]
+        inc     hl
+        sub     $3C + 1
+        add     10
+        ret     NC
+        ld      e, a
+        ld      a, d
+        add     a, a     ; double our accumulator
+        add     a, a     ; double again (now x4)
+        add     a, d     ; add the original (now x5)
+        add     a, a     ; double again (now x10)
+        add     a, e     ; add in the incoming digit
+        jr      .loop
+
+
+;;; ----------------------------------------------------------------------------
+
+strtoh:
+;;; hl - string containing a hex number
+;;; a - parsed number
+;;; eh, this is probably inefficient, I wrote it in like ten minutes
+        ld      a, [hl+]
+        ld      b, a
+        ld      a, $42
+        sub     b               ; 'f', see charmap
+        ld      b, a
+        ld      a, 15
+        sub     b
+        ld      b, a
+
+        ld      a, [hl]          ; \
+        or      a                ; | Check for null byte after the first
+        jr      Z, .returnSingle ; / character.
+
+        swap    b
+        ld      c, a
+        ld      a, $42
+        sub     c
+        ld      c, a
+        ld      a, 15
+        sub     c
+        or      b
+        ret
+
+.returnSingle:
+        ld      a, b
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+StringCompare:
+;;; hl - string 1
+;;; de - string 2
+;;; trashes b
+;;; return Z flag if equal, NZ flag otherwise
+	ld      a, [de]
+	ld      b, a
+	ld      a, [hl+]
+	cp      b
+	ret     NZ
+	cp      0
+	ret     Z
+	inc     de
+	jr      StringCompare
+
+
+;;; ----------------------------------------------------------------------------

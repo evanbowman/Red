@@ -911,6 +911,7 @@ EntitySwap:
 
 Mul32:
 ;;; bc - number to shift by five
+;;; trashes d
         ld      d, c
         ;; Right-shift contents of c by three, so upper five bits are now lsb
         srl     d

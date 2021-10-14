@@ -1690,7 +1690,6 @@ r1_SetRoomVisited:
         ld      a, [var_room_y]
         ld      c, a
 
-.test:
         fcall   r1_LoadRoom
         ld      a, [hl]
 
@@ -1756,6 +1755,13 @@ r1_LoadRoomEntities:
 
 
 ;;; ----------------------------------------------------------------------------
+
+
+r1_SpawnEntityAlt:              ; WIDE_CALL overwrites d.
+;;; b - x
+;;; c - y
+;;; e - typeid
+        ld      d, e
 
 r1_SpawnEntity:
 ;;; b - x

@@ -37,7 +37,7 @@
 ;;; ----------------------------------------------------------------------------
 
 ShellCommandSceneEnter:
-        LONG_CALL       r14_ShellCommandSceneEnterImpl
+        LONG_CALL r14_ShellCommandSceneEnterImpl
         ld      de, ShellCommandSceneUpdate
         fcall   SceneSetUpdateFn
         ret
@@ -46,7 +46,14 @@ ShellCommandSceneEnter:
 ;;; ----------------------------------------------------------------------------
 
 ShellCommandSceneUpdate:
-        LONG_CALL       r14_ShellCommandSceneUpdateImpl
+        LONG_CALL r14_ShellCommandSceneUpdateImpl
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+ShellCommandSceneSelectCompletion:
+        LONG_CALL r14_ShellCommandSceneSelectCompletion
         ret
 
 

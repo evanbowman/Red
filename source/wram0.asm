@@ -346,6 +346,12 @@ var_shell_parse_buffer:   DS      32
 var_shell_argstring:      DS      2
 var_command_buffer_size:  DS      1
 
+var_shell_completion_count:     DS      1
+
+var_shell_completion_select:    DS      1
+
+var_shell_parse_argument:       DS      32
+
         NEXTU
         ENDU
 var_scene_union_end:
