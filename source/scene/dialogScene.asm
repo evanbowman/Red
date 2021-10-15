@@ -169,12 +169,47 @@ DialogSceneExitVBlank:
 
 ;;; ----------------------------------------------------------------------------
 
+DialogSceneUpdateMoretextIcon:
+        ld      a, [var_dialog_counter]
+        inc     a
+        ld      [var_dialog_counter], a
+        cp      20
+        ret     NZ
+
+        xor     a
+        ld      [var_dialog_counter], a
+
+        VIDEO_BANK 1
+        ld      a, $80
+        ld      [$9c72], a
+        VIDEO_BANK 0
+
+        ld      a, [$9c72]      ; icon location in window
+        cp      $3a
+        jr      Z, .f1
+
+.f0:
+        ld      a, $3a
+        ld      [$9c72], a
+        ret
+
+.f1:
+        ld      a, $3b
+        ld      [$9c72], a
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+
 DialogSceneAwaitButtonVBlank:
         ld      a, [var_water_anim_changed]
         or      a
         fcallc  NZ, VBlankCopyWaterTextures
 
         fcall   VBlankCopySpriteTextures
+
+	fcall   DialogSceneUpdateMoretextIcon
 
         xor     a
         ld      [var_dialog_a_released], a
@@ -184,6 +219,7 @@ DialogSceneAwaitButtonVBlank:
         ret     Z
 
 	xor     a
+        ld      [var_dialog_counter], a
 
         ld      hl, $9c21
         ld      bc, 18

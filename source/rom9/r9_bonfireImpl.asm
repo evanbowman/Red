@@ -128,21 +128,19 @@ r9_BonfirePopulateHitbox:
 ;;; c - y coord
 ;;; hl - hitbox
         ld      a, b
-        sub     8
         ld      b, a
         ld      [hl], b
         inc     hl
         ld      a, c
-        sub     8
         ld      c, a
         ld      [hl], c
         inc     hl
 
-        ld      a, 48
+        ld      a, 32
         add     b
         ld      [hl+], a
 
-        ld      a, 48
+        ld      a, 32
         add     c
         ld      [hl], a
 

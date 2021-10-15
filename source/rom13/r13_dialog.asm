@@ -66,10 +66,10 @@ DB $FF,$FF,$FF,$FF,$FF,$FF,$00,$00
 DB $00,$00,$00,$FF,$00,$FF,$00,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-DB $FF,$FF,$FF,$FF,$DF,$DF,$9F,$9F
-DB $1F,$1F,$9F,$9F,$DF,$DF,$FF,$FF
-DB $FF,$FF,$FF,$FF,$FB,$FB,$F9,$F9
-DB $F8,$F8,$F9,$F9,$FB,$FB,$FF,$FF
+DB $FF,$FF,$FF,$FF,$E0,$FF,$E0,$FF
+DB $E0,$FF,$F1,$FF,$FB,$FF,$FF,$FF
+DB $FF,$FF,$E0,$FF,$E0,$FF,$E0,$FF
+DB $F1,$FF,$FB,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$00,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 DB $FF,$FF,$FF,$FF,$FF,$FF,$83,$83
@@ -158,12 +158,27 @@ r13_DialogEngineStep:
         ld      hl, var_dialog_current_word
         fcall   SmallStrlen     ; result in c
 
+        ld      a, [var_dialog_cursor_y]
+        or      a
+        jr      NZ, .checkLenRow2
+
+
+.checkLenRow1:
         ld      a, [var_dialog_cursor_x] ; \
         ld      b, a                     ; | A now contains remaining chars
         ld      a, 17                    ; | in row.
         sub     b                        ; /
         jr      C, .nextRow
+        jr      .remaining
 
+.checkLenRow2:
+        ld      a, [var_dialog_cursor_x] ; \
+        ld      b, a                     ; | A now contains remaining chars
+        ld      a, 16                    ; | in row.
+        sub     b                        ; /
+        jr      C, .nextRow
+
+.remaining:
         cp      c               ; \ If remaining less than required, go to next
         jr      C, .nextRow     ; / screen row...
 
