@@ -33,6 +33,11 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
+DIALOG_COMMAND_BEGIN    EQU     $ff
+DIALOG_COMMAND_Y_N      EQU     1
+
+
+
 DialogSetup:
 ;;; bc - string
 ;;; de - scene to run after the dialog completes.
@@ -80,9 +85,7 @@ DialogSceneEnterVBlank:
 ;;; ----------------------------------------------------------------------------
 
 DialogSceneScrollInVBlank:
-        ld      a, [var_water_anim_changed]
-        or      a
-        fcallc  NZ, VBlankCopyWaterTextures
+        fcall   DialogSceneVBlankCommon
 
         fcall   VBlankCopySpriteTextures
 
@@ -125,6 +128,213 @@ DialogSceneOnOpen:
 
 ;;; ----------------------------------------------------------------------------
 
+dialogYesNoText:
+DB      "  yes        no", 0
+
+
+DialogSceneSetupYNOptionsVBlank:
+        ld      de, DialogSceneExpandYNOptionsVBlank
+        fcall   SceneSetVBlankFn
+
+        ld      hl, $9ca0
+        ld      a, $32
+        ld      bc, 20
+        fcall   Memset
+
+        ld      hl, $9cc0
+        ld      a, $32
+        ld      bc, 20
+        fcall   Memset
+
+        VIDEO_BANK 1
+
+        ld      hl, $9ca0
+        ld      a, $8b
+        ld      bc, 20
+        fcall   Memset
+
+        ld      hl, $9cc0
+        ld      a, $8b
+        ld      bc, 20
+        fcall   Memset
+
+        VIDEO_BANK 0
+
+        ld      hl, dialogYesNoText
+        ld      b, $8b
+        ld      de, $9ca1
+        fcall   PutText
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+DialogSceneHideYNOptionsVBlank:
+        fcall   DialogSceneVBlankCommon
+
+        ld      a, [var_dialog_scroll_in_y]
+        inc     a
+        cp      104
+        jr      Z, .done
+
+        ld      [var_dialog_scroll_in_y], a
+        ld      [rWY], a
+        ret
+
+.done:
+        LONG_CALL r13_DialogInit
+	xor     a
+        ld      [var_dialog_cursor_x], a
+        ld      [var_dialog_cursor_y], a
+
+        LONG_CALL r13_DialogLoadWord
+
+        ld      de, DialogSceneUpdate
+        fcall   SceneSetUpdateFn
+
+        ld      de, DialogSceneVBlank
+        fcall   SceneSetVBlankFn
+
+        ld      a, [var_dialog_finished]
+        or      a
+        ret     Z
+
+        fcall   DialogSceneSetupExit
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+DialogSceneExpandYNOptionsVBlank:
+        fcall   DialogSceneVBlankCommon
+
+        ld      a, [var_dialog_scroll_in_y]
+        dec     a
+        cp      91
+        jr      Z, .done
+
+        ld      [var_dialog_scroll_in_y], a
+        ld      [rWY], a
+        ret
+
+.done:
+        xor     a
+        ld      [var_dialog_option_selected], a
+
+        ld      de, DialogSceneSelectYNVBlank
+        fcall   SceneSetVBlankFn
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
+DialogSceneSelectYNVBlank:
+        fcall   DialogSceneVBlankCommon
+
+        ld      a, [var_dialog_option_selected]
+        or      a
+        jr      Z, .no
+
+.yes:
+        ld      a, $31
+        ld      [$9ca2], a
+
+        ld      a, $32
+        ld      [$9cad], a
+
+        ldh     a, [hvar_joypad_current]
+	bit     PADB_RIGHT, a
+        jr      Z, .checkYesA
+
+        xor     a
+        ld      [var_dialog_option_selected], a
+
+.checkYesA:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_A, a
+        ret     Z
+
+        ld      b, 0
+        ld      a, [var_dialog_current_char]
+        ld      c, a
+        ld      hl, var_dialog_current_word
+        add     hl, bc
+        inc     hl
+
+        ld      a, [hl]
+        ld      c, a
+        inc     hl
+        ld      a, [hl]
+        inc     hl
+        ld      h, a
+        ld      l, c
+
+        INVOKE_HL
+
+        ld      a, [var_dialog_current_char]
+        add     6
+        ld      [var_dialog_current_char], a
+
+        fcall   DialogSceneClearBoxVBlank
+
+        ld      de, DialogSceneHideYNOptionsVBlank
+        fcall   SceneSetVBlankFn
+
+        ret
+
+.no:
+        ld      a, $32
+        ld      [$9ca2], a
+
+        ld      a, $31
+        ld      [$9cad], a
+
+        ld      a, [hvar_joypad_current]
+	bit     PADB_LEFT, a
+        jr      Z, .checkNoA
+
+        ld      a, 1
+        ld      [var_dialog_option_selected], a
+
+.checkNoA:
+        ldh     a, [hvar_joypad_current]
+        bit     PADB_A, a
+        ret     Z
+
+        ld      b, 0
+        ld      a, [var_dialog_current_char]
+        ld      c, a
+        ld      hl, var_dialog_current_word
+        add     hl, bc
+        ld      bc, 3
+        add     hl, bc
+
+        ld      a, [hl]
+        ld      c, a
+        inc     hl
+        ld      a, [hl]
+        inc     hl
+        ld      h, a
+        ld      l, c
+
+        INVOKE_HL
+
+        ld      a, [var_dialog_current_char]
+        add     6
+        ld      [var_dialog_current_char], a
+
+        fcall   DialogSceneClearBoxVBlank
+
+        ld      de, DialogSceneHideYNOptionsVBlank
+        fcall   SceneSetVBlankFn
+
+        ret
+
+
+;;; ----------------------------------------------------------------------------
+
 DialogSceneUpdate:
         fcall   UpdateEntities
         fcall   OverworldSceneAnimateWater
@@ -137,6 +347,7 @@ DialogSceneUpdate:
         bit     PADB_A, a                ; |
         ret     Z                        ; /
 
+DialogSceneSetupExit:
         LONG_CALL r13_DialogClosedMessageBroadcast
 
         ld      de, DialogSceneExitVBlank
@@ -201,14 +412,19 @@ DialogSceneUpdateMoretextIcon:
 
 ;;; ----------------------------------------------------------------------------
 
-
-DialogSceneAwaitButtonVBlank:
+DialogSceneVBlankCommon:
         ld      a, [var_water_anim_changed]
         or      a
         fcallc  NZ, VBlankCopyWaterTextures
 
         fcall   VBlankCopySpriteTextures
+        ret
 
+
+;;; ----------------------------------------------------------------------------
+
+DialogSceneAwaitButtonVBlank:
+        fcall   DialogSceneVBlankCommon
 	fcall   DialogSceneUpdateMoretextIcon
 
         xor     a
@@ -218,6 +434,9 @@ DialogSceneAwaitButtonVBlank:
         bit     PADB_A, a
         ret     Z
 
+        ;; fallthrough...
+
+DialogSceneClearBoxVBlank:
 	xor     a
         ld      [var_dialog_counter], a
 
@@ -251,11 +470,7 @@ DialogSceneAwaitButtonVBlank:
 ;;; ----------------------------------------------------------------------------
 
 DialogSceneVBlank:
-        ld      a, [var_water_anim_changed]
-        or      a
-        fcallc  NZ, VBlankCopyWaterTextures
-
-        fcall   VBlankCopySpriteTextures
+        fcall   DialogSceneVBlankCommon
 
         ldh     a, [hvar_joypad_raw]
         ld      b, a

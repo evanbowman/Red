@@ -112,3 +112,5 @@ CHARMAP "+", $7C
 CHARMAP "-", $7D
 CHARMAP "/", $7E
 CHARMAP "=", $7F
+;; Control sequences:
+CHARMAP "<COMMAND>", $ff

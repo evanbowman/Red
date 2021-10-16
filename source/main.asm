@@ -404,9 +404,16 @@ SceneGraphEvaluate:
 ;;; that I can copy within the vblank window.
 .vbl_window_exceeded:
         stop
+
+
+
 TEST_STR:
 DB      "The pale fire flickers brightly in the cold air...", 0
-
+DB      " <COMMAND>"
+DB      DIALOG_COMMAND_Y_N
+DW      VoidVBlankFn
+DW      VoidUpdateFn
+DB      0
 
 
 ;;; ----------------------------------------------------------------------------

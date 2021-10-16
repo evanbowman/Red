@@ -363,6 +363,7 @@ var_dialog_cursor_y:            DS      1
 var_dialog_scroll_in_y:         DS      1
 var_dialog_a_released:          DS      1
 var_dialog_next_scene:          DS      2
+var_dialog_option_selected:     DS      1
         NEXTU
         ENDU
 var_scene_union_end:
