@@ -33,11 +33,6 @@
 ;;; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
-DIALOG_COMMAND_BEGIN    EQU     $ff
-DIALOG_COMMAND_Y_N      EQU     1
-
-
-
 DialogSetup:
 ;;; bc - string
 ;;; de - scene to run after the dialog completes.

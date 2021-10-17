@@ -218,11 +218,26 @@ r13_DialogEngineStep:
 	ld      a, [hl]
         cp      DIALOG_COMMAND_Y_N
         jr      Z, .dialogOpenYNOptions
+        cp      DIALOG_COMMAND_BREAK
+        jr      Z, .dialogProcessBreak
         ret
 
 .dialogOpenYNOptions:
         ld      de, DialogSceneSetupYNOptionsVBlank
         fcall   SceneSetVBlankFn
+        ret
+
+.dialogProcessBreak:
+        ld      de, DialogSceneAwaitButtonVBlank
+        fcall   SceneSetVBlankFn
+
+        fcall   r13_DialogInit
+
+        ld      a, [var_dialog_current_char]
+        add     2
+        ld      [var_dialog_current_char], a
+
+        fcall   r13_DialogLoadWord
         ret
 
 

@@ -49,6 +49,7 @@ SPRITE_SHAPE_TALL_16_32 EQU $00
         INCLUDE "room.inc"
         INCLUDE "message.inc"
         INCLUDE "combat.inc"
+        INCLUDE "dialog.inc"
         INCLUDE "charmap.inc"
 
 
