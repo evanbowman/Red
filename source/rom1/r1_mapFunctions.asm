@@ -1056,7 +1056,7 @@ r1_WorldMapFormatCoordinates:
         pop     bc
 
         pop     hl              ; restore de into hl
-        add     bc              ; increment to end of used data in buffer
+        add     hl, bc          ; increment to end of used data in buffer
 
         ld      a, $78
         ld      [hl+], a

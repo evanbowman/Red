@@ -59,7 +59,6 @@ CutsceneInit:
         ld      [var_cutscene_tile_start_bank], a
         ld      [var_cutscene_tile_current_bank], a
         xor     a
-        ld      [rWY], a
         ld      [var_cutscene_tile_offset], a
         ret
 

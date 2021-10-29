@@ -91,7 +91,7 @@ MapSpriteBlock:
         ld      e, a                    ; | Look up the starting rom bank for
         ld      d, 0                    ; | the currently bound spritesheet.
         ld      hl, .spritesheetBankLut ; |
-        add     de                      ; |
+        add     hl, de                  ; |
         ld      a, [hl]                 ; |
         pop     de                      ; |
         pop     hl                      ; /

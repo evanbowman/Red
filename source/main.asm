@@ -629,9 +629,13 @@ TimerISR:
         INCLUDE "r13_dialog.asm"
         INCLUDE "rom14_intro_cutscene_data.asm"
         INCLUDE "r14_shell.asm"
+        INCLUDE "rom15_intro_cutscene_map_data.asm"
+        INCLUDE "rom16_intro_cutscene_map_data.asm"
         INCLUDE "rom20_intro_cutscene_texture_data.asm"
         INCLUDE "rom21_intro_cutscene_texture_data.asm"
         INCLUDE "rom22_intro_cutscene_texture_data.asm"
+        INCLUDE "rom23_intro_cutscene_texture_data.asm"
+        INCLUDE "rom24_intro_cutscene_texture_data.asm"
         INCLUDE "rom30_data.asm"
 
 

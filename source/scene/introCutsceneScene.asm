@@ -95,6 +95,9 @@ IntroCutsceneSceneEnter:
 
         fcall   VBlankIntrWait
 
+        xor     a
+        ld      [rWY], a
+
         ;; ...
         ld      d, 13           ; \ bank containing map data
         ld      e, 21           ; | bank containing tile textures
@@ -136,6 +139,9 @@ IntroCutsceneSceneUpdate:
         ld      hl, intro_credits_line3_str
         fcall   PutText
 
+        ld      c, 255
+        fcall   FadeToBlackExcludeOverlay
+
 
         ld      e, 154
         fcall   ForceSleep
@@ -169,7 +175,7 @@ IntroCutsceneSceneUpdate:
         fcall   CutscenePlay
         ld      a, d
         or      a
-        jr      NZ, .nextScene
+        jp      NZ, .nextScene
 
 
 
@@ -240,8 +246,59 @@ IntroCutsceneSceneUpdate:
         jr      NZ, .nextScene
 
 
-        ld      e, 40
+        ld      e, 60
         fcall   ForceSleep
+
+
+        ld      a, 20
+        ld      [rWY], a
+
+
+        ;; Fourth cutscene sequence (start drawing title)
+        ld      d, 15           ; \ bank containing map data
+        ld      e, 23           ; | bank containing tile texture
+        ld      bc, r23_cutscene_title0_texture_offsets
+        fcall   CutsceneInit    ; /
+
+        ld      d, 24
+        ld      e, BANK(@)
+        ld      c, 6
+        fcall   CutscenePlay
+
+
+	ld      d, 16
+        ld      e, 24
+        ld      bc, r24_cutscene_title1_texture_offsets
+        fcall   CutsceneInit
+
+        ld      d, 3
+        ld      e, BANK(@)
+        ld      c, 6
+        fcall   CutscenePlay
+
+
+        ld      e, 75
+        fcall   ForceSleep
+
+        ld      b, 20
+.scrollTitleUp:
+        fcall   VBlankIntrWait
+
+        ld      a, b
+        or      a
+        jr      Z, .wait
+
+        ld      [rWY], a
+
+        dec     b
+        jr      .scrollTitleUp
+
+.wait:
+        ld      e, 50
+        fcall   ForceSleep
+
+	ld      c, 255
+        fcall   FadeToBlack
 
 .nextScene:
         fcall   OverworldSceneUpdateView

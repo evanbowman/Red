@@ -131,7 +131,7 @@ r13_DialogEngineStep:
         ld      c, a                     ; |
         ld      b, 0                     ; | Calculate destination position on
                                          ; | screen, into which to put the
-        add     bc                       ; | character.
+        add     hl, bc                   ; | character.
         ld      d, h                     ; |
         ld      e, l                     ; |
         pop     hl                       ; /
